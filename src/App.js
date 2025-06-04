@@ -1,5 +1,5 @@
 // src/App.js
-import React, { useState, useCallback } from "react"; // Add useCallback
+import React, { useState, useCallback, useMemo } from "react"; // Add useMemo
 import { useGolfLeaderboard } from "./useGolfLeaderboard";
 import "./App.css";
 
@@ -14,28 +14,67 @@ const formatScoreForDisplay = (score) => {
     return score > 0 ? `+${score}` : `${score}`;
 };
 
+// Helper to parse numeric scores for sorting (needed here too)
+const parseNumericScore = (scoreStr) => {
+    if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
+      return 0;
+    }
+    const num = parseFloat(scoreStr);
+    return isNaN(num) ? null : num;
+};
+
+
 function App() {
-  // Add state for sorting
+  // Fetch raw data (now it's called 'rawData') from the hook
+  const { rawData, loading, error } = useGolfLeaderboard();
+
+  // State for sorting (managed locally in App.js)
   const [sortColumn, setSortColumn] = useState('total'); // Default sort by total
   const [sortDirection, setSortDirection] = useState('asc'); // Default ascending
 
-  // Pass sorting parameters to the custom hook
-  const { leaderboardData, loading, error } = useGolfLeaderboard(sortColumn, sortDirection);
+  // Memoize the sorting logic so it only re-runs when rawData, sortColumn, or sortDirection change
+  const leaderboardData = useMemo(() => {
+    if (!rawData || rawData.length === 0) {
+      return [];
+    }
 
-  // Function to handle column header clicks
+    // Create a mutable copy to sort
+    const sortableData = [...rawData];
+
+    sortableData.sort((a, b) => {
+      const valA = parseNumericScore(a[sortColumn]);
+      const valB = parseNumericScore(b[sortColumn]);
+
+      // Handle nulls: nulls go to the end
+      if (valA === null && valB === null) return 0;
+      if (valA === null) return 1;
+      if (valB === null) return -1;
+
+      // For golf, lower score is better (ascending).
+      // If sorting 'asc', A-B. If sorting 'desc', B-A.
+      const comparison = valA - valB;
+      return sortDirection === 'asc' ? comparison : -comparison;
+    });
+
+    // Assign positions after sorting
+    sortableData.forEach((team, idx) => {
+      team.position = idx + 1; // Assign new position after sorting
+    });
+
+    return sortableData;
+  }, [rawData, sortColumn, sortDirection]); // Dependencies for useMemo
+
+
   const handleHeaderClick = useCallback((columnName) => {
     setSortDirection(prevDir => {
-      // If clicking the same column, toggle direction
       if (columnName === sortColumn) {
         return prevDir === 'asc' ? 'desc' : 'asc';
       }
-      // If clicking a new column, default to ascending
       return 'asc';
     });
     setSortColumn(columnName);
-  }, [sortColumn]); // Dependency on sortColumn to re-create if it changes
+  }, [sortColumn]);
 
-  // Helper to display sort indicator
   const renderSortArrow = (columnName) => {
     if (sortColumn === columnName) {
       return sortDirection === 'asc' ? ' ↑' : ' ↓';
@@ -62,7 +101,6 @@ function App() {
       <div className="App">
         <header className="App-header">
           <h1>WVU Alumni Leaderboard</h1>
-		  <h1>PGA Championship</h1>
         </header>
         <main>
           <p style={{ color: 'red' }}>Error: {error}</p>
@@ -103,8 +141,8 @@ function App() {
           </thead>
 
           <tbody>
-            {leaderboardData.map((team, index) => (
-              <React.Fragment key={`team-${index}`}>
+            {leaderboardData.map((team, index) => ( // Use leaderboardData (the sorted version)
+              <React.Fragment key={`team-${team.team}`}> {/* Use team name for key if unique */}
                 {/* Team Row */}
                 <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
                   <td>{team.position}</td>
@@ -117,7 +155,7 @@ function App() {
                 </tr>
                 {/* Golfer Sub-rows */}
                 {team.golfers && team.golfers.map((golfer, golferIndex) => (
-                  <tr key={`golfer-${index}-${golferIndex}`} className="golfer-row">
+                  <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row"> {/* Unique key for golfer */}
                     <td></td>
                     <td>{golfer.name}</td>
                     <td></td>

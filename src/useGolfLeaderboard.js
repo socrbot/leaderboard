@@ -1,16 +1,13 @@
 // src/useGolfLeaderboard.js
 import { useState, useEffect } from 'react';
 
-// WARNING: Your API key will be visible in the browser's source code.
-// This is NOT recommended for production applications.
-const RAPIDAPI_KEY = "ed588908c5mshd39b6ec2c9168a5p142e26jsnd2c9925b5e53";
-const RAPIDAPI_HOST = "live-golf-data.p.rapidapi.com";
-const API_ENDPOINT = "https://live-golf-data.p.rapidapi.com/leaderboard?orgId=1&tournId=033&year=2025";
+// API Constants (point to your Flask backend)
+const API_ENDPOINT = "http://localhost:5000/api/leaderboard";
 
 // Define the Par for the course
 const PAR = 71;
 
-// Your team assignments with actual golfer names
+// Team Assignments
 const teamAssignments = [
   {
     name: "Ash",
@@ -58,7 +55,8 @@ const teamAssignments = [
   },
 ];
 
-// Helper to parse scores
+// ALL HELPER FUNCTIONS MUST BE DECLARED BEFORE useGolfLeaderboard
+
 const parseNumericScore = (scoreStr) => {
     if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
       return 0;
@@ -67,7 +65,6 @@ const parseNumericScore = (scoreStr) => {
     return isNaN(num) ? null : num;
 };
 
-// Helper to format scores for display (This is still in useGolfLeaderboard for self-containment)
 const formatScoreForDisplay = (score) => {
     if (score === null || score === undefined || isNaN(score)) {
         return "-";
@@ -78,21 +75,17 @@ const formatScoreForDisplay = (score) => {
     return score > 0 ? `+${score}` : `${score}`;
 };
 
-
-// Helper to transform individual players into teams
-const transformPlayersToTeams = (players, cutRoundScorePlaceholderR3, cutRoundScorePlaceholderR4) => {
-  const teamsMap = new Map();
-
-  // Helper to calculate the sum of the best N scores from an array
-  const sumBestNScores = (scoresArray, n, roundPlaceholder) => {
+const sumBestNScores = (scoresArray, n, roundPlaceholder) => {
     const scoresForSorting = scoresArray.map(score => score === null ? roundPlaceholder : score);
     const sortedScores = scoresForSorting.sort((a, b) => a - b);
     if (sortedScores.length < n) {
       return null;
     }
     return sortedScores.slice(0, n).reduce((sum, score) => sum + score, 0);
-  };
+};
 
+const transformPlayersToTeams = (players, cutRoundScorePlaceholderR3, cutRoundScorePlaceholderR4) => {
+  const teamsMap = new Map();
 
   teamAssignments.forEach(teamDef => {
     const teamPlayers = [];
@@ -195,31 +188,30 @@ const transformPlayersToTeams = (players, cutRoundScorePlaceholderR3, cutRoundSc
     });
   });
 
-  return Array.from(teamsMap.values()); // Return unsorted data to be sorted by the hook
+  return Array.from(teamsMap.values());
 };
 
-
-export const useGolfLeaderboard = (sortColumn = 'total', sortDirection = 'asc') => { // Accept sort params
-  const [leaderboardData, setLeaderboardData] = useState([]);
+// --- Main Hook (no sorting or position assignment here anymore) ---
+export const useGolfLeaderboard = () => { // Removed sortColumn, sortDirection parameters
+  const [rawData, setRawData] = useState([]); // Will store the fetched and transformed data
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchLeaderboardData = async () => {
+    const fetchAndTransformData = async () => { // Renamed for clarity
       try {
-        const response = await fetch(API_ENDPOINT, {
-          method: "GET",
-          headers: {
-            "X-RapidAPI-Key": RAPIDAPI_KEY,
-            "X-RapidAPI-Host": RAPIDAPI_HOST,
-          },
-        });
+        const response = await fetch(API_ENDPOINT);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          const errorBody = await response.json().catch(() => ({}));
+          throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || response.statusText}`);
         }
 
         const result = await response.json();
+
+        if (result.error) {
+            throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
+        }
 
         if (!result.leaderboardRows || result.leaderboardRows.length === 0) {
           throw new Error("No 'leaderboardRows' data found in API response.");
@@ -260,35 +252,14 @@ export const useGolfLeaderboard = (sortColumn = 'total', sortDirection = 'asc') 
           (maxR4Score - PAR + 1) : null;
 
 
-        // Pass fallbacks for placeholders to transformPlayersToTeams
+        // Call transformPlayersToTeams to get the processed data
         const transformedData = transformPlayersToTeams(
           rawPlayers,
           dynamicCutRoundScorePlaceholderR3 !== null ? dynamicCutRoundScorePlaceholderR3 : 9,
           dynamicCutRoundScorePlaceholderR4 !== null ? dynamicCutRoundScorePlaceholderR4 : 10
         );
 
-        // Apply sorting after data transformation
-        const sortedData = transformedData.sort((a, b) => {
-          const valA = parseNumericScore(a[sortColumn]);
-          const valB = parseNumericScore(b[sortColumn]);
-
-          // Handle nulls: nulls go to the end
-          if (valA === null && valB === null) return 0;
-          if (valA === null) return 1;
-          if (valB === null) return -1;
-
-          // For golf, lower score is better (ascending).
-          // If sorting 'asc', A-B. If sorting 'desc', B-A.
-          const comparison = valA - valB;
-          return sortDirection === 'asc' ? comparison : -comparison;
-        });
-
-        // Assign positions after sorting
-        sortedData.forEach((team, idx) => {
-          team.position = idx + 1;
-        });
-
-        setLeaderboardData(sortedData);
+        setRawData(transformedData); // Store the transformed data (without sorting or positions yet)
 
       } catch (e) {
         setError(e.message);
@@ -298,10 +269,11 @@ export const useGolfLeaderboard = (sortColumn = 'total', sortDirection = 'asc') 
       }
     };
 
-    fetchLeaderboardData();
-    const intervalId = setInterval(fetchLeaderboardData, 5 * 60 * 1000); // 5 minutes
+    fetchAndTransformData(); // Call it once on mount
+    const intervalId = setInterval(fetchAndTransformData, 5 * 60 * 1000); // And then on interval
     return () => clearInterval(intervalId);
-  }, [sortColumn, sortDirection]); // Re-run effect when sort params change
+  }, []); // Empty dependency array, so it runs only once on mount (and then by interval)
 
-  return { leaderboardData, loading, error };
+  // Return the raw data, loading, and error. Sorting will happen in App.js
+  return { rawData, loading, error };
 };
