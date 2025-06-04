@@ -1,38 +1,78 @@
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #1e1e1e; /* Dark background */
+  color: white;
+}
+
 .App {
   text-align: center;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
-}
-
 .App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
+  background-color: #006400; /* Green header */
+  padding: 20px;
   color: white;
 }
 
-.App-link {
-  color: #61dafb;
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 90%;
+  background-color: #333333; /* Dark grey table background */
+  color: white;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+th, td {
+  border: 1px solid #444; /* Darker border for table cells */
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #006400; /* Dark green headers */
+  color: white;
+}
+
+/* This rule is the culprit for overriding team-row backgrounds */
+tbody tr:nth-child(even) {
+  background-color: #2b2b2b; /* Slightly lighter grey for alternate rows */
+}
+
+tbody tr:hover {
+  background-color: #444; /* Hover effect */
+}
+
+.total {
+  color: red; /* Highlight total scores in red */
+  font-weight: bold;
+}
+
+/* Additions for team and golfer rows below */
+/* Making this rule more specific to override nth-child(even) */
+tbody .team-row {
+  font-weight: bold;
+  background-color: #004d00 !important; /* A darker green for team rows to stand out */
+}
+
+/* Optional: remove hover effect for team rows if you want only golfers to highlight */
+tbody .team-row:hover { /* Also make this more specific */
+  background-color: #004d00; /* Keep the same background on hover */
+}
+
+.golfer-row {
+  font-size: 0.9em; /* Slightly smaller text for golfers */
+  color: #ccc; /* Slightly muted color for golfer names */
+  background-color: #262626; /* A bit darker than even rows, lighter than body */
+}
+
+.golfer-row td {
+  padding-left: 30px; /* Indent golfer rows to visually group them under the team */
+  text-align: left; /* Align golfer names to the left for better readability */
+}
+
+/* Optional: Add hover effect to golfer rows */
+.golfer-row:hover {
+  background-color: #3a3a3a; /* Hover effect for golfer rows */
 }
