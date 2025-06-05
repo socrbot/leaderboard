@@ -65,15 +65,15 @@ const parseNumericScore = (scoreStr) => {
     return isNaN(num) ? null : num;
 };
 
-const formatScoreForDisplay = (score) => {
-    if (score === null || score === undefined || isNaN(score)) {
-        return "-";
-    }
-    if (score === 0) {
-        return "E";
-    }
-    return score > 0 ? `+${score}` : `${score}`;
-};
+//const formatScoreForDisplay = (score) => {
+  //  if (score === null || score === undefined || isNaN(score)) {
+//        return "-";
+//    }
+//    if (score === 0) {
+//        return "E";
+//    }
+//    return score > 0 ? `+${score}` : `${score}`;
+//};
 
 const sumBestNScores = (scoresArray, n, roundPlaceholder) => {
     const scoresForSorting = scoresArray.map(score => score === null ? roundPlaceholder : score);
