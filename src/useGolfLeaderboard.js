@@ -2,7 +2,7 @@
 import { useState, useEffect } from 'react';
 
 // API Constants (point to your Flask backend)
-const API_ENDPOINT = "https://leaderboard-backend-628169335141.us-east1.run.app";
+const API_ENDPOINT = "https://leaderboard-backend-628169335141.us-east1.run.app/api/leaderboard";
 
 // Define the Par for the course
 const PAR = 71;
