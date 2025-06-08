@@ -1,175 +1,239 @@
-// src/App.js
-import React, { useState, useCallback, useMemo } from "react"; // Add useMemo
-import { useGolfLeaderboard } from "./useGolfLeaderboard";
-import "./App.css";
+import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import './App.css';
+import { useGolfLeaderboard } from './useGolfLeaderboard';
+import TeamManagement from './components/TeamManagement';
 
-// Helper to format scores for display (+X, -X, E for Even)
+// Helper function to format scores for display (already in App.js)
 const formatScoreForDisplay = (score) => {
-    if (score === null || score === undefined || isNaN(score)) {
-        return "-";
-    }
-    if (score === 0) {
-        return "E";
-    }
-    return score > 0 ? `+${score}` : `${score}`;
+  if (score === null || score === undefined || score === '') {
+    return '-';
+  }
+  if (score > 0) {
+    return `+${score}`;
+  }
+  return score.toString();
 };
-
-// Helper to parse numeric scores for sorting (needed here too)
-const parseNumericScore = (scoreStr) => {
-    if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
-      return 0;
-    }
-    const num = parseFloat(scoreStr);
-    return isNaN(num) ? null : num;
-};
-
 
 function App() {
-  // Fetch raw data (now it's called 'rawData') from the hook
-  const { rawData, loading, error } = useGolfLeaderboard();
+  const [showTeamManagement, setShowTeamManagement] = useState(false);
+  const [selectedTournamentId, setSelectedTournamentId] = useState('');
+  const [tournaments, setTournaments] = useState([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(true);
+  const [tournamentError, setTournamentError] = useState(null);
 
-  // State for sorting (managed locally in App.js)
-  const [sortColumn, setSortColumn] = useState('total'); // Default sort by total
-  const [sortDirection, setSortDirection] = useState('asc'); // Default ascending
+  // Sorting state (already in App.js)
+  const [sortColumn, setSortColumn] = useState('total');
+  const [sortDirection, setSortDirection] = useState('asc');
 
-  // Memoize the sorting logic so it only re-runs when rawData, sortColumn, or sortDirection change
-  const leaderboardData = useMemo(() => {
-    if (!rawData || rawData.length === 0) {
-      return [];
-    }
+  // New state to trigger re-fetch of tournaments/leaderboard data
+  const [refreshTrigger, setRefreshTrigger] = useState(0);
 
-    // Create a mutable copy to sort
-    const sortableData = [...rawData];
-
-    sortableData.sort((a, b) => {
-      const valA = parseNumericScore(a[sortColumn]);
-      const valB = parseNumericScore(b[sortColumn]);
-
-      // Handle nulls: nulls go to the end
-      if (valA === null && valB === null) return 0;
-      if (valA === null) return 1;
-      if (valB === null) return -1;
-
-      // For golf, lower score is better (ascending).
-      // If sorting 'asc', A-B. If sorting 'desc', B-A.
-      const comparison = valA - valB;
-      return sortDirection === 'asc' ? comparison : -comparison;
-    });
-
-    // Assign positions after sorting
-    sortableData.forEach((team, idx) => {
-      team.position = idx + 1; // Assign new position after sorting
-    });
-
-    return sortableData;
-  }, [rawData, sortColumn, sortDirection]); // Dependencies for useMemo
+  // New state specifically for refreshing the leaderboard data when navigating back
+  const [leaderboardRefreshKey, setLeaderboardRefreshKey] = useState(0);
 
 
-  const handleHeaderClick = useCallback((columnName) => {
-    setSortDirection(prevDir => {
-      if (columnName === sortColumn) {
-        return prevDir === 'asc' ? 'desc' : 'asc';
+  // Fetch available tournaments from your Flask Backend
+  useEffect(() => {
+    const fetchTournaments = async () => {
+      setLoadingTournaments(true);
+      setTournamentError(null);
+      try {
+        const response = await fetch("http://127.0.0.1:8080/api/tournaments");
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        const data = await response.json();
+        setTournaments(data);
+        if (data.length > 0 && !selectedTournamentId) {
+          setSelectedTournamentId(data[0].id);
+        } else if (data.length > 0 && selectedTournamentId && !data.find(t => t.id === selectedTournamentId)) {
+          setSelectedTournamentId(data[0].id);
+        } else if (data.length === 0) {
+          setSelectedTournamentId('');
+        }
+      } catch (error) {
+        console.error("Error fetching tournaments from backend:", error);
+        setTournamentError("Failed to load tournaments.");
+      } finally {
+        setLoadingTournaments(false);
       }
-      return 'asc';
-    });
-    setSortColumn(columnName);
-  }, [sortColumn]);
+    };
+    fetchTournaments();
+  }, [refreshTrigger, selectedTournamentId]);
 
-  const renderSortArrow = (columnName) => {
-    if (sortColumn === columnName) {
+  // Callback to trigger a refresh when teams are updated or a new tournament is created
+  const handleDataUpdated = useCallback(() => {
+    setRefreshTrigger(prev => prev + 1); // Increment to trigger App.js tournament list re-fetch
+  }, []);
+
+  // Modify onClick for Show Leaderboard to update leaderboardRefreshKey
+  const handleShowLeaderboardClick = () => {
+    setShowTeamManagement(false);
+    setLeaderboardRefreshKey(prev => prev + 1); // Increment to force useGolfLeaderboard to re-fetch
+  };
+
+  // Pass leaderboardRefreshKey as the refreshDependency to useGolfLeaderboard
+  const { rawData, loading, error } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
+
+  // Sorting Logic (already in App.js)
+  const handleHeaderClick = (column) => {
+    if (sortColumn === column) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortColumn(column);
+      setSortDirection('asc');
+    }
+  };
+
+  const renderSortArrow = (column) => {
+    if (sortColumn === column) {
       return sortDirection === 'asc' ? ' ↑' : ' ↓';
     }
     return '';
   };
 
+  // Memoize the sorted leaderboard data (already in App.js)
+  const sortedLeaderboardData = useMemo(() => {
+    if (!rawData || rawData.length === 0) return [];
 
-  if (loading) {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h1>WVU Alumni Leaderboard</h1>
-        </header>
-        <main>
-          <p>Loading leaderboard data...</p>
-        </main>
-      </div>
-    );
-  }
+    const sortableData = [...rawData];
 
-  if (error) {
-    return (
-      <div className="App">
-        <header className="App-header">
-          <h1>WVU Alumni Leaderboard</h1>
-        </header>
-        <main>
-          <p style={{ color: 'red' }}>Error: {error}</p>
-          <p>There was an issue fetching golf data. Please check your network or API key.</p>
-        </main>
-      </div>
-    );
-  }
+    sortableData.sort((a, b) => {
+      const aValue = a[sortColumn];
+      const bValue = b[sortColumn];
+
+      if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+
+      if (sortDirection === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+
+    return sortableData.map((team, index) => ({
+      ...team,
+      position: index + 1
+    }));
+
+  }, [rawData, sortColumn, sortDirection]);
+
+
+  if (loadingTournaments) return <div>Loading tournaments...</div>;
+  if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
+  if (loading) return <div>Loading leaderboard data...</div>;
+  if (error) return <div style={{ color: 'red' }}>Error: {error}</div>;
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>WVU Alumni Leaderboard</h1>
-		<h2>PGA Championship</h2>
-      </header>
-      <main>
-        <table>
-          <thead>
-            <tr>
-              <th>POS</th>
-              <th>TEAM / GOLFER</th>
-              <th onClick={() => handleHeaderClick('total')} className="sortable-header">
-                TOTAL{renderSortArrow('total')}
-              </th>
-              <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
-                R1{renderSortArrow('r1')}
-              </th>
-              <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
-                R2{renderSortArrow('r2')}
-              </th>
-              <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
-                R3{renderSortArrow('r3')}
-              </th>
-              <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
-                R4{renderSortArrow('r4')}
-              </th>
-            </tr>
-          </thead>
+        <h1>Alumni Golf Tournament Leaderboard</h1>
 
-          <tbody>
-            {leaderboardData.map((team, index) => ( // Use leaderboardData (the sorted version)
-              <React.Fragment key={`team-${team.team}`}> {/* Use team name for key if unique */}
-                {/* Team Row */}
-                <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-                  <td>{team.position}</td>
-                  <td>{team.team}</td>
-                  <td className="total">{formatScoreForDisplay(team.total)}</td>
-                  <td>{formatScoreForDisplay(team.r1)}</td>
-                  <td>{formatScoreForDisplay(team.r2)}</td>
-                  <td>{formatScoreForDisplay(team.r3)}</td>
-                  <td>{formatScoreForDisplay(team.r4)}</td>
-                </tr>
-                {/* Golfer Sub-rows */}
-                {team.golfers && team.golfers.map((golfer, golferIndex) => (
-                  <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row"> {/* Unique key for golfer */}
-                    <td></td>
-                    <td>{golfer.name}</td>
-                    <td></td>
-                    <td>{formatScoreForDisplay(golfer.r1)}</td>
-                    <td>{formatScoreForDisplay(golfer.r2)}</td>
-                    <td>{formatScoreForDisplay(golfer.r3)}</td>
-                    <td>{formatScoreForDisplay(golfer.r4)}</td>
+        {/* Tournament Selector */}
+        <div>
+          <label htmlFor="tournament-select">Select Tournament: </label>
+          <select
+            id="tournament-select"
+            value={selectedTournamentId}
+            onChange={(e) => setSelectedTournamentId(e.target.value)}
+          >
+            {tournaments.length === 0 ? (
+              <option value="">No Tournaments Available</option>
+            ) : (
+              tournaments.map((tournament) => (
+                <option key={tournament.id} value={tournament.id}>
+                  {tournament.name}
+                </option>
+              ))
+            )}
+          </select>
+        </div>
+
+        {/* Navigation Buttons */}
+        <nav style={{ margin: '10px 0' }}>
+          <button onClick={handleShowLeaderboardClick} disabled={!selectedTournamentId}> {/* Modified onClick */}
+            Show Leaderboard
+          </button>
+          <button onClick={() => setShowTeamManagement(true)} disabled={!selectedTournamentId}>
+            Manage Teams
+          </button>
+        </nav>
+      </header>
+
+      {/* Conditional Rendering of Components */}
+      {selectedTournamentId ? (
+        showTeamManagement ? (
+          <TeamManagement
+            tournamentId={selectedTournamentId}
+            onTournamentCreated={handleDataUpdated}
+            onTeamsSaved={handleDataUpdated}
+          />
+        ) : (
+          <main>
+            {sortedLeaderboardData.length > 0 ? (
+              <table className="leaderboard-table">
+                <thead>
+                  <tr>
+                    <th>POS</th>
+                    <th className="team-golfer-header">TEAM / GOLFER</th>
+                    <th onClick={() => handleHeaderClick('total')} className="sortable-header">
+                      TOTAL{renderSortArrow('total')}
+                    </th>
+                    <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
+                      R1{renderSortArrow('r1')}
+                    </th>
+                    <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
+                      R2{renderSortArrow('r2')}
+                    </th>
+                    <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
+                      R3{renderSortArrow('r3')}
+                    </th>
+                    <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
+                      R4{renderSortArrow('r4')}
+                    </th>
                   </tr>
-                ))}
-              </React.Fragment>
-            ))}
-          </tbody>
-        </table>
-      </main>
+                </thead>
+                <tbody>
+                  {sortedLeaderboardData.map((team, teamIndex) => (
+                    <React.Fragment key={`team-${team.team}`}>
+                      {/* Team Row */}
+                      <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                        <td>{team.position}</td>
+                        <td className="team-name-cell">{team.team}</td>
+                        <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
+                        <td>{formatScoreForDisplay(team.r1)}</td>
+                        <td>{formatScoreForDisplay(team.r2)}</td>
+                        <td>{formatScoreForDisplay(team.r3)}</td>
+                        <td>{formatScoreForDisplay(team.r4)}</td>
+                      </tr>
+                      {/* Golfer Sub-rows */}
+                      {team.golfers && team.golfers.map((golfer, golferIndex) => (
+                        <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
+                          <td></td>
+                          <td className="golfer-name-cell">{golfer.name}</td>
+                          <td></td>
+                          <td>{formatScoreForDisplay(golfer.r1)}</td>
+                          <td>{formatScoreForDisplay(golfer.r2)}</td>
+                          <td>{formatScoreForDisplay(golfer.r3)}</td>
+                          <td>{formatScoreForDisplay(golfer.r4)}</td>
+                        </tr>
+                      ))}
+                    </React.Fragment>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div>No team data available for this tournament. Select another or go to Manage Teams to assign players.</div>
+            )}
+          </main>
+        )
+      ) : (
+        <div style={{ padding: '20px', textAlign: 'center' }}>
+          Please create or select a tournament to get started.
+          <br/><br/>
+        </div>
+      )}
     </div>
   );
 }
