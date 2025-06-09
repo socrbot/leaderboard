@@ -76,3 +76,75 @@ tbody .team-row:hover { /* Also make this more specific */
 .golfer-row:hover {
   background-color: #3a3a3a; /* Hover effect for golfer rows */
 }
+
+nav button {
+  background-color: Grey;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+nav button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+nav button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+
+/* Tournament Selector Styling */
+select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: white;
+    margin-left: 10px;
+    font-size: 1em;
+}
+
+select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+
+.teams-container {
+  display: flex; /* Enables flexbox */
+  flex-wrap: wrap; /* Allows items to wrap to the next line if space runs out */
+  gap: 20px; /* Provides space between the cards */
+  justify-content: center; /* Centers the cards horizontally within the container */
+  padding: 20px; /* Optional: adds padding around all cards */
+}
+
+.team-card {
+  background-color: #333; /* Darker background for cards */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 15px; /* Internal spacing within each card */
+  margin-bottom: 10px; /* Space below each card when wrapped */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+  flex: 1 1 calc(33% - 40px); /* Adjusts card width for responsiveness */
+  min-width: 280px; /* Minimum width for each card */
+  max-width: 350px; /* Maximum width for each card (optional) */
+  box-sizing: border-box; /* Ensures padding/border are included in width calculation */
+  color: #eee; /* Light text color */
+}
+
+@media (max-width: 1024px) {
+  .team-card {
+    flex: 1 1 calc(50% - 40px); /* On medium screens, try for 2 cards per row */
+  }
+}
+
+@media (max-width: 768px) {
+  .team-card {
+    flex: 1 1 calc(100% - 20px); /* On small screens, stack cards vertically (1 per row) */
+  }
+}
