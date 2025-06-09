@@ -15,7 +15,7 @@ const formatScoreForDisplay = (score) => {
   return score.toString();
 };
 
-const BACKEND_BASE_URL = "http://127.0.0.1:8080/api";
+const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app";
 const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
 
 function App() {
