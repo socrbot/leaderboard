@@ -1,14 +1,15 @@
+// src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 
 // Define your backend endpoints
 const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
 const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
 
-// TeamManagement now receives tournamentOddsId and isDraftStarted as props, and onDraftStarted callback
-const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, onDraftStarted }) => { // ADDED isDraftStarted, onDraftStarted
+// TeamManagement now receives tournamentOddsId, isDraftStarted, and hasManualDraftOdds as props,
+// and onDraftStarted and onManualOddsUpdated callbacks
+const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => { // ADDED hasManualDraftOdds, onManualOddsUpdated
   const [teams, setTeams] = useState([]);
   const [allPlayersWithOdds, setAllPlayersWithOdds] = useState([]);
-  
   
   //const [availablePlayers, setAvailablePlayers] = useState([]);
 
@@ -32,8 +33,10 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   // State for saving teams process
   const [isSaving, setIsSaving] = useState(false);
   // State for starting draft process
-  const [isStartingDraft, setIsStartingDraft] = useState(false); // NEW: State for draft starting process
+  const [isStartingDraft, setIsStartingDraft] = useState(false);
 
+  // State for clearing manual odds
+  const [isClearingManualOdds, setIsClearingManualOdds] = useState(false); // NEW: State for clearing manual odds
 
   // 1. Load existing teams for the selected tournament
   const loadTeams = useCallback(async () => {
@@ -62,18 +65,19 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
 
   // Fetch all players for the search functionality (depends on prop `tournamentOddsId`)
+  // This list will correctly fetch from ManualDraftOdds if available and draft not started
   useEffect(() => {
     const fetchAllPlayersForSearch = async () => {
       if (!tournamentOddsId) {
         setPlayerLoading(false);
         setAllPlayersWithOdds([]);
-        //setAvailablePlayers([]);
         return;
       }
 
       setPlayerLoading(true);
       setPlayerError(null);
       try {
+        // This endpoint will now correctly prioritize manual odds if they exist
         const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -81,19 +85,17 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         const rawOddsData = await response.json();
 
         setAllPlayersWithOdds(rawOddsData);
-        //setAvailablePlayers(rawOddsData.map(p => p.name));
 
       } catch (error) {
         console.error("Error fetching ALL player odds for search functionality:", error);
         setPlayerError(`Failed to load players for search. Please check tournament Odds ID (${tournamentOddsId}).`);
         setAllPlayersWithOdds([]);
-        //setAvailablePlayers([]);
       } finally {
         setPlayerLoading(false);
       }
     };
     fetchAllPlayersForSearch();
-  }, [tournamentOddsId]);
+  }, [tournamentOddsId, hasManualDraftOdds]); // ADDED hasManualDraftOdds so player list refreshes if manual odds status changes
 
 
   // --- Event Handlers for Team/Player Management (mostly unchanged) ---
@@ -128,6 +130,12 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         alert(`${playerToAdd} is already in ${team.name}!`);
         return;
     }
+
+    // Optional: Limit players per team
+    // if (team.golferNames.length >= 4) {
+    //     alert(`${team.name} already has 4 golfers.`);
+    //     return;
+    // }
 
     team.golferNames.push(playerToAdd);
     setTeams(updatedTeams);
@@ -182,7 +190,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       return;
     }
     if (newOrgId.trim() === '' || newTournId.trim() === '' || newYear.trim() === '' || newOddsId.trim() === '') {
-        alert("Please enter values for Tournament Name, Org ID, Tourn ID, Year, and Odds ID.");
+        alert("Please enter values for Tournament Name, Org ID, Tourn ID, Year, or Odds ID.");
         return;
     }
 
@@ -224,7 +232,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     }
   };
 
-  // NEW: handleStartDraft function
+  // handleStartDraft function (unchanged)
   const handleStartDraft = async () => {
     if (!tournamentId) {
       alert("No tournament selected. Please select one to start the draft.");
@@ -263,6 +271,48 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       alert(`Failed to start draft: ${error.message}`);
     } finally {
       setIsStartingDraft(false);
+    }
+  };
+
+  // NEW: handleClearManualOdds function
+  const handleClearManualOdds = async () => {
+    if (!tournamentId) {
+      alert("No tournament selected.");
+      return;
+    }
+    if (isClearingManualOdds) return;
+    if (isDraftStarted) {
+      alert("Cannot clear manual odds: Draft has already started.");
+      return;
+    }
+
+    if (!window.confirm("Are you sure you want to clear manual odds? This will revert to using live SportsData.io odds.")) {
+      return; // User cancelled
+    }
+
+    setIsClearingManualOdds(true);
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/clear_manual_odds`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
+        throw new Error(`HTTP error! status: ${response.status}. ${errorData.error || errorData.message}`);
+      }
+
+      alert('Manual odds cleared successfully! The Draft Board will now use live SportsData.io odds.');
+      if (onManualOddsUpdated) { // Trigger App.js to re-fetch tournament data and player odds for DraftBoard
+        onManualOddsUpdated();
+      }
+    } catch (error) {
+      console.error('Error clearing manual odds:', error);
+      alert(`Failed to clear manual odds: ${error.message}`);
+    } finally {
+      setIsClearingManualOdds(false);
     }
   };
 
@@ -344,12 +394,49 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         </button>
       </div>
 
-      {/* NEW: Start Draft Button */}
+      {/* NEW: Draft Actions Section */}
       <div style={{ textAlign: 'center', margin: '20px auto', maxWidth: '500px', padding: '15px', border: '1px solid #555', borderRadius: '8px', backgroundColor: '#333', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
         <h2 style={{marginTop: '0', marginBottom: '20px'}}>Draft Actions</h2>
-        {isDraftStarted ? (
-          <p style={{ color: '#90EE90' }}>Draft has started. Odds are locked in!</p>
-        ) : (
+
+        {/* Manual Odds Status and Clear Button */}
+        <div style={{marginBottom: '15px'}}>
+          {hasManualDraftOdds ? (
+            <p style={{ color: '#FFD700', marginBottom: '10px' }}>
+              Manual Draft Odds are currently ACTIVE.
+            </p>
+          ) : (
+            <p style={{ color: '#ADD8E6', marginBottom: '10px' }}>
+              Using Live SportsData.io Odds.
+            </p>
+          )}
+          {hasManualDraftOdds && !isDraftStarted && (
+            <button
+              onClick={handleClearManualOdds}
+              disabled={isClearingManualOdds || !tournamentId}
+              style={{
+                backgroundColor: '#DC143C', // Crimson red for clear
+                color: 'white',
+                padding: '8px 15px',
+                borderRadius: '4px',
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: '0.9em',
+                transition: 'background-color 0.3s ease',
+              }}
+            >
+              {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
+            </button>
+          )}
+          {isDraftStarted && (
+            <p style={{ color: '#90EE90', marginTop: '10px' }}>
+              Draft has started. Odds are locked in!
+            </p>
+          )}
+        </div>
+
+
+        {/* Start Draft Button */}
+        {!isDraftStarted && (
           <button
             onClick={handleStartDraft}
             disabled={isStartingDraft || !tournamentId}

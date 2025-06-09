@@ -1,3 +1,4 @@
+// src/App.js
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
@@ -70,10 +71,10 @@ function App() {
     fetchTournaments();
   }, [refreshTrigger, selectedTournamentId]);
 
-  // Callback to trigger a refresh when teams are updated or a new tournament is created
+  // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
   const handleDataUpdated = useCallback(() => {
     setRefreshTrigger(prev => prev + 1); // Increment to trigger App.js tournament list re-fetch
-    setLeaderboardRefreshKey(prev => prev + 1); // Also trigger leaderboard refresh when data changes
+    setLeaderboardRefreshKey(prev => prev + 1); // Also trigger leaderboard/draftboard refresh when data changes
   }, []);
 
   // Modify onClick for Show Leaderboard to update leaderboardRefreshKey
@@ -85,12 +86,16 @@ function App() {
 
   // Pass leaderboardRefreshKey as the refreshDependency to useGolfLeaderboard
   // Remove teamAssignments from destructuring if it's not directly used in App.js beyond what the hook itself does.
-  const { rawData, loading, error, isTournamentInProgress, tournamentOddsId, selectedTeamGolfersMap, teamColors, isDraftStarted } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
+  const { rawData, loading, error, isTournamentInProgress, tournamentOddsId, selectedTeamGolfersMap, teamColors, isDraftStarted, hasManualDraftOdds } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey); // NEW: Get hasManualDraftOdds
 
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
     const fetchPlayerOddsForDraftBoard = async () => {
-      if (!selectedTournamentId || !tournamentOddsId) {
+      // Fetch player odds for draft board if:
+      // 1. A tournament is selected AND
+      // 2. Either tournamentOddsId is present (for live odds) OR hasManualDraftOdds is true (for manual odds)
+      // 3. AND the tournament is NOT in progress (i.e., we are showing the draft board)
+      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds) || isTournamentInProgress) {
         setDraftBoardLoading(false);
         setDraftBoardPlayers([]);
         setDraftBoardError(null);
@@ -100,36 +105,29 @@ function App() {
       setDraftBoardLoading(true);
       setDraftBoardError(null);
       try {
+        // This endpoint's logic now handles manual vs. live odds automatically based on backend state
         const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const rawOddsData = await response.json();
-        const top40Players = rawOddsData.slice(0, 44);
+        // Assuming rawOddsData is already sorted by averageOdds from the backend
+        const top40Players = rawOddsData.slice(0, 44); // Take top 44 based on provided data
         setDraftBoardPlayers(top40Players);
       } catch (error) {
         console.error("Error fetching player odds for draft board:", error);
-        setDraftBoardError(`Failed to load player odds for draft board. Please check tournament Odds ID (${tournamentOddsId}).`);
+        setDraftBoardError(`Failed to load player odds for draft board. Please check tournament Odds ID (${tournamentOddsId}) or manual odds.`);
         setDraftBoardPlayers([]);
       } finally {
         setDraftBoardLoading(false);
       }
     };
 
-    // Only fetch if it's NOT in progress (i.e., we are showing the draft board)
-    // AND if a tournament is selected and oddsId is available
-    if (!isTournamentInProgress) {
-        fetchPlayerOddsForDraftBoard();
-    } else {
-        // If tournament is in progress, clear draft board data as it's not relevant
-        setDraftBoardPlayers([]);
-        setDraftBoardLoading(false);
-        setDraftBoardError(null);
-    }
-  }, [selectedTournamentId, tournamentOddsId, isTournamentInProgress, leaderboardRefreshKey, isDraftStarted]); // ADDED isDraftStarted as dependency so Draft Board refreshes when draft starts
+    fetchPlayerOddsForDraftBoard();
+  }, [selectedTournamentId, tournamentOddsId, isTournamentInProgress, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]); // ADDED hasManualDraftOdds as dependency
 
 
-  // Sorting Logic
+  // Sorting Logic (unchanged)
   const handleHeaderClick = (column) => {
     if (sortColumn === column) {
       setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
@@ -146,7 +144,7 @@ function App() {
     return '';
   };
 
-  // Memoize the sorted leaderboard data
+  // Memoize the sorted leaderboard data (unchanged)
   const sortedLeaderboardData = useMemo(() => {
     if (!rawData || rawData.length === 0) return [];
 
@@ -173,7 +171,7 @@ function App() {
 
   }, [rawData, sortColumn, sortDirection]);
 
-  // Memoize the augmented draft board players (not filtered, but enhanced with team info)
+  // Memoize the augmented draft board players (not filtered, but enhanced with team info) (unchanged)
   const augmentedDraftBoardPlayers = useMemo(() => {
     if (!draftBoardPlayers || draftBoardPlayers.length === 0) {
       return [];
@@ -241,9 +239,11 @@ function App() {
             tournamentId={selectedTournamentId}
             onTournamentCreated={handleDataUpdated}
             onTeamsSaved={handleDataUpdated}
-            tournamentOddsId={tournamentOddsId} // Pass tournamentOddsId to TeamManagement
-            isDraftStarted={isDraftStarted} // NEW: Pass isDraftStarted to TeamManagement
-            onDraftStarted={handleDataUpdated} // NEW: Callback for when draft starts
+            tournamentOddsId={tournamentOddsId}
+            isDraftStarted={isDraftStarted}
+            hasManualDraftOdds={hasManualDraftOdds} // NEW: Pass this prop
+            onDraftStarted={handleDataUpdated}
+            onManualOddsUpdated={handleDataUpdated} // NEW: Pass this callback
           />
         ) : ( // This block handles Leaderboard vs. Draft Board
           <main>
@@ -308,10 +308,11 @@ function App() {
               )
             ) : ( // Display Draft Board if tournament is NOT in progress
               <DraftBoard
-                topPlayers={augmentedDraftBoardPlayers} // Use augmented players here
+                topPlayers={augmentedDraftBoardPlayers}
                 loading={draftBoardLoading}
                 error={draftBoardError}
-                oddsId={tournamentOddsId}
+                oddsId={tournamentOddsId} // This will now fetch from manual odds if active
+                hasManualDraftOdds={hasManualDraftOdds} // NEW: Pass this to DraftBoard to indicate source
               />
             )}
           </main>

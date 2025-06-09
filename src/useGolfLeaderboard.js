@@ -137,7 +137,8 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
   const [teamAssignments, setTeamAssignments] = useState([]);
   const [isTournamentInProgress, setIsTournamentInProgress] = useState(false);
   const [tournamentOddsId, setTournamentOddsId] = useState('');
-  const [isDraftStarted, setIsDraftStarted] = useState(false); // NEW: State for IsDraftStarted
+  const [isDraftStarted, setIsDraftStarted] = useState(false);
+  const [hasManualDraftOdds, setHasManualDraftOdds] = useState(false); // NEW STATE
 
 
   // State to hold the RapidAPI-specific identifiers AND the tournament's PAR
@@ -148,7 +149,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
     par: 71 // Default par, will be overwritten by fetched data
   });
 
-  // Effect to fetch tournament details (including RapidAPI IDs, PAR, IsInProgress, OddsId, and IsDraftStarted)
+  // Effect to fetch tournament details (including RapidAPI IDs, PAR, IsInProgress, OddsId, IsDraftStarted, and hasManualDraftOdds)
   // from YOUR backend based on the Firebase tournamentId.
   useEffect(() => {
     const fetchTournamentDetails = async () => {
@@ -158,7 +159,8 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
         setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 }); // Reset to defaults
         setIsTournamentInProgress(false); // Reset
         setTournamentOddsId(''); // Reset
-        setIsDraftStarted(false); // NEW: Reset IsDraftStarted
+        setIsDraftStarted(false); // Reset IsDraftStarted
+        setHasManualDraftOdds(false); // NEW: Reset hasManualDraftOdds
         setLoading(false); // No tournament selected, so no data to load
         return;
       }
@@ -184,10 +186,11 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
           par: tournamentData.par || 71 // Use stored par, default to 71 if missing
         });
 
-        // Set IsInProgress, tournamentOddsId, and IsDraftStarted
+        // Set IsInProgress, tournamentOddsId, IsDraftStarted, and hasManualDraftOdds
         setIsTournamentInProgress(tournamentData.IsInProgress || false);
         setTournamentOddsId(tournamentData.oddsId || '');
-        setIsDraftStarted(tournamentData.IsDraftStarted || false); // NEW: Set IsDraftStarted
+        setIsDraftStarted(tournamentData.IsDraftStarted || false);
+        setHasManualDraftOdds(tournamentData.hasManualDraftOdds || false); // NEW: Set hasManualDraftOdds
 
         console.log("Updated tournamentSpecifics state with:", {
           orgId: tournamentData.orgId,
@@ -196,7 +199,8 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
           par: tournamentData.par,
           IsInProgress: tournamentData.IsInProgress,
           oddsId: tournamentData.oddsId,
-          IsDraftStarted: tournamentData.IsDraftStarted // Log new field
+          IsDraftStarted: tournamentData.IsDraftStarted,
+          hasManualDraftOdds: tournamentData.hasManualDraftOdds // Log new field
         });
 
         if (!tournamentData.teams || tournamentData.teams.length === 0) {
@@ -210,7 +214,8 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
         setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 }); // Reset on error
         setIsTournamentInProgress(false); // Reset
         setTournamentOddsId(''); // Reset
-        setIsDraftStarted(false); // NEW: Reset IsDraftStarted on error
+        setIsDraftStarted(false); // Reset IsDraftStarted on error
+        setHasManualDraftOdds(false); // NEW: Reset hasManualDraftOdds on error
         setLoading(false);
       }
     };
@@ -370,7 +375,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
   }), []);
 
 
-  console.log("useGolfLeaderboard returning: rawData.length=", rawData.length, "loading=", loading, "error=", error, "isTournamentInProgress=", isTournamentInProgress, "tournamentOddsId=", tournamentOddsId, "teamAssignments.length=", teamAssignments.length, "isDraftStarted=", isDraftStarted);
+  console.log("useGolfLeaderboard returning: rawData.length=", rawData.length, "loading=", loading, "error=", error, "isTournamentInProgress=", isTournamentInProgress, "tournamentOddsId=", tournamentOddsId, "teamAssignments.length=", teamAssignments.length, "isDraftStarted=", isDraftStarted, "hasManualDraftOdds=", hasManualDraftOdds);
   // ADD selectedTeamGolfersMap, teamColors, and isDraftStarted to the returned object
-  return { rawData, loading, error, isTournamentInProgress, tournamentOddsId, teamAssignments, selectedTeamGolfersMap, teamColors, isDraftStarted };
+  return { rawData, loading, error, isTournamentInProgress, tournamentOddsId, teamAssignments, selectedTeamGolfersMap, teamColors, isDraftStarted, hasManualDraftOdds };
 };

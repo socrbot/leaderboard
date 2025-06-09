@@ -1,17 +1,26 @@
 // src/components/DraftBoard.js
 import React from 'react';
 
-const DraftBoard = ({ topPlayers, loading, error, oddsId }) => {
+const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds }) => { // NEW: Receive hasManualDraftOdds prop
   return (
     <div style={{ padding: '20px', color: 'white' }}>
-      <h2 style={{ marginTop: '30px', textAlign: 'center' }}>Draft Board (Top 40 Golfers by Odds)</h2>
+      <h2 style={{ marginTop: '30px', textAlign: 'center' }}>Draft Board (Top Golfers by Odds)</h2>
+
+      {/* NEW: Display message indicating source of odds */}
+      <p style={{textAlign: 'center', fontSize: '0.9em', color: '#aaa'}}>
+        {hasManualDraftOdds ?
+          <span style={{color: '#FFD700'}}>Using Manual Odds</span> :
+          `Using Live SportsData.io Odds (Odds ID: ${oddsId || 'N/A'})`
+        }
+      </p>
+
       {loading ? (
         <p style={{ textAlign: 'center', color: '#ccc' }}>Loading draft board players...</p>
       ) : error ? (
         <p style={{ textAlign: 'center', color: 'red' }}>{error}</p>
       ) : topPlayers.length === 0 ? (
         <p style={{ textAlign: 'center', color: '#ccc' }}>
-          No draft board players available for this tournament's Odds ID ({oddsId}). Ensure it's correct and player odds are available.
+          No draft board players available for this tournament. Ensure the Odds ID ({oddsId}) is correct, or upload manual odds.
         </p>
       ) : (
         <div style={{ maxWidth: '1000px', margin: '20px auto', overflowX: 'auto', border: '1px solid #555', borderRadius: '8px', boxShadow: '0 4px 8px rgba(0,0,0,0.2)', backgroundColor: '#333' }}>
