@@ -8,7 +8,9 @@ const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
 const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, onDraftStarted }) => { // ADDED isDraftStarted, onDraftStarted
   const [teams, setTeams] = useState([]);
   const [allPlayersWithOdds, setAllPlayersWithOdds] = useState([]);
-  const [availablePlayers, setAvailablePlayers] = useState([]);
+  
+  
+  //const [availablePlayers, setAvailablePlayers] = useState([]);
 
   // States for creating a new tournament
   const [newTournamentName, setNewTournamentName] = useState('');
@@ -65,7 +67,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       if (!tournamentOddsId) {
         setPlayerLoading(false);
         setAllPlayersWithOdds([]);
-        setAvailablePlayers([]);
+        //setAvailablePlayers([]);
         return;
       }
 

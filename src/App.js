@@ -84,9 +84,8 @@ function App() {
 
 
   // Pass leaderboardRefreshKey as the refreshDependency to useGolfLeaderboard
-  // Destructure teamAssignments, selectedTeamGolfersMap, teamColors, and isDraftStarted from the hook
-  const { rawData, loading, error, isTournamentInProgress, tournamentOddsId, teamAssignments, selectedTeamGolfersMap, teamColors, isDraftStarted } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
-
+  // Remove teamAssignments from destructuring if it's not directly used in App.js beyond what the hook itself does.
+  const { rawData, loading, error, isTournamentInProgress, tournamentOddsId, selectedTeamGolfersMap, teamColors, isDraftStarted } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
