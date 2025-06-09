@@ -81,13 +81,13 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         const rawOddsData = await response.json();
 
         setAllPlayersWithOdds(rawOddsData);
-        setAvailablePlayers(rawOddsData.map(p => p.name));
+        //setAvailablePlayers(rawOddsData.map(p => p.name));
 
       } catch (error) {
         console.error("Error fetching ALL player odds for search functionality:", error);
         setPlayerError(`Failed to load players for search. Please check tournament Odds ID (${tournamentOddsId}).`);
         setAllPlayersWithOdds([]);
-        setAvailablePlayers([]);
+        //setAvailablePlayers([]);
       } finally {
         setPlayerLoading(false);
       }
