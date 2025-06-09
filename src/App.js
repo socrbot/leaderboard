@@ -15,7 +15,7 @@ const formatScoreForDisplay = (score) => {
   return score.toString();
 };
 
-const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app";
+const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
 const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
 
 function App() {
@@ -47,7 +47,7 @@ function App() {
       setLoadingTournaments(true);
       setTournamentError(null);
       try {
-        const response = await fetch("http://127.0.0.1:8080/api/tournaments");
+        const response = await fetch("https://leaderboard-backend-628169335141.us-east1.run.app/api/tournaments");
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -185,7 +185,7 @@ function App() {
       return {
         ...player,
         teamAssigned: teamName, // Add this new property
-        teamColor: teamName ? teamColors[teamName] || '#9E9E9E' : null // Use teamColors from useGolfLeaderboard
+        teamColor: teamName ? teamColors[teamName] || '#FFCDD2' : null // Use teamColors from useGolfLeaderboard
       };
     });
   }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors]);
@@ -227,7 +227,7 @@ function App() {
         {/* Navigation Buttons */}
         <nav style={{ margin: '10px 0' }}>
           <button onClick={handleShowLeaderboardClick} disabled={!selectedTournamentId}>
-            Show Leaderboard / Draft Board
+            Leaderboard
           </button>
           <button onClick={() => setShowTeamManagement(true)} disabled={!selectedTournamentId}>
             Manage Teams

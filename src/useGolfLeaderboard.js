@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from 'react'; // Ensure useMemo is imported
 
 // API Constants
-const BACKEND_BASE_URL = "http://127.0.0.1:8080/api";
+const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
 const LEADERBOARD_API_ENDPOINT = `${BACKEND_BASE_URL}/leaderboard`;
 
 const parseNumericScore = (scoreStr) => {
