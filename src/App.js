@@ -4,22 +4,18 @@ import { useGolfLeaderboard } from './useGolfLeaderboard';
 import TeamManagement from './components/TeamManagement';
 import DraftBoard from './components/DraftBoard';
 
-// Helper function to format scores for display, with live indicator support
+// Helper function to format scores for display
 const formatScoreForDisplay = (scoreObj) => {
-  if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
-    if (scoreObj.score === null || scoreObj.score === undefined || scoreObj.score === '') {
-      return '-';
-    }
-    // For live scores, use bold and a different color or style (e.g. blue and bold)
-    if (scoreObj.isLive) {
-      if(scoreObj.score === 0) return <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
-      return <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>{scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}</span>;
+  // }}>
+          {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
+        </span>
+      );
     } else {
-      if(scoreObj.score === 0) return 'E';
+      if (scoreObj.score === 0) return 'E';
       return scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
     }
   }
-  // Fallback (for old logic)
+  // Fallback for numbers (totals etc)
   if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
     return '-';
   }
@@ -99,7 +95,17 @@ function App() {
   };
 
   // Pass leaderboardRefreshKey as the refreshDependency to useGolfLeaderboard
-  const { rawData, loading, error, isTournamentInProgress, tournamentOddsId, selectedTeamGolfersMap, teamColors, isDraftStarted, hasManualDraftOdds } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
+  const {
+    rawData,
+    loading,
+    error,
+    isTournamentInProgress,
+    tournamentOddsId,
+    selectedTeamGolfersMap,
+    teamColors,
+    isDraftStarted,
+    hasManualDraftOdds
+  } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
@@ -160,25 +166,7 @@ function App() {
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
 
-      if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
-      if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
-
-      if (sortDirection === 'asc') {
-        return aValue - bValue;
-      } else {
-        return bValue - aValue;
-      }
-    });
-
-    return sortableData.map((team, index) => ({
-      ...team,
-      position: index + 1
-    }));
-
-  }, [rawData, sortColumn, sortDirection]);
-
-  // Memoize the augmented draft board players
-  const augmentedDraftBoardPlayers = useMemo(() => {
+      if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : augmentedDraftBoardPlayers = useMemo(() => {
     if (!draftBoardPlayers || draftBoardPlayers.length === 0) {
       return [];
     }
@@ -205,21 +193,7 @@ function App() {
         <div>
           <label htmlFor="tournament-select">Select Tournament: </label>
           <select
-            id="tournament-select"
-            value={selectedTournamentId}
-            onChange={(e) => {
-                setSelectedTournamentId(e.target.value);
-                setLeaderboardRefreshKey(prev => prev + 1);
-            }}
-          >
-            {tournaments.length === 0 ? (
-              <option value="">No Tournaments Available</option>
-            ) : (
-              tournaments.map((tournament) => (
-                <option key={tournament.id} value={tournament.id}>
-                  {tournament.name}
-                </option>
-              ))
+            id="tournament              ))
             )}
           </select>
         </div>
