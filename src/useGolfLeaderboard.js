@@ -2,7 +2,10 @@ import { useState, useEffect, useMemo } from 'react';
 
 // API Constants
 const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
-const LEADERBOARD || scoreStr === null || scoreStr === undefined || scoreStr === "") {
+const LEADERBOARD_API_ENDPOINT = `${BACKEND_BASE_URL}/leaderboard`;
+
+const parseNumericScore = (scoreStr) => {
+    if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
         return 0;
     }
     const num = parseFloat(scoreStr);
@@ -10,7 +13,24 @@ const LEADERBOARD || scoreStr === null || scoreStr === undefined || scoreStr ===
 };
 
 const getGolferRoundScore = (player, roundNum, currentPar) => {
-    if isLive: false };
+    if (player.rounds && Array.isArray(player.rounds)) {
+        const round = player.rounds.find(r => parseInt(r.roundId?.$numberInt || r.roundId) === roundNum);
+        if (round && round.strokes && (round.strokes.$numberInt !== undefined && round.strokes.$numberInt !== null)) {
+            // Always relative to par
+            return { score: parseNumericScore(round.strokes.$numberInt) - currentPar, isLive: false };
+        }
+    }
+    if (
+        player.currentRound &&
+        parseInt(player.currentRound.$numberInt || player.currentRound) === roundNum &&
+        player.currentRoundScore !== undefined &&
+        player.currentRoundScore !== null &&
+        player.currentRoundScore !== ""
+    ) {
+        return { score: parseNumericScore(player.currentRoundScore), isLive: true };
+    }
+    // Not started
+    return { score: null, isLive: false };
 };
 
 // Only sum if enough valid scores (≥ n)
@@ -177,7 +197,78 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
             } catch (e) {
                 setError(`Failed to load tournament details: ${e.message}`);
                 setTeamAssignments([]);
-                setTournamentSpecifics({ orgId: '1 if (teamAssignments && teamAssignments.length > 0) {
+                setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
+                setIsTournamentInProgress(false);
+                setTournamentOddsId('');
+                setIsDraftStarted(false);
+                setHasManualDraftOdds(false);
+                setLoading(false);
+            }
+        };
+
+        fetchTournamentDetails();
+    }, [tournamentId, refreshDependency]);
+
+    useEffect(() => {
+        if (!isTournamentInProgress) {
+            setRawData([]);
+            setLoading(false);
+            return;
+        }
+
+        if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId || !tournamentSpecifics.orgId || !tournamentSpecifics.year || tournamentSpecifics.par === undefined || tournamentSpecifics.par === null) {
+            setRawData([]);
+            setLoading(false);
+            return;
+        }
+
+        const fetchAndTransformData = async () => {
+            setLoading(true);
+            setError(null);
+            try {
+                const fetchUrl = `${LEADERBOARD_API_ENDPOINT}?tournId=${tournamentSpecifics.tournId}&orgId=${tournamentSpecifics.orgId}&year=${tournamentSpecifics.year}`;
+                const response = await fetch(fetchUrl);
+
+                if (!response.ok) {
+                    const errorBody = await response.json().catch(() => ({}));
+                    throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || errorBody.message || response.statusText}`);
+                }
+
+                const result = await response.json();
+
+                if (result.error) {
+                    throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
+                }
+
+                const rawPlayers = result.leaderboardRows || [];
+
+                const transformedData = transformPlayersToTeams(
+                    rawPlayers,
+                    teamAssignments,
+                    tournamentSpecifics.par
+                );
+
+                setRawData(transformedData);
+                setLoading(false);
+
+            } catch (e) {
+                setError(e.message);
+                setRawData([]);
+                setLoading(false);
+            }
+        };
+
+        if (teamAssignments.length > 0 && tournamentSpecifics.tournId && tournamentSpecifics.orgId && tournamentSpecifics.year && tournamentSpecifics.par !== undefined && tournamentSpecifics.par !== null) {
+            fetchAndTransformData();
+        } else {
+            setLoading(false);
+            setRawData([]);
+        }
+    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency]);
+
+    const selectedTeamGolfersMap = useMemo(() => {
+        const newMap = {};
+        if (teamAssignments && teamAssignments.length > 0) {
             teamAssignments.forEach(team => {
                 team.golferNames.forEach(golferName => {
                     newMap[golferName] = team.name;
