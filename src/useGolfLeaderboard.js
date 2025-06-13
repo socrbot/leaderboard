@@ -12,7 +12,7 @@ const parseNumericScore = (scoreStr) => {
     return isNaN(num) ? 0 : num;
 };
 
-// NEW: Helper to get the round score for a player, with live indicator
+// --- KEY UPDATE BELOW ---
 const getGolferRoundScore = (player, roundNum, currentPar) => {
     // 1. Check finished rounds
     if (player.rounds && player.rounds.length > 0) {
@@ -31,9 +31,10 @@ const getGolferRoundScore = (player, roundNum, currentPar) => {
     ) {
         return { score: parseNumericScore(player.currentRoundScore), isLive: true };
     }
-    // 3. Default to 0 if neither is available
-    return { score: 0, isLive: false };
+    // 3. Default to null if neither is available (round not started)
+    return { score: null, isLive: false };
 };
+// --- END KEY UPDATE ---
 
 const sumBestNScores = (scoresArray, n, roundPlaceholder) => {
     const scoresForSorting = scoresArray.map(s => (s && typeof s.score === 'number' ? s.score : roundPlaceholder));
