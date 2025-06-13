@@ -224,7 +224,6 @@ function App() {
     <div className="App">
       <header className="App-header">
         <h1>Alumni Golf Tournament Leaderboard</h1>
-
         {/* Tournament Selector */}
         <div>
           <label htmlFor="tournament-select">Select Tournament: </label>
@@ -316,7 +315,12 @@ function App() {
                       {team.golfers && team.golfers.map((golfer, golferIndex) => (
                         <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
                           <td></td>
-                          <td className="golfer-name-cell">{golfer.name}</td>
+                          <td className="golfer-name-cell">
+                            {golfer.name}
+                            {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
+                              <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
+                            )}
+                          </td>
                           <td></td>
                           <td>{formatScoreForDisplay(golfer.r1)}</td>
                           <td>{formatScoreForDisplay(golfer.r2)}</td>
@@ -331,7 +335,6 @@ function App() {
             ) : (
               <div>No team data available for this tournament. Select another or go to Manage Teams to assign players.</div>
             )}
-
             {/* Only show DraftBoard if tournament is NOT in progress */}
             {!isTournamentInProgress && (
               <DraftBoard
