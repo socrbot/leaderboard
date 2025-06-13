@@ -6,7 +6,25 @@ import DraftBoard from './components/DraftBoard';
 
 // Helper function to format scores for display
 const formatScoreForDisplay = (scoreObj) => {
-  // }}>
+  // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
+  if (scoreObj && scoreObj.notStarted) return '-';
+
+  if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
+    if (
+      scoreObj.score === null ||
+      scoreObj.score === undefined ||
+      scoreObj.score === '' ||
+      Number.isNaN(scoreObj.score)
+    ) {
+      return '-';
+    }
+    // Show "E" for 0
+    if (scoreObj.isLive) {
+      if (scoreObj.score === 0) {
+        return <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
+      }
+      return (
+        <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
           {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
         </span>
       );
@@ -166,7 +184,25 @@ function App() {
       const aValue = a[sortColumn];
       const bValue = b[sortColumn];
 
-      if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : augmentedDraftBoardPlayers = useMemo(() => {
+      if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
+      if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
+
+      if (sortDirection === 'asc') {
+        return aValue - bValue;
+      } else {
+        return bValue - aValue;
+      }
+    });
+
+    return sortableData.map((team, index) => ({
+      ...team,
+      position: index + 1
+    }));
+
+  }, [rawData, sortColumn, sortDirection]);
+
+  // Memoize the augmented draft board players
+  const augmentedDraftBoardPlayers = useMemo(() => {
     if (!draftBoardPlayers || draftBoardPlayers.length === 0) {
       return [];
     }
@@ -193,7 +229,21 @@ function App() {
         <div>
           <label htmlFor="tournament-select">Select Tournament: </label>
           <select
-            id="tournament              ))
+            id="tournament-select"
+            value={selectedTournamentId}
+            onChange={(e) => {
+              setSelectedTournamentId(e.target.value);
+              setLeaderboardRefreshKey(prev => prev + 1);
+            }}
+          >
+            {tournaments.length === 0 ? (
+              <option value="">No Tournaments Available</option>
+            ) : (
+              tournaments.map((tournament) => (
+                <option key={tournament.id} value={tournament.id}>
+                  {tournament.name}
+                </option>
+              ))
             )}
           </select>
         </div>
@@ -252,7 +302,7 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {sortedLeaderboardData.map((team, teamIndex) => (
+                  {sortedLeaderboardData.map((team) => (
                     <React.Fragment key={`team-${team.team}`}>
                       <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
                         <td>{team.position}</td>
