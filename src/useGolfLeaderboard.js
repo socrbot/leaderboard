@@ -12,7 +12,7 @@ const parseNumericScore = (scoreStr) => {
     return isNaN(num) ? 0 : num;
 };
 
-// --- KEY UPDATE BELOW ---
+// UPDATED: Null for not-started rounds
 const getGolferRoundScore = (player, roundNum, currentPar) => {
     // 1. Check finished rounds
     if (player.rounds && player.rounds.length > 0) {
@@ -34,18 +34,20 @@ const getGolferRoundScore = (player, roundNum, currentPar) => {
     // 3. Default to null if neither is available (round not started)
     return { score: null, isLive: false };
 };
-// --- END KEY UPDATE ---
 
-const sumBestNScores = (scoresArray, n, roundPlaceholder) => {
-    const scoresForSorting = scoresArray.map(s => (s && typeof s.score === 'number' ? s.score : roundPlaceholder));
-    const sortedScores = scoresForSorting.sort((a, b) => a - b);
-    if (sortedScores.length < n) {
-      return null;
+// UPDATED: Only sum if enough valid scores
+const sumBestNScores = (scoresArray, n) => {
+    const validScores = scoresArray
+        .map(s => (s && typeof s.score === 'number' && s.score !== null ? s.score : null))
+        .filter(s => s !== null && !isNaN(s));
+    if (validScores.length < n) {
+        return null;
     }
+    const sortedScores = validScores.sort((a, b) => a - b);
     return sortedScores.slice(0, n).reduce((sum, score) => sum + score, 0);
 };
 
-const transformPlayersToTeams = (players, teamAssignments, currentPar, cutRoundScorePlaceholderR3, cutRoundScorePlaceholderR4) => {
+const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
   const teamsMap = new Map();
 
   teamAssignments.forEach(teamDef => {
@@ -90,17 +92,17 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar, cutRoundS
         teamPlayers.push({
           name: `${golferName} (N/A)`,
           status: '',
-          r1: { score: 0, isLive: false },
-          r2: { score: 0, isLive: false },
-          r3: { score: 0, isLive: false },
-          r4: { score: 0, isLive: false },
+          r1: { score: null, isLive: false },
+          r2: { score: null, isLive: false },
+          r3: { score: null, isLive: false },
+          r4: { score: null, isLive: false },
           total: null,
           thru: ''
         });
-        teamRoundsRelative.r1.push({ score: 0, isLive: false });
-        teamRoundsRelative.r2.push({ score: 0, isLive: false });
-        teamRoundsRelative.r3.push({ score: 0, isLive: false });
-        teamRoundsRelative.r4.push({ score: 0, isLive: false });
+        teamRoundsRelative.r1.push({ score: null, isLive: false });
+        teamRoundsRelative.r2.push({ score: null, isLive: false });
+        teamRoundsRelative.r3.push({ score: null, isLive: false });
+        teamRoundsRelative.r4.push({ score: null, isLive: false });
       }
     });
 
@@ -108,19 +110,20 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar, cutRoundS
       teamPlayers.push({
         name: `Missing Golfer ${teamPlayers.length + 1}`,
         status: '',
-        r1: { score: 0, isLive: false },
-        r2: { score: 0, isLive: false },
-        r3: { score: 0, isLive: false },
-        r4: { score: 0, isLive: false },
+        r1: { score: null, isLive: false },
+        r2: { score: null, isLive: false },
+        r3: { score: null, isLive: false },
+        r4: { score: null, isLive: false },
         total: null,
         thru: ''
       });
     }
 
-    const calculatedTeamR1 = sumBestNScores(teamRoundsRelative.r1, 3, 0);
-    const calculatedTeamR2 = sumBestNScores(teamRoundsRelative.r2, 3, 0);
-    const calculatedTeamR3 = sumBestNScores(teamRoundsRelative.r3, 3, 0);
-    const calculatedTeamR4 = sumBestNScores(teamRoundsRelative.r4, 3, 0);
+    // UPDATED: Only sum if enough valid scores
+    const calculatedTeamR1 = sumBestNScores(teamRoundsRelative.r1, 3);
+    const calculatedTeamR2 = sumBestNScores(teamRoundsRelative.r2, 3);
+    const calculatedTeamR3 = sumBestNScores(teamRoundsRelative.r3, 3);
+    const calculatedTeamR4 = sumBestNScores(teamRoundsRelative.r4, 3);
 
     let teamTotalSum = 0;
     let anyRoundCalculated = false;
@@ -134,7 +137,7 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar, cutRoundS
 
     teamsMap.set(teamDef.name, {
       team: teamDef.name,
-      total: finalTeamTotal,
+      total: anyRoundCalculated ? teamTotalSum : null,
       r1: calculatedTeamR1,
       r2: calculatedTeamR2,
       r3: calculatedTeamR3,
@@ -250,9 +253,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
           const transformedData = transformPlayersToTeams(
             [],
             teamAssignments,
-            tournamentSpecifics.par,
-            0,
-            0
+            tournamentSpecifics.par
           );
           setRawData(transformedData);
           setLoading(false);
@@ -264,9 +265,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
         const transformedData = transformPlayersToTeams(
           rawPlayers,
           teamAssignments,
-          tournamentSpecifics.par,
-          0,
-          0
+          tournamentSpecifics.par
         );
 
         setRawData(transformedData);
