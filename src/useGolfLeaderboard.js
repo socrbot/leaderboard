@@ -2,38 +2,18 @@ import { useState, useEffect, useMemo } from 'react';
 
 // API Constants
 const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
-const LEADERBOARD_API_ENDPOINT = `${BACKEND_BASE_URL}/leaderboard`;
-
-const parseNumericScore = (scoreStr) => {
-    if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
+const LEADERBOARD || scoreStr === null || scoreStr === undefined || scoreStr === "") {
         return 0;
     }
     const num = parseFloat(scoreStr);
     return isNaN(num) ? 0 : num;
 };
 
-// Null for not-started rounds
 const getGolferRoundScore = (player, roundNum, currentPar) => {
-    if (player.rounds && Array.isArray(player.rounds)) {
-        const round = player.rounds.find(r => parseInt(r.roundId?.$numberInt || r.roundId) === roundNum);
-        if (round && round.strokes && (round.strokes.$numberInt !== undefined && round.strokes.$numberInt !== null)) {
-            return { score: parseNumericScore(round.strokes.$numberInt), isLive: false };
-        }
-    }
-    if (
-        player.currentRound &&
-        parseInt(player.currentRound.$numberInt || player.currentRound) === roundNum &&
-        player.currentRoundScore !== undefined &&
-        player.currentRoundScore !== null &&
-        player.currentRoundScore !== ""
-    ) {
-        return { score: parseNumericScore(player.currentRoundScore), isLive: true };
-    }
-    // Not started
-    return { score: null, isLive: false };
+    if isLive: false };
 };
 
-// Only sum if enough valid scores
+// Only sum if enough valid scores (≥ n)
 const sumBestNScores = (scoresArray, n) => {
     const validScores = (scoresArray || [])
         .map(s => (s && typeof s.score === 'number' && s.score !== null ? s.score : null))
@@ -115,22 +95,20 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
             });
         }
 
+        // Team round scores: null if not enough valid, else number
         const calculatedTeamR1 = sumBestNScores(teamRoundsRelative.r1, 3);
         const calculatedTeamR2 = sumBestNScores(teamRoundsRelative.r2, 3);
         const calculatedTeamR3 = sumBestNScores(teamRoundsRelative.r3, 3);
         const calculatedTeamR4 = sumBestNScores(teamRoundsRelative.r4, 3);
 
-        let teamTotalSum = 0;
-        let anyRoundCalculated = false;
-
-        if (calculatedTeamR1 !== null) { teamTotalSum += calculatedTeamR1; anyRoundCalculated = true; }
-        if (calculatedTeamR2 !== null) { teamTotalSum += calculatedTeamR2; anyRoundCalculated = true; }
-        if (calculatedTeamR3 !== null) { teamTotalSum += calculatedTeamR3; anyRoundCalculated = true; }
-        if (calculatedTeamR4 !== null) { teamTotalSum += calculatedTeamR4; anyRoundCalculated = true; }
+        // Team total: sum of completed rounds only, or null if none
+        const roundTotals = [calculatedTeamR1, calculatedTeamR2, calculatedTeamR3, calculatedTeamR4];
+        const completedRounds = roundTotals.filter(rt => rt !== null);
+        const teamTotalSum = completedRounds.length > 0 ? completedRounds.reduce((a, b) => a + b, 0) : null;
 
         teamsMap.set(teamDef.name, {
             team: teamDef.name,
-            total: anyRoundCalculated ? teamTotalSum : null,
+            total: teamTotalSum,
             r1: calculatedTeamR1,
             r2: calculatedTeamR2,
             r3: calculatedTeamR3,
@@ -199,78 +177,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
             } catch (e) {
                 setError(`Failed to load tournament details: ${e.message}`);
                 setTeamAssignments([]);
-                setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
-                setIsTournamentInProgress(false);
-                setTournamentOddsId('');
-                setIsDraftStarted(false);
-                setHasManualDraftOdds(false);
-                setLoading(false);
-            }
-        };
-
-        fetchTournamentDetails();
-    }, [tournamentId, refreshDependency]);
-
-    useEffect(() => {
-        if (!isTournamentInProgress) {
-            setRawData([]);
-            setLoading(false);
-            return;
-        }
-
-        if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId || !tournamentSpecifics.orgId || !tournamentSpecifics.year || tournamentSpecifics.par === undefined || tournamentSpecifics.par === null) {
-            setRawData([]);
-            setLoading(false);
-            return;
-        }
-
-        const fetchAndTransformData = async () => {
-            setLoading(true);
-            setError(null);
-            try {
-                const fetchUrl = `${LEADERBOARD_API_ENDPOINT}?tournId=${tournamentSpecifics.tournId}&orgId=${tournamentSpecifics.orgId}&year=${tournamentSpecifics.year}`;
-                const response = await fetch(fetchUrl);
-
-                if (!response.ok) {
-                    const errorBody = await response.json().catch(() => ({}));
-                    throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || errorBody.message || response.statusText}`);
-                }
-
-                const result = await response.json();
-
-                if (result.error) {
-                    throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
-                }
-
-                const rawPlayers = result.leaderboardRows || [];
-
-                const transformedData = transformPlayersToTeams(
-                    rawPlayers,
-                    teamAssignments,
-                    tournamentSpecifics.par
-                );
-
-                setRawData(transformedData);
-                setLoading(false);
-
-            } catch (e) {
-                setError(e.message);
-                setRawData([]);
-                setLoading(false);
-            }
-        };
-
-        if (teamAssignments.length > 0 && tournamentSpecifics.tournId && tournamentSpecifics.orgId && tournamentSpecifics.year && tournamentSpecifics.par !== undefined && tournamentSpecifics.par !== null) {
-            fetchAndTransformData();
-        } else {
-            setLoading(false);
-            setRawData([]);
-        }
-    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency]);
-
-    const selectedTeamGolfersMap = useMemo(() => {
-        const newMap = {};
-        if (teamAssignments && teamAssignments.length > 0) {
+                setTournamentSpecifics({ orgId: '1 if (teamAssignments && teamAssignments.length > 0) {
             teamAssignments.forEach(team => {
                 team.golferNames.forEach(golferName => {
                     newMap[golferName] = team.name;
