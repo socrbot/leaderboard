@@ -44,3 +44,19 @@ This repository powers a dynamic, team-based golf tournament leaderboard for alu
     - For development or custom backends, edit the relevant URL in `src/App.js` and `src/useGolfLeaderboard.js`.
 
 ## Folder Structure
+
+```markdown
+## Folder Structure
+
+```
+src/
+├── App.js                 # Main React app and leaderboard logic
+├── useGolfLeaderboard.js  # Custom React hook for data fetching & transformation
+├── components/
+│   ├── TeamManagement.js  # Team management UI
+│   ├── DraftBoard.js      # Player draft board UI
+│   └── ...                # Other UI components
+├── App.css                # App styling
+└── ...
+```
+```
