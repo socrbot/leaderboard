@@ -143,7 +143,54 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
     return Array.from(teamsMap.values());
 };
 
-export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
+// --- PATCHING HELPERS FOR CUT PLAYER PENALTIES ---
+/**
+ * Patch in penalty rounds for CUT players.
+ * @param {Array} players - leaderboardRows array
+ * @param {number} par - course par
+ * @param {number} round3Penalty - penalty scoreToPar for round 3 (e.g., 13 for +13)
+ * @param {number} round4Penalty - penalty scoreToPar for round 4 (e.g., 16 for +16)
+ * @returns {Array}
+ */
+function patchCutPlayerRounds(players, par = 71, round3Penalty = 13, round4Penalty = 13) {
+    return players.map(player => {
+        if (String(player.status).toLowerCase() === 'cut') {
+            let newRounds = player.rounds ? [...player.rounds] : [];
+            const penalties = [
+                { round: 3, value: round3Penalty },
+                { round: 4, value: round4Penalty }
+            ];
+            penalties.forEach(({ round, value }) => {
+                const roundIdx = newRounds.findIndex(r => parseInt(r.roundId?.$numberInt || r.roundId) === round);
+                const patchedRound = {
+                    courseId: newRounds[0]?.courseId || "608",
+                    courseName: newRounds[0]?.courseName || "Unknown",
+                    roundId: { $numberInt: String(round) },
+                    scoreToPar: value > 0 ? `+${value}` : String(value),
+                    strokes: { $numberInt: String(par + value) },
+                    isPenalty: true
+                };
+                if (roundIdx >= 0) {
+                    newRounds[roundIdx] = patchedRound;
+                } else {
+                    newRounds.push(patchedRound);
+                }
+            });
+            newRounds = newRounds.sort((a, b) =>
+                parseInt(a.roundId?.$numberInt || a.roundId) - parseInt(b.roundId?.$numberInt || b.roundId)
+            );
+            return { ...player, rounds: newRounds };
+        }
+        return player;
+    });
+}
+
+export const useGolfLeaderboard = (
+    tournamentId,
+    refreshDependency,
+    round3Penalty = 13,    // You can pass these in via your component
+    round4Penalty = 13     // Or hardcode here
+) => {
     const [rawData, setRawData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
@@ -245,8 +292,16 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
 
                 const rawPlayers = result.leaderboardRows || [];
 
-                const transformedData = transformPlayersToTeams(
+                // PATCH in cut player penalty rounds for round 3 and 4
+                const patchedPlayers = patchCutPlayerRounds(
                     rawPlayers,
+                    tournamentSpecifics.par,
+                    round3Penalty,
+                    round4Penalty
+                );
+
+                const transformedData = transformPlayersToTeams(
+                    patchedPlayers,
                     teamAssignments,
                     tournamentSpecifics.par
                 );
@@ -267,7 +322,7 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
             setLoading(false);
             setRawData([]);
         }
-    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency]);
+    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency, round3Penalty, round4Penalty]);
 
     const selectedTeamGolfersMap = useMemo(() => {
         const newMap = {};
@@ -291,5 +346,16 @@ export const useGolfLeaderboard = (tournamentId, refreshDependency) => {
         "Team G": "#FFAB91",
     }), []);
 
-    return { rawData, loading, error, isTournamentInProgress, tournamentOddsId, teamAssignments, selectedTeamGolfersMap, teamColors, isDraftStarted, hasManualDraftOdds };
+    return {
+        rawData,
+        loading,
+        error,
+        isTournamentInProgress,
+        tournamentOddsId,
+        teamAssignments,
+        selectedTeamGolfersMap,
+        teamColors,
+        isDraftStarted,
+        hasManualDraftOdds
+    };
 };
