@@ -15,9 +15,12 @@ const parseNumericScore = (scoreStr) => {
 const getGolferRoundScore = (player, roundNum, currentPar) => {
     if (player.rounds && Array.isArray(player.rounds)) {
         const round = player.rounds.find(r => parseInt(r.roundId?.$numberInt || r.roundId) === roundNum);
-        if (round && round.strokes && (round.strokes.$numberInt !== undefined && round.strokes.$numberInt !== null)) {
-            // Always relative to par
-            return { score: parseNumericScore(round.strokes.$numberInt) - currentPar, isLive: false };
+        if (round && round.strokes !== undefined && round.strokes !== null) {
+            // Support both MongoDB int object and plain number
+            const strokes = typeof round.strokes === 'object' && round.strokes.$numberInt !== undefined
+                ? round.strokes.$numberInt
+                : round.strokes;
+            return { score: parseNumericScore(strokes) - currentPar, isLive: false };
         }
     }
     if (
