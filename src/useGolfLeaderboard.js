@@ -149,7 +149,7 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
  * @param {number} round4Penalty - penalty scoreToPar for round 4 (e.g., 16 for +16)
  * @returns {Array}
  */
-function patchCutPlayerRounds(players, par = 71, round3Penalty = 13, round4Penalty = 13) {
+function patchCutPlayerRounds(players, par, round3Penalty, round4Penalty) {
     return players.map(player => {
         if (String(player.status).toLowerCase() === 'cut') {
             let newRounds = player.rounds ? [...player.rounds] : [];
@@ -182,11 +182,39 @@ function patchCutPlayerRounds(players, par = 71, round3Penalty = 13, round4Penal
     });
 }
 
+// Helper to get highest non-cut score for a round
+export function getHighestNonCutScore(leaderboardRows, roundNumber) {
+  let highestScore = null;
+  leaderboardRows.forEach(row => {
+    // Exclude cut and withdrawn players
+    if (row.status !== 'cut' && row.status !== 'wd') {
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
+        const score = Number(round.strokes.$numberInt);
+        if (highestScore === null || score > highestScore) {
+          highestScore = score;
+        }
+      }
+    }
+  });
+  // If no valid score found, fallback to highest available score for the round
+  if (highestScore === null) {
+    leaderboardRows.forEach(row => {
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
+        const score = Number(round.strokes.$numberInt);
+        if (highestScore === null || score > highestScore) {
+          highestScore = score;
+        }
+      }
+    });
+  }
+  return highestScore;
+}
+
 export const useGolfLeaderboard = (
     tournamentId,
-    refreshDependency,
-    round3Penalty = 13,    // You can pass these in via your component
-    round4Penalty = 13     // Or hardcode here
+    refreshDependency
 ) => {
     const [rawData, setRawData] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -262,33 +290,35 @@ export const useGolfLeaderboard = (
             setLoading(false);
             return;
         }
-
         if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId || !tournamentSpecifics.orgId || !tournamentSpecifics.year || tournamentSpecifics.par === undefined || tournamentSpecifics.par === null) {
             setRawData([]);
             setLoading(false);
             return;
         }
-
         const fetchAndTransformData = async () => {
             setLoading(true);
             setError(null);
             try {
                 const fetchUrl = `${LEADERBOARD_API_ENDPOINT}?tournId=${tournamentSpecifics.tournId}&orgId=${tournamentSpecifics.orgId}&year=${tournamentSpecifics.year}`;
                 const response = await fetch(fetchUrl);
-
                 if (!response.ok) {
                     const errorBody = await response.json().catch(() => ({}));
                     throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || errorBody.message || response.statusText}`);
                 }
-
                 const result = await response.json();
-
                 if (result.error) {
                     throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
                 }
-
                 const rawPlayers = result.leaderboardRows || [];
-
+                // Calculate dynamic penalties
+                const round3Penalty = (() => {
+                    const val = getHighestNonCutScore(rawPlayers, 3, tournamentSpecifics.par);
+                    return val !== null ? val + 1 : null;
+                })();
+                const round4Penalty = (() => {
+                    const val = getHighestNonCutScore(rawPlayers, 4, tournamentSpecifics.par);
+                    return val !== null ? val + 1 : null;
+                })();
                 // PATCH in cut player penalty rounds for round 3 and 4
                 const patchedPlayers = patchCutPlayerRounds(
                     rawPlayers,
@@ -296,31 +326,26 @@ export const useGolfLeaderboard = (
                     round3Penalty,
                     round4Penalty
                 );
-
                 const transformedData = transformPlayersToTeams(
                     patchedPlayers,
                     teamAssignments,
                     tournamentSpecifics.par
                 );
-
                 setRawData(transformedData);
                 setLoading(false);
-
             } catch (e) {
                 setError(e.message);
                 setRawData([]);
                 setLoading(false);
             }
         };
-
         if (teamAssignments.length > 0 && tournamentSpecifics.tournId && tournamentSpecifics.orgId && tournamentSpecifics.year && tournamentSpecifics.par !== undefined && tournamentSpecifics.par !== null) {
             fetchAndTransformData();
         } else {
             setLoading(false);
             setRawData([]);
         }
-    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency, round3Penalty, round4Penalty]);
-
+    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency]);
     const selectedTeamGolfersMap = useMemo(() => {
         const newMap = {};
         if (teamAssignments && teamAssignments.length > 0) {
@@ -356,3 +381,5 @@ export const useGolfLeaderboard = (
         hasManualDraftOdds
     };
 };
+
+export { patchCutPlayerRounds, getHighestNonCutScore };
