@@ -183,22 +183,33 @@ function patchCutPlayerRounds(players, par, round3Penalty, round4Penalty) {
 }
 
 // Helper to get highest non-cut score for a round
-function getHighestNonCutScore(players, roundNum, par) {
-    let scores = [];
-    players.forEach(player => {
-        if (String(player.status).toLowerCase() !== 'cut' && player.rounds && Array.isArray(player.rounds)) {
-            const round = player.rounds.find(r => parseInt(r.roundId?.$numberInt || r.roundId) === roundNum);
-            if (round && round.strokes !== undefined && round.strokes !== null) {
-                const strokes = typeof round.strokes === 'object' && round.strokes.$numberInt !== undefined
-                    ? parseInt(round.strokes.$numberInt)
-                    : parseInt(round.strokes);
-                if (!isNaN(strokes)) {
-                    scores.push(strokes - par);
-                }
-            }
+export function getHighestNonCutScore(leaderboardRows, roundNumber) {
+  let highestScore = null;
+  leaderboardRows.forEach(row => {
+    // Exclude cut and withdrawn players
+    if (row.status !== 'cut' && row.status !== 'wd') {
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
+        const score = Number(round.strokes.$numberInt);
+        if (highestScore === null || score > highestScore) {
+          highestScore = score;
         }
+      }
+    }
+  });
+  // If no valid score found, fallback to highest available score for the round
+  if (highestScore === null) {
+    leaderboardRows.forEach(row => {
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
+        const score = Number(round.strokes.$numberInt);
+        if (highestScore === null || score > highestScore) {
+          highestScore = score;
+        }
+      }
     });
-    return scores.length > 0 ? Math.max(...scores) : null;
+  }
+  return highestScore;
 }
 
 export const useGolfLeaderboard = (
@@ -302,11 +313,11 @@ export const useGolfLeaderboard = (
                 // Calculate dynamic penalties
                 const round3Penalty = (() => {
                     const val = getHighestNonCutScore(rawPlayers, 3, tournamentSpecifics.par);
-                    return val !== null ? val + 1 : 13;
+                    return val !== null ? val + 1 : null;
                 })();
                 const round4Penalty = (() => {
                     const val = getHighestNonCutScore(rawPlayers, 4, tournamentSpecifics.par);
-                    return val !== null ? val + 1 : 13;
+                    return val !== null ? val + 1 : null;
                 })();
                 // PATCH in cut player penalty rounds for round 3 and 4
                 const patchedPlayers = patchCutPlayerRounds(
