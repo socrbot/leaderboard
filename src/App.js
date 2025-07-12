@@ -3,6 +3,7 @@ import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
 import TeamManagement from './components/TeamManagement';
 import DraftBoard from './components/DraftBoard';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
 // Helper function to format scores for display
 const formatScoreForDisplay = (scoreObj) => {
@@ -44,9 +45,6 @@ const formatScoreForDisplay = (scoreObj) => {
   return scoreObj.toString();
 };
 
-const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
-const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
-
 function App() {
   const [showTeamManagement, setShowTeamManagement] = useState(false);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
@@ -75,7 +73,7 @@ function App() {
       setLoadingTournaments(true);
       setTournamentError(null);
       try {
-        const response = await fetch("https://leaderboard-backend-628169335141.us-east1.run.app/api/tournaments");
+        const response = await fetch(TOURNAMENTS_API_ENDPOINT);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }

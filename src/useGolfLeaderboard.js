@@ -1,8 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
-
-// API Constants
-const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
-const LEADERBOARD_API_ENDPOINT = `${BACKEND_BASE_URL}/leaderboard`;
+import { LEADERBOARD_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 
 const parseNumericScore = (scoreStr) => {
     if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
