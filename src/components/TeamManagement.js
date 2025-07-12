@@ -1,9 +1,7 @@
 // src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
-
-// Define your backend endpoints
-const BACKEND_BASE_URL = "https://leaderboard-backend-628169335141.us-east1.run.app/api";
-const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
+import { BACKEND_BASE_URL, PLAYER_ODDS_API_ENDPOINT } from '../apiConfig';
+import '../App.css'; // Importing the CSS file
 
 // TeamManagement now receives tournamentOddsId, isDraftStarted, and hasManualDraftOdds as props,
 // and onDraftStarted and onManualOddsUpdated callbacks
@@ -318,38 +316,20 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
 
   return (
-    <div style={{ padding: '20px', color: 'white' }}>
+    <div className="team-management-container">
       <h1>Manage Teams</h1>
 
       {/* Create New Tournament UI - Applying Card and Grid Layout */}
-      <div style={{
-          marginBottom: '30px',
-          border: '1px solid #555',
-          padding: '15px',
-          borderRadius: '8px',
-          backgroundColor: '#333',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-          maxWidth: '500px',
-          margin: '30px auto',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-      }}>
+      <div className="tournament-form-card">
         <h2 style={{marginTop: '0', marginBottom: '20px'}}>Create New Tournament</h2>
-        <div style={{
-            display: 'grid',
-            gridTemplateColumns: '1fr 1fr',
-            gap: '15px',
-            width: '100%',
-            marginBottom: '20px'
-        }}>
+        <div className="tournament-form-grid">
             <div style={{width: '100%'}}>
                 <input
                     type="text"
                     placeholder="Tournament Name"
                     value={newTournamentName}
                     onChange={(e) => setNewTournamentName(e.target.value)}
-                    style={{ width: 'calc(100% - 16px)', padding: '8px', borderRadius: '4px', border: '1px solid #666', backgroundColor: '#444', color: 'white' }}
+                    className="tournament-input"
                 />
             </div>
             <div style={{width: '100%'}}>
@@ -358,7 +338,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     placeholder="Leaderboard Org ID"
                     value={newOrgId}
                     onChange={(e) => setNewOrgId(e.target.value)}
-                    style={{ width: 'calc(100% - 16px)', padding: '8px', borderRadius: '4px', border: '1px solid #666', backgroundColor: '#444', color: 'white' }}
+                    className="tournament-input"
                 />
             </div>
             <div style={{width: '100%'}}>
@@ -367,7 +347,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     placeholder="Leaderboard Tourn ID"
                     value={newTournId}
                     onChange={(e) => setNewTournId(e.target.value)}
-                    style={{ width: 'calc(100% - 16px)', padding: '8px', borderRadius: '4px', border: '1px solid #666', backgroundColor: '#444', color: 'white' }}
+                    className="tournament-input"
                 />
             </div>
             <div style={{width: '100%'}}>
@@ -376,7 +356,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     placeholder="Leaderboard Year"
                     value={newYear}
                     onChange={(e) => setNewYear(e.target.value)}
-                    style={{ width: 'calc(100% - 16px)', padding: '8px', borderRadius: '4px', border: '1px solid #666', backgroundColor: '#444', color: 'white' }}
+                    className="tournament-input"
                 />
             </div>
             <div style={{width: '100%'}}>
@@ -385,17 +365,17 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     placeholder="Odds API Tournament ID"
                     value={newOddsId}
                     onChange={(e) => setNewOddsId(e.target.value)}
-                    style={{ width: 'calc(100% - 16px)', padding: '8px', borderRadius: '4px', border: '1px solid #666', backgroundColor: '#444', color: 'white' }}
+                    className="tournament-input"
                 />
             </div>
         </div>
-        <button onClick={handleCreateTournament} style={{ backgroundColor: '#2196F3', color: 'white', padding: '10px 20px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+        <button onClick={handleCreateTournament} className="tournament-form-btn">
           Create Tournament
         </button>
       </div>
 
       {/* NEW: Draft Actions Section */}
-      <div style={{ textAlign: 'center', margin: '20px auto', maxWidth: '500px', padding: '15px', border: '1px solid #555', borderRadius: '8px', backgroundColor: '#333', boxShadow: '0 4px 8px rgba(0,0,0,0.2)' }}>
+      <div className="draft-actions-card">
         <h2 style={{marginTop: '0', marginBottom: '20px'}}>Draft Actions</h2>
 
         {/* Manual Odds Status and Clear Button */}
@@ -413,16 +393,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
             <button
               onClick={handleClearManualOdds}
               disabled={isClearingManualOdds || !tournamentId}
-              style={{
-                backgroundColor: '#DC143C', // Crimson red for clear
-                color: 'white',
-                padding: '8px 15px',
-                borderRadius: '4px',
-                border: 'none',
-                cursor: 'pointer',
-                fontSize: '0.9em',
-                transition: 'background-color 0.3s ease',
-              }}
+              className="draft-clear-btn"
             >
               {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
             </button>
@@ -434,22 +405,12 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
           )}
         </div>
 
-
         {/* Start Draft Button */}
         {!isDraftStarted && (
           <button
             onClick={handleStartDraft}
             disabled={isStartingDraft || !tournamentId}
-            style={{
-              backgroundColor: '#FF5722', // Orange for action
-              color: 'white',
-              padding: '10px 20px',
-              borderRadius: '4px',
-              border: 'none',
-              cursor: 'pointer',
-              fontSize: '1.1em',
-              transition: 'background-color 0.3s ease',
-            }}
+            className="draft-start-btn"
           >
             {isStartingDraft ? 'Starting Draft...' : 'Start Draft & Lock Odds'}
           </button>
@@ -462,13 +423,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       {teams.length === 0 && <p>No teams assigned to this tournament yet. Add one below!</p>}
 
       {/* --- FLEXBOX CONTAINER FOR TEAM CARDS --- */}
-      <div style={{
-          display: 'flex',
-          flexWrap: 'wrap',
-          gap: '20px',
-          justifyContent: 'center',
-          padding: '10px 0'
-      }}>
+      <div className="teams-flex-container">
         {teams.map((team, teamIndex) => {
           const currentSearchTerm = searchTerms[teamIndex] || '';
           const filteredPlayersForThisTeam = allPlayersWithOdds.filter(player =>
@@ -479,97 +434,45 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
           return (
             <div
               key={team.name || `team-${teamIndex}`}
-              style={{
-                border: '1px solid #555',
-                borderRadius: '8px',
-                backgroundColor: '#444',
-                boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-                flex: '1 1 calc(33% - 20px)',
-                minWidth: '280px',
-                maxWidth: '400px',
-                boxSizing: 'border-box',
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                overflow: 'hidden'
-              }}
+              className="team-card"
             >
-              <div style={{
-                backgroundColor: '#383838',
-                padding: '10px 15px',
-                borderRadius: '8px 8px 0 0',
-                width: '100%',
-                boxSizing: 'border-box',
-                textAlign: 'center'
-              }}>
+              <div className="team-card-header">
                 <h3 style={{ marginTop: '0', marginBottom: '5px', color: 'white' }}>
                   {team.name}
                 </h3>
                 <button
                   onClick={() => handleRemoveTeam(teamIndex)}
-                  style={{
-                    backgroundColor: '#f44336',
-                    color: 'white',
-                    padding: '3px 8px',
-                    borderRadius: '3px',
-                    border: 'none',
-                    cursor: 'pointer',
-                    fontSize: '0.75em',
-                    maxWidth: '120px'
-                  }}
+                  className="team-remove-btn"
                 >
                   Remove Team
                 </button>
               </div>
 
-              <div style={{
-                backgroundColor: '#404040',
-                padding: '8px 15px',
-                width: '100%',
-                boxSizing: 'border-box',
-                textAlign: 'center',
-                color: '#ccc',
-                fontWeight: 'bold'
-              }}>
+              <div className="team-card-golfers">
                 Golfers:
               </div>
 
-              <ul style={{ listStyle: 'none', padding: '0', margin: '0', flexGrow: '1', width: '100%' }}>
+              <ul className="team-golfer-list">
                 {team.golferNames.length === 0 && <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>No golfers assigned yet.</li>}
                 {team.golferNames.map((golfer, playerIndex) => (
                   <li
                     key={golfer}
-                    style={{
-                      display: 'flex',
-                      justifyContent: 'space-between',
-                      alignItems: 'center',
-                      padding: '8px 15px',
-                      backgroundColor: playerIndex % 2 === 0 ? '#4A4A4A' : '#525252',
-                      borderBottom: playerIndex === team.golferNames.length - 1 ? 'none' : '1px dotted #555'
-                    }}
                   >
                     {golfer}
-                    <button onClick={() => handleRemovePlayerFromTeam(teamIndex, golfer)} style={{ backgroundColor: '#f44336', color: 'white', fontSize: '0.8em', padding: '3px 6px', borderRadius: '3px', border: 'none', cursor: 'pointer' }}>
+                    <button onClick={() => handleRemovePlayerFromTeam(teamIndex, golfer)} className="team-golfer-remove-btn">
                       Remove
                     </button>
                   </li>
                 ))}
               </ul>
 
-              <div style={{
-                marginTop: '0px',
-                backgroundColor: '#555',
-                padding: '10px',
-                borderRadius: '0 0 8px 8px',
-                width: '100%',
-                boxSizing: 'border-box'
-              }}>
+              <div className="team-card-search">
                 <input
                   type="text"
                   placeholder="Search players to add"
                   value={currentSearchTerm}
                   onChange={(e) => handleSearchTermChange(teamIndex, e.target.value)}
-                  style={{ width: 'calc(100% - 20px)', padding: '8px', borderRadius: '4px', border: '1px solid #777', backgroundColor: '#666', color: 'white' }}
+                  className="team-search-input"
                 />
                 {playerLoading ? (
                   <p style={{ margin: '10px 0 0 0', color: '#ccc' }}>Loading potential players...</p>
@@ -577,14 +480,11 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                   <p style={{ color: 'red', margin: '10px 0 0 0' }}>{playerError}</p>
                 ) : (
                   currentSearchTerm && filteredPlayersForThisTeam.length > 0 && (
-                    <ul style={{ maxHeight: '150px', overflowY: 'auto', border: '1px solid #777', listStyle: 'none', padding: '5px', backgroundColor: '#666', margin: '10px 0 0 0', borderRadius: '4px' }}>
+                    <ul className="team-search-list">
                       {filteredPlayersForThisTeam.map((player) => (
                         <li
                           key={player}
                           onClick={() => handleAddPlayerToTeam(teamIndex, player)}
-                          style={{ cursor: 'pointer', padding: '5px', borderBottom: '1px solid #777', '&:last-child': { borderBottom: 'none' }, transition: 'background-color 0.2s', backgroundColor: '#666' }}
-                          onMouseEnter={(e) => e.currentTarget.style.backgroundColor = '#777'}
-                          onMouseLeave={(e) => e.currentTarget.style.backgroundColor = '#666'}
                         >
                           {player}
                         </li>
@@ -601,41 +501,20 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         })}
       </div>
 
-      <button onClick={handleSaveTeams} disabled={isSaving} style={{ marginTop: '20px', padding: '10px 20px', fontSize: '1.2em', backgroundColor: '#4CAF50', color: 'white', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+      <button onClick={handleSaveTeams} disabled={isSaving} className="save-teams-btn">
         {isSaving ? 'Saving...' : 'Save All Teams'}
       </button>
 
-      <div style={{
-          marginTop: '20px',
-          border: '1px solid #555',
-          padding: '15px',
-          borderRadius: '8px',
-          backgroundColor: '#333',
-          boxShadow: '0 4px 8px rgba(0, 0, 0, 0.2)',
-          maxWidth: '500px',
-          margin: '20px auto',
-          display: 'flex',
-          flexDirection: 'column',
-          alignItems: 'center'
-      }}>
+      <div className="team-add-card">
         <h2 style={{marginTop: '0', marginBottom: '20px'}}>Add New Team</h2>
         <input
           type="text"
           placeholder="New Team Name"
           value={newTeamName}
           onChange={(e) => setNewTeamName(e.target.value)}
-          style={{
-            width: 'calc(100% - 16px)',
-            padding: '8px',
-            marginRight: '0px',
-            marginBottom: '20px',
-            borderRadius: '4px',
-            border: '1px solid #666',
-            backgroundColor: '#444',
-            color: 'white'
-          }}
+          className="team-add-input"
         />
-        <button onClick={handleAddTeam} style={{ backgroundColor: '#2196F3', color: 'white', padding: '10px 20px', borderRadius: '4px', border: 'none', cursor: 'pointer' }}>
+        <button onClick={handleAddTeam} className="team-add-btn">
           Add Team
         </button>
       </div>
