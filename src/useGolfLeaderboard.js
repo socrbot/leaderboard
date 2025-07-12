@@ -382,4 +382,3 @@ export const useGolfLeaderboard = (
     };
 };
 
-export { patchCutPlayerRounds, getHighestNonCutScore };
