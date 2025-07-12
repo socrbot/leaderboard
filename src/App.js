@@ -3,7 +3,7 @@ import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
 import TeamManagement from './components/TeamManagement';
 import DraftBoard from './components/DraftBoard';
-import { BACKEND_BASE_URL, TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
 // Helper function to format scores for display
 const formatScoreForDisplay = (scoreObj) => {
