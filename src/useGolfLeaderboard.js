@@ -182,34 +182,34 @@ function patchCutPlayerRounds(players, par, round3Penalty, round4Penalty) {
     });
 }
 
-// Helper to get highest non-cut score for a round
+// Helper to get highest non-cut scoreToPar for a round
 export function getHighestNonCutScore(leaderboardRows, roundNumber) {
-  let highestScore = null;
+  let highestScoreToPar = null;
   leaderboardRows.forEach(row => {
     // Exclude cut and withdrawn players
     if (row.status !== 'cut' && row.status !== 'wd') {
       const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
-      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
-        const score = Number(round.strokes.$numberInt);
-        if (highestScore === null || score > highestScore) {
-          highestScore = score;
+      if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
+        const scoreToPar = parseNumericScore(round.scoreToPar);
+        if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
+          highestScoreToPar = scoreToPar;
         }
       }
     }
   });
-  // If no valid score found, fallback to highest available score for the round
-  if (highestScore === null) {
+  // If no valid score found, fallback to highest available scoreToPar for the round
+  if (highestScoreToPar === null) {
     leaderboardRows.forEach(row => {
       const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
-      if (round && round.strokes && !isNaN(Number(round.strokes.$numberInt))) {
-        const score = Number(round.strokes.$numberInt);
-        if (highestScore === null || score > highestScore) {
-          highestScore = score;
+      if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
+        const scoreToPar = parseNumericScore(round.scoreToPar);
+        if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
+          highestScoreToPar = scoreToPar;
         }
       }
     });
   }
-  return highestScore;
+  return highestScoreToPar;
 }
 
 export const useGolfLeaderboard = (
