@@ -74,7 +74,6 @@ function App() {
     IsDraftComplete: false
   });
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
-  const [tournamentStatus, setTournamentStatus] = useState(''); // RapidAPI status
 
   // Helper function to find a tournament ready for draft board display
   const findDraftReadyTournament = async (tournaments) => {
@@ -194,7 +193,6 @@ function App() {
     if (!selectedTournamentId) {
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
       setDraftStatusLoading(false);
-      setTournamentStatus('');
       return;
     }
     setDraftStatusLoading(true);
@@ -204,14 +202,8 @@ function App() {
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
       setDraftStatus(status);
-      // Fetch tournament details for RapidAPI status
-      const tournRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`);
-      if (!tournRes.ok) throw new Error('Failed to fetch tournament details');
-      const tournData = await tournRes.json();
-      setTournamentStatus(tournData?.Tournament?.Status || tournData?.status || '');
     } catch (error) {
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
-      setTournamentStatus('');
     } finally {
       setDraftStatusLoading(false);
     }
