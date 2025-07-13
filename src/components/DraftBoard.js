@@ -4,16 +4,9 @@ import React from 'react';
 const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds }) => { // NEW: Receive hasManualDraftOdds prop
   return (
     <div style={{ padding: '20px', color: 'white' }}>
-      <h2 style={{ marginTop: '30px', textAlign: 'center' }}>Draft Board (Top Golfers by Odds)</h2>
+      <h2 style={{ marginTop: '30px', textAlign: 'center' }}>Draft Board</h2>
 
-      {/* NEW: Display message indicating source of odds */}
-      <p style={{textAlign: 'center', fontSize: '0.9em', color: '#aaa'}}>
-        {hasManualDraftOdds ?
-          <span style={{color: '#FFD700'}}>Using Manual Odds</span> :
-          `Using Live SportsData.io Odds (Odds ID: ${oddsId || 'N/A'})`
-        }
-      </p>
-
+      
       {loading ? (
         <p style={{ textAlign: 'center', color: '#ccc' }}>Loading draft board players...</p>
       ) : error ? (
