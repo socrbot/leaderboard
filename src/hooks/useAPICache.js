@@ -90,7 +90,7 @@ export const useAPICache = (url, dependencies = []) => {
         abortController.current.abort();
       }
     };
-  }, [url, ...dependencies]);
+  }, [url, dependencies]); // eslint-disable-line react-hooks/exhaustive-deps
 
   return { data, loading, error };
 };
