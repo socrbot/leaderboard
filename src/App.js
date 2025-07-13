@@ -279,8 +279,10 @@ function App() {
     // 1. Draft has started and is locked (has odds available)
     // 2. Draft is not complete
     // 3. Tournament is not in progress yet
-    return draftStatus.IsDraftStarted &&
-           !draftStatus.IsDraftComplete;
+    return draftStatus.IsDraftStarted && 
+           draftStatus.IsDraftLocked && 
+           !draftStatus.IsDraftComplete &&
+           !isTournamentInProgress;
   }, [draftStatus, isTournamentInProgress]);
 
   const shouldShowLeaderboard = useMemo(() => {
