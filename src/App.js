@@ -283,11 +283,9 @@ function App() {
   }, [draftStatus]);
 
   const shouldShowLeaderboard = useMemo(() => {
-    // Show leaderboard if:
-    // 1. Draft is complete, OR
-    // 2. Tournament is in progress/over (has live scores)
-    return draftStatus.IsDraftComplete || isTournamentInProgress;
-  }, [draftStatus.IsDraftComplete, isTournamentInProgress]);
+    // Show leaderboard if draft is complete
+    return draftStatus.IsDraftComplete;
+  }, [draftStatus.IsDraftComplete]);
 
   // --- Main Render Logic ---
   if (loadingTournaments) return <div>Loading tournaments...</div>;
