@@ -64,7 +64,6 @@ function App() {
 
   // State for preloaded tournament data
   const [preloadedTournamentData, setPreloadedTournamentData] = useState({});
-  const [preloadingTournaments, setPreloadingTournaments] = useState(false);
 
   // State for Draft Board data
   const [draftBoardPlayers, setDraftBoardPlayers] = useState([]);
@@ -136,11 +135,10 @@ function App() {
       }
     };
     fetchTournaments();
-  }, [refreshTrigger]); // Remove selectedTournamentId to avoid infinite loop
+  }, [refreshTrigger, preloadTournamentData]);
 
   // Function to preload tournament data for faster switching
   const preloadTournamentData = useCallback(async (tournaments) => {
-    setPreloadingTournaments(true);
     const preloadedData = {};
     
     for (const tournament of tournaments) {
@@ -170,7 +168,6 @@ function App() {
     }
     
     setPreloadedTournamentData(preloadedData);
-    setPreloadingTournaments(false);
   }, []);
 
   // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
