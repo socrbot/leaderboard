@@ -76,6 +76,25 @@ function App() {
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
   const [tournamentStatus, setTournamentStatus] = useState(''); // RapidAPI status
 
+  // Helper function to find a tournament ready for draft board display
+  const findDraftReadyTournament = async (tournaments) => {
+    for (const tournament of tournaments) {
+      try {
+        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
+        if (statusResponse.ok) {
+          const status = await statusResponse.json();
+          // Look for tournament with draft started, locked odds, but not complete
+          if (status.IsDraftStarted && status.IsDraftLocked && !status.IsDraftComplete) {
+            return tournament.id;
+          }
+        }
+      } catch (error) {
+        console.log(`Could not check draft status for tournament ${tournament.id}`);
+      }
+    }
+    return null;
+  };
+
   // Fetch available tournaments from your Flask Backend
   useEffect(() => {
     const fetchTournaments = async () => {
@@ -88,18 +107,17 @@ function App() {
         }
         const data = await response.json();
         setTournaments(data);
-        // Improved default selection logic
+        
+        // Fixed default selection logic
         let defaultTournament = '';
         if (data.length > 0) {
-          // Prefer draft board
-          const draftBoard = data.find(t => t.isDraftBoard || t.IsDraftStarted);
-          // Then active
-          const activeTournament = data.find(t => t.isActive || t.IsInProgress);
-          if (draftBoard) {
-            defaultTournament = draftBoard.id;
-          } else if (activeTournament) {
-            defaultTournament = activeTournament.id;
+          // First priority: Find tournament with draft started and has locked odds but not complete
+          const draftReadyTournament = await findDraftReadyTournament(data);
+          
+          if (draftReadyTournament) {
+            defaultTournament = draftReadyTournament;
           } else {
+            // Fallback to most recent tournament
             defaultTournament = data[data.length - 1].id;
           }
         }
@@ -112,8 +130,7 @@ function App() {
       }
     };
     fetchTournaments();
-    // eslint-disable-next-line
-  }, [refreshTrigger, selectedTournamentId]);
+  }, [refreshTrigger]); // Remove selectedTournamentId dependency to avoid infinite loop
 
   // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
   const handleDataUpdated = useCallback(() => {
@@ -264,13 +281,28 @@ function App() {
     });
   }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors]);
 
+  // --- Determine what to show based on draft and tournament status ---
+  const shouldShowDraftBoard = useMemo(() => {
+    // Show draft board if:
+    // 1. Draft has started and is locked (has odds available)
+    // 2. Draft is not complete
+    // 3. Tournament is not in progress yet
+    return draftStatus.IsDraftStarted && 
+           draftStatus.IsDraftLocked && 
+           !draftStatus.IsDraftComplete &&
+           !isTournamentInProgress;
+  }, [draftStatus, isTournamentInProgress]);
+
+  const shouldShowLeaderboard = useMemo(() => {
+    // Show leaderboard if:
+    // 1. Draft is complete, OR
+    // 2. Tournament is in progress/over (has live scores)
+    return draftStatus.IsDraftComplete || isTournamentInProgress;
+  }, [draftStatus.IsDraftComplete, isTournamentInProgress]);
+
   // --- Main Render Logic ---
   if (loadingTournaments) return <div>Loading tournaments...</div>;
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
-
-  // --- DraftBoard/Leaderboard Logic ---
-  const showDraftBoard = !draftStatus.IsDraftComplete && (draftStatus.IsDraftStarted || draftStatus.IsDraftLocked);
-  const showLeaderboard = draftStatus.IsDraftComplete || ["Not Started", "InProgress", "Complete", "Official"].includes(tournamentStatus);
 
   return (
     <div className="App">
@@ -326,7 +358,7 @@ function App() {
           <main>
             {draftStatusLoading ? (
               <div>Loading draft status...</div>
-            ) : showDraftBoard ? (
+            ) : shouldShowDraftBoard ? (
               <DraftBoard
                 topPlayers={augmentedDraftBoardPlayers}
                 loading={draftBoardLoading}
@@ -334,7 +366,7 @@ function App() {
                 oddsId={tournamentOddsId}
                 hasManualDraftOdds={hasManualDraftOdds}
               />
-            ) : showLeaderboard ? (
+            ) : shouldShowLeaderboard ? (
               loading ? (
                 <div>Loading leaderboard data...</div>
               ) : error ? (
@@ -398,7 +430,7 @@ function App() {
                 <div>No leaderboard data available.</div>
               )
             ) : (
-              <div>No tournament status available.</div>
+              <div>No tournament data available. Tournament may not have started yet.</div>
             )}
           </main>
         )
