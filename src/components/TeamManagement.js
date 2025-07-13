@@ -303,6 +303,25 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     }
   };
 
+  // --- Clear Manual Odds Handler ---
+  const handleClearManualOdds = async () => {
+    if (!tournamentId) return;
+    setIsClearingManualOdds(true);
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/clear_manual_odds`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Failed to clear manual odds');
+      alert('Manual odds cleared! Now using live odds.');
+      if (onManualOddsUpdated) onManualOddsUpdated();
+    } catch (error) {
+      alert(`Failed to clear manual odds: ${error.message}`);
+    } finally {
+      setIsClearingManualOdds(false);
+    }
+  };
+
   return (
     <div className="team-management-container">
       <h1>Manage Teams</h1>
