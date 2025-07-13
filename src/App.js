@@ -309,8 +309,7 @@ function App() {
               console.log('Tournament selection changed to:', newTournamentId);
               setSelectedTournamentId(newTournamentId);
               setLeaderboardRefreshKey(prev => prev + 1);
-              // Force refresh of all data when tournament changes
-              setRefreshTrigger(prev => prev + 1);
+              // Don't trigger tournament re-fetch when user manually selects a tournament
             }}
           >
             {tournaments.length === 0 ? (
