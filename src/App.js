@@ -275,10 +275,10 @@ function App() {
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Alumni Golf Tournament Leaderboard</h1>
+        <h1>Alumni Golf Tournament</h1>
         {/* Tournament Selector */}
         <div>
-          <label htmlFor="tournament-select">Select Tournament: </label>
+          
           <select
             id="tournament-select"
             value={selectedTournamentId}
