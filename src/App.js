@@ -5,65 +5,65 @@ import TeamManagement from './components/TeamManagement';
 import DraftBoard from './components/DraftBoard';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
-// Memoized helper function to format scores for display
-const formatScoreForDisplay = useMemo(() => {
-  const cache = new Map();
-  
-  return (scoreObj) => {
-    const cacheKey = JSON.stringify(scoreObj);
-    if (cache.has(cacheKey)) {
-      return cache.get(cacheKey);
-    }
-
-    let result;
-    
-    // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
-    if (scoreObj && scoreObj.notStarted) {
-      result = '-';
-    } else if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
-      if (
-        scoreObj.score === null ||
-        scoreObj.score === undefined ||
-        scoreObj.score === '' ||
-        Number.isNaN(scoreObj.score)
-      ) {
-        result = '-';
-      } else if (scoreObj.isLive) {
-        if (scoreObj.score === 0) {
-          result = <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
-        } else {
-          result = (
-            <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
-              {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
-            </span>
-          );
-        }
-      } else {
-        if (scoreObj.score === 0) {
-          result = 'E';
-        } else {
-          result = scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
-        }
-      }
-    } else {
-      // Fallback for numbers (totals etc)
-      if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
-        result = '-';
-      } else if (scoreObj === 0) {
-        result = 'E';
-      } else if (scoreObj > 0) {
-        result = `+${scoreObj}`;
-      } else {
-        result = scoreObj.toString();
-      }
-    }
-
-    cache.set(cacheKey, result);
-    return result;
-  };
-}, []);
-
 function App() {
+  // Memoized helper function to format scores for display
+  const formatScoreForDisplay = useMemo(() => {
+    const cache = new Map();
+    
+    return (scoreObj) => {
+      const cacheKey = JSON.stringify(scoreObj);
+      if (cache.has(cacheKey)) {
+        return cache.get(cacheKey);
+      }
+
+      let result;
+      
+      // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
+      if (scoreObj && scoreObj.notStarted) {
+        result = '-';
+      } else if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
+        if (
+          scoreObj.score === null ||
+          scoreObj.score === undefined ||
+          scoreObj.score === '' ||
+          Number.isNaN(scoreObj.score)
+        ) {
+          result = '-';
+        } else if (scoreObj.isLive) {
+          if (scoreObj.score === 0) {
+            result = <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
+          } else {
+            result = (
+              <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
+                {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
+              </span>
+            );
+          }
+        } else {
+          if (scoreObj.score === 0) {
+            result = 'E';
+          } else {
+            result = scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
+          }
+        }
+      } else {
+        // Fallback for numbers (totals etc)
+        if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
+          result = '-';
+        } else if (scoreObj === 0) {
+          result = 'E';
+        } else if (scoreObj > 0) {
+          result = `+${scoreObj}`;
+        } else {
+          result = scoreObj.toString();
+        }
+      }
+
+      cache.set(cacheKey, result);
+      return result;
+    };
+  }, []);
+
   const [showTeamManagement, setShowTeamManagement] = useState(false);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
