@@ -30,11 +30,16 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
   // State for saving teams process
   const [isSaving, setIsSaving] = useState(false);
-  // State for starting draft process
-  const [isStartingDraft, setIsStartingDraft] = useState(false);
-
   // State for clearing manual odds
   const [isClearingManualOdds, setIsClearingManualOdds] = useState(false); // NEW: State for clearing manual odds
+
+  // --- Draft Status State ---
+  const [draftStatus, setDraftStatus] = useState({
+    IsDraftStarted: false,
+    IsDraftLocked: false,
+    IsDraftComplete: false
+  });
+  const [isDraftActionLoading, setIsDraftActionLoading] = useState(false);
 
   // 1. Load existing teams for the selected tournament
   const loadTeams = useCallback(async () => {
@@ -230,90 +235,87 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     }
   };
 
-  // handleStartDraft function (unchanged)
-  const handleStartDraft = async () => {
+  // --- Fetch Draft Status ---
+  const fetchDraftStatus = useCallback(async () => {
     if (!tournamentId) {
-      alert("No tournament selected. Please select one to start the draft.");
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
       return;
     }
-    if (isStartingDraft) return; // Prevent double click
-    if (isDraftStarted) {
-      alert("Draft has already been started for this tournament.");
-      return;
-    }
-
-    if (!window.confirm("Are you sure you want to start the draft? This will lock in the current odds and cannot be undone.")) {
-      return; // User cancelled
-    }
-
-    setIsStartingDraft(true);
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/start_draft`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(`HTTP error! status: ${response.status}. ${errorData.error || errorData.message}`);
-      }
-
-      alert('Draft started successfully! Odds are now locked in.');
-      if (onDraftStarted) { // Trigger App.js to re-fetch tournament data
-        onDraftStarted();
-      }
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/draft_status`);
+      if (!response.ok) throw new Error('Failed to fetch draft status');
+      const status = await response.json();
+      setDraftStatus(status);
     } catch (error) {
-      console.error('Error starting draft:', error);
-      alert(`Failed to start draft: ${error.message}`);
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+    }
+  }, [tournamentId]);
+
+  useEffect(() => {
+    fetchDraftStatus();
+  }, [fetchDraftStatus, tournamentId]);
+
+  // --- Unified Draft Action Handler ---
+  const handleDraftAction = async () => {
+    if (!tournamentId) return;
+    setIsDraftActionLoading(true);
+    let endpoint = '';
+    let confirmMsg = '';
+    let successMsg = '';
+    if (!draftStatus.IsDraftStarted) {
+      endpoint = `/tournaments/${tournamentId}/start_draft_flag`;
+      confirmMsg = 'Are you sure you want to start the draft?';
+      successMsg = 'Draft started!';
+    } else if (!draftStatus.IsDraftLocked) {
+      endpoint = `/tournaments/${tournamentId}/lock_draft_odds`;
+      confirmMsg = 'Are you sure you want to lock the draft odds?';
+      successMsg = 'Draft odds locked!';
+    } else if (!draftStatus.IsDraftComplete) {
+      endpoint = `/tournaments/${tournamentId}/complete_draft`;
+      confirmMsg = 'Are you sure you want to complete the draft?';
+      successMsg = 'Draft marked complete!';
+    } else {
+      setIsDraftActionLoading(false);
+      return;
+    }
+    if (!window.confirm(confirmMsg)) {
+      setIsDraftActionLoading(false);
+      return;
+    }
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      if (!response.ok) throw new Error('Draft action failed');
+      alert(successMsg);
+      fetchDraftStatus();
+      if (onDraftStarted) onDraftStarted();
+    } catch (error) {
+      alert(`Draft action failed: ${error.message}`);
     } finally {
-      setIsStartingDraft(false);
+      setIsDraftActionLoading(false);
     }
   };
 
-  // NEW: handleClearManualOdds function
+  // --- Clear Manual Odds Handler ---
   const handleClearManualOdds = async () => {
-    if (!tournamentId) {
-      alert("No tournament selected.");
-      return;
-    }
-    if (isClearingManualOdds) return;
-    if (isDraftStarted) {
-      alert("Cannot clear manual odds: Draft has already started.");
-      return;
-    }
-
-    if (!window.confirm("Are you sure you want to clear manual odds? This will revert to using live SportsData.io odds.")) {
-      return; // User cancelled
-    }
-
+    if (!tournamentId) return;
     setIsClearingManualOdds(true);
     try {
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/clear_manual_odds`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' }
       });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(`HTTP error! status: ${response.status}. ${errorData.error || errorData.message}`);
-      }
-
-      alert('Manual odds cleared successfully! The Draft Board will now use live SportsData.io odds.');
-      if (onManualOddsUpdated) { // Trigger App.js to re-fetch tournament data and player odds for DraftBoard
-        onManualOddsUpdated();
-      }
+      if (!response.ok) throw new Error('Failed to clear manual odds');
+      alert('Manual odds cleared! Now using live odds.');
+      if (onManualOddsUpdated) onManualOddsUpdated();
     } catch (error) {
-      console.error('Error clearing manual odds:', error);
       alert(`Failed to clear manual odds: ${error.message}`);
     } finally {
       setIsClearingManualOdds(false);
     }
   };
-
 
   return (
     <div className="team-management-container">
@@ -389,7 +391,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               Using Live SportsData.io Odds.
             </p>
           )}
-          {hasManualDraftOdds && !isDraftStarted && (
+          {hasManualDraftOdds && !draftStatus.IsDraftStarted && (
             <button
               onClick={handleClearManualOdds}
               disabled={isClearingManualOdds || !tournamentId}
@@ -398,22 +400,33 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
             </button>
           )}
-          {isDraftStarted && (
+          {draftStatus.IsDraftStarted && (
             <p style={{ color: '#90EE90', marginTop: '10px' }}>
               Draft has started. Odds are locked in!
             </p>
           )}
         </div>
 
-        {/* Start Draft Button */}
-        {!isDraftStarted && (
+        {/* Unified Draft Action Button */}
+        {!draftStatus.IsDraftComplete && (
           <button
-            onClick={handleStartDraft}
-            disabled={isStartingDraft || !tournamentId}
-            className="draft-start-btn"
+            onClick={handleDraftAction}
+            disabled={isDraftActionLoading || !tournamentId}
+            className="draft-action-btn"
           >
-            {isStartingDraft ? 'Starting Draft...' : 'Start Draft & Lock Odds'}
+            {isDraftActionLoading
+              ? 'Processing...'
+              : !draftStatus.IsDraftStarted
+                ? 'Start Draft'
+                : !draftStatus.IsDraftLocked
+                  ? 'Lock Draft Odds'
+                  : 'Complete Draft'}
           </button>
+        )}
+        {draftStatus.IsDraftComplete && (
+          <p style={{ color: '#32CD32', marginTop: '10px' }}>
+            Draft is complete!
+          </p>
         )}
       </div>
 

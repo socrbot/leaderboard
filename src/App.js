@@ -67,6 +67,15 @@ function App() {
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
   const [draftBoardError, setDraftBoardError] = useState(null);
 
+  // --- Draft Status State ---
+  const [draftStatus, setDraftStatus] = useState({
+    IsDraftStarted: false,
+    IsDraftLocked: false,
+    IsDraftComplete: false
+  });
+  const [draftStatusLoading, setDraftStatusLoading] = useState(true);
+  const [tournamentStatus, setTournamentStatus] = useState(''); // RapidAPI status
+
   // Fetch available tournaments from your Flask Backend
   useEffect(() => {
     const fetchTournaments = async () => {
@@ -79,13 +88,22 @@ function App() {
         }
         const data = await response.json();
         setTournaments(data);
-        if (data.length > 0 && !selectedTournamentId) {
-          setSelectedTournamentId(data[0].id);
-        } else if (data.length > 0 && selectedTournamentId && !data.find(t => t.id === selectedTournamentId)) {
-          setSelectedTournamentId(data[0].id);
-        } else if (data.length === 0) {
-          setSelectedTournamentId('');
+        // Improved default selection logic
+        let defaultTournament = '';
+        if (data.length > 0) {
+          // Prefer draft board
+          const draftBoard = data.find(t => t.isDraftBoard || t.IsDraftStarted);
+          // Then active
+          const activeTournament = data.find(t => t.isActive || t.IsInProgress);
+          if (draftBoard) {
+            defaultTournament = draftBoard.id;
+          } else if (activeTournament) {
+            defaultTournament = activeTournament.id;
+          } else {
+            defaultTournament = data[data.length - 1].id;
+          }
         }
+        setSelectedTournamentId(defaultTournament);
       } catch (error) {
         console.error("Error fetching tournaments from backend:", error);
         setTournamentError("Failed to load tournaments.");
@@ -94,7 +112,6 @@ function App() {
       }
     };
     fetchTournaments();
-    // Only want to refresh tournaments on trigger or tournament change
     // eslint-disable-next-line
   }, [refreshTrigger, selectedTournamentId]);
 
@@ -154,6 +171,38 @@ function App() {
 
     fetchPlayerOddsForDraftBoard();
   }, [selectedTournamentId, tournamentOddsId, isTournamentInProgress, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
+
+  // --- Fetch Draft Status ---
+  const fetchDraftStatus = useCallback(async () => {
+    if (!selectedTournamentId) {
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setDraftStatusLoading(false);
+      setTournamentStatus('');
+      return;
+    }
+    setDraftStatusLoading(true);
+    try {
+      // Fetch draft status
+      const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
+      if (!draftRes.ok) throw new Error('Failed to fetch draft status');
+      const status = await draftRes.json();
+      setDraftStatus(status);
+      // Fetch tournament details for RapidAPI status
+      const tournRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`);
+      if (!tournRes.ok) throw new Error('Failed to fetch tournament details');
+      const tournData = await tournRes.json();
+      setTournamentStatus(tournData?.Tournament?.Status || tournData?.status || '');
+    } catch (error) {
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setTournamentStatus('');
+    } finally {
+      setDraftStatusLoading(false);
+    }
+  }, [selectedTournamentId]);
+
+  useEffect(() => {
+    fetchDraftStatus();
+  }, [fetchDraftStatus, selectedTournamentId, refreshTrigger]);
 
   // Sorting Logic
   const handleHeaderClick = (column) => {
@@ -215,16 +264,21 @@ function App() {
     });
   }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors]);
 
+  // --- Main Render Logic ---
   if (loadingTournaments) return <div>Loading tournaments...</div>;
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
+
+  // --- DraftBoard/Leaderboard Logic ---
+  const showDraftBoard = !draftStatus.IsDraftComplete && (draftStatus.IsDraftStarted || draftStatus.IsDraftLocked);
+  const showLeaderboard = draftStatus.IsDraftComplete || ["Not Started", "InProgress", "Complete", "Official"].includes(tournamentStatus);
 
   return (
     <div className="App">
       <header className="App-header">
-        <h1>Alumni Golf Tournament Leaderboard</h1>
+        <h1>Alumni Golf Tournament</h1>
         {/* Tournament Selector */}
         <div>
-          <label htmlFor="tournament-select">Select Tournament: </label>
+          
           <select
             id="tournament-select"
             value={selectedTournamentId}
@@ -263,78 +317,16 @@ function App() {
             onTournamentCreated={handleDataUpdated}
             onTeamsSaved={handleDataUpdated}
             tournamentOddsId={tournamentOddsId}
-            isDraftStarted={isDraftStarted}
+            isDraftStarted={draftStatus.IsDraftStarted}
             hasManualDraftOdds={hasManualDraftOdds}
             onDraftStarted={handleDataUpdated}
             onManualOddsUpdated={handleDataUpdated}
           />
         ) : (
           <main>
-            {/* Always show Leaderboard first */}
-            {loading ? (
-              <div>Loading leaderboard data...</div>
-            ) : error ? (
-              <div style={{ color: 'red' }}>Error: {error}</div>
-            ) : sortedLeaderboardData.length > 0 ? (
-              <table className="leaderboard-table">
-                <thead>
-                  <tr>
-                    <th>POS</th>
-                    <th className="team-golfer-header">TEAM / GOLFER</th>
-                    <th onClick={() => handleHeaderClick('total')} className="sortable-header">
-                      TOTAL{renderSortArrow('total')}
-                    </th>
-                    <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
-                      R1{renderSortArrow('r1')}
-                    </th>
-                    <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
-                      R2{renderSortArrow('r2')}
-                    </th>
-                    <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
-                      R3{renderSortArrow('r3')}
-                    </th>
-                    <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
-                      R4{renderSortArrow('r4')}
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sortedLeaderboardData.map((team) => (
-                    <React.Fragment key={`team-${team.team}`}>
-                      <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-                        <td>{team.position}</td>
-                        <td className="team-name-cell">{team.team}</td>
-                        <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
-                        <td>{formatScoreForDisplay(team.r1)}</td>
-                        <td>{formatScoreForDisplay(team.r2)}</td>
-                        <td>{formatScoreForDisplay(team.r3)}</td>
-                        <td>{formatScoreForDisplay(team.r4)}</td>
-                      </tr>
-                      {team.golfers && team.golfers.map((golfer, golferIndex) => (
-                        <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
-                          <td></td>
-                          <td className="golfer-name-cell">
-                            {golfer.name}
-                            {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
-                              <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
-                            )}
-                          </td>
-                          <td></td>
-                          <td>{formatScoreForDisplay(golfer.r1)}</td>
-                          <td>{formatScoreForDisplay(golfer.r2)}</td>
-                          <td>{formatScoreForDisplay(golfer.r3)}</td>
-                          <td>{formatScoreForDisplay(golfer.r4)}</td>
-                        </tr>
-                      ))}
-                    </React.Fragment>
-                  ))}
-                </tbody>
-              </table>
-            ) : (
-              <div>No team data available for this tournament. Select another or go to Manage Teams to assign players.</div>
-            )}
-            {/* Only show DraftBoard if tournament is NOT in progress */}
-            {!isTournamentInProgress && (
+            {draftStatusLoading ? (
+              <div>Loading draft status...</div>
+            ) : showDraftBoard ? (
               <DraftBoard
                 topPlayers={augmentedDraftBoardPlayers}
                 loading={draftBoardLoading}
@@ -342,6 +334,71 @@ function App() {
                 oddsId={tournamentOddsId}
                 hasManualDraftOdds={hasManualDraftOdds}
               />
+            ) : showLeaderboard ? (
+              loading ? (
+                <div>Loading leaderboard data...</div>
+              ) : error ? (
+                <div style={{ color: 'red' }}>Error: {error}</div>
+              ) : sortedLeaderboardData.length > 0 ? (
+                <table className="leaderboard-table">
+                  <thead>
+                    <tr>
+                      <th>POS</th>
+                      <th className="team-golfer-header">TEAM / GOLFER</th>
+                      <th onClick={() => handleHeaderClick('total')} className="sortable-header">
+                        TOTAL{renderSortArrow('total')}
+                      </th>
+                      <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
+                        R1{renderSortArrow('r1')}
+                      </th>
+                      <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
+                        R2{renderSortArrow('r2')}
+                      </th>
+                      <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
+                        R3{renderSortArrow('r3')}
+                      </th>
+                      <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
+                        R4{renderSortArrow('r4')}
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sortedLeaderboardData.map((team) => (
+                      <React.Fragment key={`team-${team.team}`}>
+                        <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                          <td>{team.position}</td>
+                          <td className="team-name-cell">{team.team}</td>
+                          <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
+                          <td>{formatScoreForDisplay(team.r1)}</td>
+                          <td>{formatScoreForDisplay(team.r2)}</td>
+                          <td>{formatScoreForDisplay(team.r3)}</td>
+                          <td>{formatScoreForDisplay(team.r4)}</td>
+                        </tr>
+                        {team.golfers && team.golfers.map((golfer, golferIndex) => (
+                          <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
+                            <td></td>
+                            <td className="golfer-name-cell">
+                              {golfer.name}
+                              {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
+                                <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
+                              )}
+                            </td>
+                            <td></td>
+                            <td>{formatScoreForDisplay(golfer.r1)}</td>
+                            <td>{formatScoreForDisplay(golfer.r2)}</td>
+                            <td>{formatScoreForDisplay(golfer.r3)}</td>
+                            <td>{formatScoreForDisplay(golfer.r4)}</td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </tbody>
+                </table>
+              ) : (
+                <div>No leaderboard data available.</div>
+              )
+            ) : (
+              <div>No tournament status available.</div>
             )}
           </main>
         )
