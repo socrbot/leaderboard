@@ -1,5 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import { LEADERBOARD_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
+import { useAPICache } from './hooks/useAPICache';
+import { measurePerformance } from './utils/performance';
 
 const parseNumericScore = (scoreStr) => {
     if (scoreStr === "E" || scoreStr === "e" || scoreStr === null || scoreStr === undefined || scoreStr === "") {
