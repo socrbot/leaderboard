@@ -230,7 +230,9 @@ function App() {
             value={selectedTournamentId}
             onChange={(e) => {
               setSelectedTournamentId(e.target.value);
+              setShowTeamManagement(false); // Always show leaderboard when changing tournament
               setLeaderboardRefreshKey(prev => prev + 1);
+              setRefreshTrigger(prev => prev + 1); // Force refresh of tournaments and related data
             }}
           >
             {tournaments.length === 0 ? (
