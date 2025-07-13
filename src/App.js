@@ -96,6 +96,39 @@ function App() {
     }
     return null;
   };
+  
+// Function to preload tournament data for faster switching
+  const preloadTournamentData = useCallback(async (tournaments) => {
+    const preloadedData = {};
+    
+    for (const tournament of tournaments) {
+      try {
+        // Check if tournament has completed draft
+        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
+        if (statusResponse.ok) {
+          const status = await statusResponse.json();
+          if (status.IsDraftComplete) {
+            // Preload leaderboard data for completed tournaments
+            const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
+            if (leaderboardResponse.ok) {
+              const leaderboardData = await leaderboardResponse.json();
+              preloadedData[tournament.id] = {
+                rawData: leaderboardData,
+                loading: false,
+                error: null,
+                lastUpdated: Date.now()
+              };
+              console.log(`Preloaded data for tournament: ${tournament.name}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`Could not preload data for tournament ${tournament.id}:`, error);
+      }
+    }
+    
+    setPreloadedTournamentData(preloadedData);
+  }, []);
 
   // Fetch available tournaments from your Flask Backend
   useEffect(() => {
@@ -137,38 +170,7 @@ function App() {
     fetchTournaments();
   }, [refreshTrigger, preloadTournamentData]);
 
-  // Function to preload tournament data for faster switching
-  const preloadTournamentData = useCallback(async (tournaments) => {
-    const preloadedData = {};
-    
-    for (const tournament of tournaments) {
-      try {
-        // Check if tournament has completed draft
-        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
-        if (statusResponse.ok) {
-          const status = await statusResponse.json();
-          if (status.IsDraftComplete) {
-            // Preload leaderboard data for completed tournaments
-            const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
-            if (leaderboardResponse.ok) {
-              const leaderboardData = await leaderboardResponse.json();
-              preloadedData[tournament.id] = {
-                rawData: leaderboardData,
-                loading: false,
-                error: null,
-                lastUpdated: Date.now()
-              };
-              console.log(`Preloaded data for tournament: ${tournament.name}`);
-            }
-          }
-        }
-      } catch (error) {
-        console.log(`Could not preload data for tournament ${tournament.id}:`, error);
-      }
-    }
-    
-    setPreloadedTournamentData(preloadedData);
-  }, []);
+  
 
   // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
   const handleDataUpdated = useCallback(() => {
