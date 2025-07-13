@@ -276,14 +276,15 @@ function App() {
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
     // Show draft board if:
-    // 1. Draft has started and is locked (has odds available)
-    // 2. Draft is not complete
+    // 1. Draft has started
+    // 2. Draft is not complete  
     // 3. Tournament is not in progress yet
+    // 4. Either has locked odds OR has manual odds available
     return draftStatus.IsDraftStarted && 
-           draftStatus.IsDraftLocked && 
            !draftStatus.IsDraftComplete &&
-           !isTournamentInProgress;
-  }, [draftStatus, isTournamentInProgress]);
+           !isTournamentInProgress &&
+           (draftStatus.IsDraftLocked || hasManualDraftOdds);
+  }, [draftStatus, isTournamentInProgress, hasManualDraftOdds]);
 
   const shouldShowLeaderboard = useMemo(() => {
     // Show leaderboard if:
