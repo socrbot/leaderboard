@@ -62,6 +62,10 @@ function App() {
   // State specifically for refreshing the leaderboard data when navigating back
   const [leaderboardRefreshKey, setLeaderboardRefreshKey] = useState(0);
 
+  // State for preloaded tournament data
+  const [preloadedTournamentData, setPreloadedTournamentData] = useState({});
+  const [preloadingTournaments, setPreloadingTournaments] = useState(false);
+
   // State for Draft Board data
   const [draftBoardPlayers, setDraftBoardPlayers] = useState([]);
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
@@ -121,6 +125,9 @@ function App() {
           }
         }
         setSelectedTournamentId(defaultTournament);
+        
+        // Preload leaderboard data for all completed tournaments
+        preloadTournamentData(data);
       } catch (error) {
         console.error("Error fetching tournaments from backend:", error);
         setTournamentError("Failed to load tournaments.");
@@ -130,6 +137,41 @@ function App() {
     };
     fetchTournaments();
   }, [refreshTrigger]); // Remove selectedTournamentId to avoid infinite loop
+
+  // Function to preload tournament data for faster switching
+  const preloadTournamentData = useCallback(async (tournaments) => {
+    setPreloadingTournaments(true);
+    const preloadedData = {};
+    
+    for (const tournament of tournaments) {
+      try {
+        // Check if tournament has completed draft
+        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
+        if (statusResponse.ok) {
+          const status = await statusResponse.json();
+          if (status.IsDraftComplete) {
+            // Preload leaderboard data for completed tournaments
+            const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
+            if (leaderboardResponse.ok) {
+              const leaderboardData = await leaderboardResponse.json();
+              preloadedData[tournament.id] = {
+                rawData: leaderboardData,
+                loading: false,
+                error: null,
+                lastUpdated: Date.now()
+              };
+              console.log(`Preloaded data for tournament: ${tournament.name}`);
+            }
+          }
+        }
+      } catch (error) {
+        console.log(`Could not preload data for tournament ${tournament.id}:`, error);
+      }
+    }
+    
+    setPreloadedTournamentData(preloadedData);
+    setPreloadingTournaments(false);
+  }, []);
 
   // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
   const handleDataUpdated = useCallback(() => {
@@ -155,6 +197,31 @@ function App() {
     isDraftStarted,
     hasManualDraftOdds
   } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
+
+  // Use preloaded data if available and tournament has completed draft
+  const effectiveRawData = useMemo(() => {
+    const preloadedData = preloadedTournamentData[selectedTournamentId];
+    if (preloadedData && draftStatus.IsDraftComplete) {
+      return preloadedData.rawData;
+    }
+    return rawData;
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, rawData]);
+
+  const effectiveLoading = useMemo(() => {
+    const preloadedData = preloadedTournamentData[selectedTournamentId];
+    if (preloadedData && draftStatus.IsDraftComplete) {
+      return false; // Data is already loaded
+    }
+    return loading;
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, loading]);
+
+  const effectiveError = useMemo(() => {
+    const preloadedData = preloadedTournamentData[selectedTournamentId];
+    if (preloadedData && draftStatus.IsDraftComplete) {
+      return preloadedData.error;
+    }
+    return error;
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, error]);
 
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
@@ -235,9 +302,9 @@ function App() {
 
   // Memoize the sorted leaderboard data
   const sortedLeaderboardData = useMemo(() => {
-    if (!rawData || rawData.length === 0) return [];
+    if (!effectiveRawData || effectiveRawData.length === 0) return [];
 
-    const sortableData = [...rawData];
+    const sortableData = [...effectiveRawData];
 
     sortableData.sort((a, b) => {
       const aValue = a[sortColumn];
@@ -258,7 +325,7 @@ function App() {
       position: index + 1
     }));
 
-  }, [rawData, sortColumn, sortDirection]);
+  }, [effectiveRawData, sortColumn, sortDirection]);
 
   // Memoize the augmented draft board players
   const augmentedDraftBoardPlayers = useMemo(() => {
@@ -360,10 +427,12 @@ function App() {
                 hasManualDraftOdds={hasManualDraftOdds}
               />
             ) : shouldShowLeaderboard ? (
-              loading ? (
-                <div>Loading leaderboard data...</div>
-              ) : error ? (
-                <div style={{ color: 'red' }}>Error: {error}</div>
+              (effectiveLoading || draftStatusLoading || !effectiveRawData) ? (
+                <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
+                  <p>Loading leaderboard data...</p>
+                </div>
+              ) : effectiveError ? (
+                <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {effectiveError}</div>
               ) : sortedLeaderboardData.length > 0 ? (
                 <table className="leaderboard-table">
                   <thead>
@@ -420,7 +489,9 @@ function App() {
                   </tbody>
                 </table>
               ) : (
-                <div>No leaderboard data available.</div>
+                <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
+                  <p>No leaderboard data available for this tournament.</p>
+                </div>
               )
             ) : draftStatus.IsDraftStarted && !draftStatus.IsDraftLocked ? (
               <div style={{ padding: '20px', textAlign: 'center' }}>
