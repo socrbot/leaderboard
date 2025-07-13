@@ -30,11 +30,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
   // State for saving teams process
   const [isSaving, setIsSaving] = useState(false);
-  // State for starting draft process
-  const [isStartingDraft, setIsStartingDraft] = useState(false);
-  // State for locking odds process
-  const [isLockingOdds, setIsLockingOdds] = useState(false);
-
   // State for clearing manual odds
   const [isClearingManualOdds, setIsClearingManualOdds] = useState(false); // NEW: State for clearing manual odds
 
