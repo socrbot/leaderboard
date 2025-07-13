@@ -82,8 +82,8 @@ function App() {
         const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
         if (statusResponse.ok) {
           const status = await statusResponse.json();
-          // Look for tournament with draft started, locked odds, but not complete
-          if (status.IsDraftStarted && status.IsDraftLocked && !status.IsDraftComplete) {
+          // Look for tournament with draft started but not complete (for draft board)
+          if (status.IsDraftStarted && !status.IsDraftComplete) {
             return tournament.id;
           }
         }
@@ -195,14 +195,17 @@ function App() {
       setDraftStatusLoading(false);
       return;
     }
+    console.log('Fetching draft status for tournament:', selectedTournamentId);
     setDraftStatusLoading(true);
     try {
       // Fetch draft status
       const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
+      console.log('Draft status received:', status);
       setDraftStatus(status);
     } catch (error) {
+      console.error('Error fetching draft status:', error);
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
     } finally {
       setDraftStatusLoading(false);
@@ -302,7 +305,9 @@ function App() {
             id="tournament-select"
             value={selectedTournamentId}
             onChange={(e) => {
-              setSelectedTournamentId(e.target.value);
+              const newTournamentId = e.target.value;
+              console.log('Tournament selection changed to:', newTournamentId);
+              setSelectedTournamentId(newTournamentId);
               setLeaderboardRefreshKey(prev => prev + 1);
               // Force refresh of all data when tournament changes
               setRefreshTrigger(prev => prev + 1);
