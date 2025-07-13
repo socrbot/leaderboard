@@ -5,45 +5,63 @@ import TeamManagement from './components/TeamManagement';
 import DraftBoard from './components/DraftBoard';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
-// Helper function to format scores for display
-const formatScoreForDisplay = (scoreObj) => {
-  // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
-  if (scoreObj && scoreObj.notStarted) return '-';
+// Memoized helper function to format scores for display
+const formatScoreForDisplay = useMemo(() => {
+  const cache = new Map();
+  
+  return (scoreObj) => {
+    const cacheKey = JSON.stringify(scoreObj);
+    if (cache.has(cacheKey)) {
+      return cache.get(cacheKey);
+    }
 
-  if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
-    if (
-      scoreObj.score === null ||
-      scoreObj.score === undefined ||
-      scoreObj.score === '' ||
-      Number.isNaN(scoreObj.score)
-    ) {
-      return '-';
-    }
-    // Show "E" for 0
-    if (scoreObj.isLive) {
-      if (scoreObj.score === 0) {
-        return <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
+    let result;
+    
+    // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
+    if (scoreObj && scoreObj.notStarted) {
+      result = '-';
+    } else if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
+      if (
+        scoreObj.score === null ||
+        scoreObj.score === undefined ||
+        scoreObj.score === '' ||
+        Number.isNaN(scoreObj.score)
+      ) {
+        result = '-';
+      } else if (scoreObj.isLive) {
+        if (scoreObj.score === 0) {
+          result = <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
+        } else {
+          result = (
+            <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
+              {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
+            </span>
+          );
+        }
+      } else {
+        if (scoreObj.score === 0) {
+          result = 'E';
+        } else {
+          result = scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
+        }
       }
-      return (
-        <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
-          {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
-        </span>
-      );
     } else {
-      if (scoreObj.score === 0) return 'E';
-      return scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
+      // Fallback for numbers (totals etc)
+      if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
+        result = '-';
+      } else if (scoreObj === 0) {
+        result = 'E';
+      } else if (scoreObj > 0) {
+        result = `+${scoreObj}`;
+      } else {
+        result = scoreObj.toString();
+      }
     }
-  }
-  // Fallback for numbers (totals etc)
-  if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
-    return '-';
-  }
-  if (scoreObj === 0) return 'E';
-  if (scoreObj > 0) {
-    return `+${scoreObj}`;
-  }
-  return scoreObj.toString();
-};
+
+    cache.set(cacheKey, result);
+    return result;
+  };
+}, []);
 
 function App() {
   const [showTeamManagement, setShowTeamManagement] = useState(false);

@@ -1,0 +1,28 @@
+{
+    "folders": [
+        {
+            "name": "Frontend",
+            "path": "."
+        },
+        {
+            "name": "Backend", 
+            "path": "../leaderboard-backend"
+        }
+    ],
+    "settings": {
+        "typescript.preferences.preferTypeOnlyAutoImports": true,
+        "eslint.workingDirectories": [
+            "./",
+            "../leaderboard-backend"
+        ]
+    },
+    "extensions": {
+        "recommendations": [
+            "ms-vscode.vscode-typescript-next",
+            "esbenp.prettier-vscode",
+            "bradlc.vscode-tailwindcss",
+            "ms-python.python",
+            "ms-vscode.vscode-json"
+        ]
+    }
+}

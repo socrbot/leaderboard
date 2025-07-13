@@ -1,52 +1,63 @@
+/* Critical CSS - inline this in HTML head */
 body {
   font-family: Arial, sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #1e1e1e; /* Dark background */
+  background-color: #1e1e1e;
   color: white;
+  contain: layout style paint;
 }
 
 .App {
   text-align: center;
+  min-height: 100vh;
 }
 
 .App-header {
-  background-color: #006400; /* Green header */
+  background-color: #006400;
   padding: 20px;
   color: white;
+  will-change: transform;
 }
 
+/* Use CSS Grid for better performance */
 table {
   margin: 20px auto;
   border-collapse: collapse;
   width: 90%;
-  background-color: #333333; /* Dark grey table background */
+  background-color: #333333;
   color: white;
+  contain: layout style;
 }
 
 th, td {
-  border: 1px solid #444; /* Darker border for table cells */
+  border: 1px solid #444;
   padding: 8px;
   text-align: center;
 }
 
 th {
-  background-color: #006400; /* Dark green headers */
+  background-color: #006400;
   color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
 
-/* This rule is the culprit for overriding team-row backgrounds */
+/* Optimized row styling */
 tbody tr:nth-child(even) {
-  background-color: #2b2b2b; /* Slightly lighter grey for alternate rows */
+  background-color: #2b2b2b;
 }
 
 tbody tr:hover {
-  background-color: #444; /* Hover effect */
+  background-color: #444;
+  transform: translateZ(0); /* Force GPU acceleration */
 }
 
 .total {
-  color: red; /* Highlight total scores in red */
+  color: red;
   font-weight: bold;
+  font-variant-numeric: tabular-nums;
 }
 
 /* Additions for team and golfer rows below */
