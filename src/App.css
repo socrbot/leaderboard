@@ -158,6 +158,75 @@ select:focus {
   .team-card {
     flex: 1 1 calc(100% - 20px); /* On small screens, stack cards vertically (1 per row) */
   }
+  
+  /* Mobile optimizations for TeamManagement */
+  .team-management-container {
+    padding: 10px;
+  }
+  
+  .tournament-form-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 10px;
+  }
+  
+  .tournament-form-card {
+    margin: 15px 10px;
+    padding: 12px;
+    max-width: none; /* Remove max-width constraint on mobile */
+  }
+  
+  .draft-actions-card {
+    margin: 15px 10px;
+    padding: 12px;
+  }
+  
+  .team-add-card {
+    margin: 15px 10px;
+    padding: 12px;
+  }
+  
+  /* Make team cards more mobile-friendly */
+  .team-card {
+    min-width: calc(100% - 20px);
+    margin: 10px;
+  }
+  
+  .team-card-header {
+    padding: 12px;
+  }
+  
+  .team-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  .tournament-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  .team-add-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  /* Improve button touch targets on mobile */
+  .tournament-form-btn,
+  .draft-action-btn,
+  .draft-clear-btn,
+  .team-add-btn,
+  .save-teams-btn {
+    min-height: 44px; /* iOS recommended touch target */
+    padding: 12px 20px;
+    font-size: 1em;
+  }
+  
+  .team-remove-btn,
+  .team-golfer-remove-btn {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
 }
 
 /* TeamManagement main container */
