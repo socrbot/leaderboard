@@ -530,7 +530,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                 </h3>
                 <div style={{ 
                   display: 'flex', 
-                  alignItems: 'center', 
                   gap: '10px', 
                   marginBottom: '10px',
                   flexDirection: isMobile ? 'column' : 'row',
