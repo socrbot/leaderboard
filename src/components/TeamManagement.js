@@ -6,6 +6,9 @@ import '../App.css'; // Importing the CSS file
 // TeamManagement now receives tournamentOddsId, isDraftStarted, and hasManualDraftOdds as props,
 // and onDraftStarted and onManualOddsUpdated callbacks
 const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => { // ADDED hasManualDraftOdds, onManualOddsUpdated
+  // Mobile responsive state
+  const [isMobile, setIsMobile] = useState(false);
+  
   const [teams, setTeams] = useState([]);
   const [allPlayersWithOdds, setAllPlayersWithOdds] = useState([]);
   
@@ -40,6 +43,18 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     IsDraftComplete: false
   });
   const [isDraftActionLoading, setIsDraftActionLoading] = useState(false);
+
+  // Check for mobile on mount and resize
+  useEffect(() => {
+    const checkMobile = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   // 1. Load existing teams for the selected tournament
   const loadTeams = useCallback(async () => {
@@ -362,7 +377,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
   return (
     <div className="team-management-container">
-      <h1>Manage Teams</h1>
+      <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Manage Teams</h1>
 
       {/* Create New Tournament UI - Applying Card and Grid Layout */}
       <div className="tournament-form-card">
@@ -475,12 +490,29 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
 
       {/* Current Teams Section - Applying Flexbox Card Layout */}
-      <h2>Current Teams</h2>
-      {teams.length === 0 && <p>No teams assigned to this tournament yet. Add one below!</p>}
+      <h2 style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Current Teams</h2>
+      {teams.length === 0 && (
+        <p style={{ 
+          textAlign: 'center', 
+          fontSize: isMobile ? '1em' : '1.1em',
+          padding: isMobile ? '10px' : '0'
+        }}>
+          No teams assigned to this tournament yet. Add one below!
+        </p>
+      )}
 
       {/* --- FLEXBOX CONTAINER FOR TEAM CARDS --- */}
       <div className="teams-flex-container">
-        {teams.map((team, teamIndex) => {
+        {[...teams]
+          .sort((a, b) => {
+            // Teams with draft order come first, sorted by draft order
+            const orderA = a.draftOrder ?? 999;
+            const orderB = b.draftOrder ?? 999;
+            return orderA - orderB;
+          })
+          .map((team, sortedIndex) => {
+          // Find the original index for searchTerms
+          const teamIndex = teams.findIndex(t => t.name === team.name);
           const currentSearchTerm = searchTerms[teamIndex] || '';
           const filteredPlayersForThisTeam = allPlayersWithOdds.filter(player =>
             player.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) &&
@@ -496,8 +528,18 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                 <h3 style={{ marginTop: '0', marginBottom: '5px', color: 'white' }}>
                   {team.name}
                 </h3>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
-                  <label style={{ color: 'white', fontSize: '0.9em' }}>Draft Order:</label>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '10px', 
+                  marginBottom: '10px',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'stretch' : 'center'
+                }}>
+                  <label style={{ 
+                    color: 'white', 
+                    fontSize: isMobile ? '1em' : '0.9em',
+                    textAlign: isMobile ? 'center' : 'left'
+                  }}>Draft Order:</label>
                   <input
                     type="number"
                     min="1"
@@ -506,12 +548,15 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     onChange={(e) => handleDraftOrderChange(teamIndex, e.target.value)}
                     placeholder="Order"
                     style={{
-                      width: '60px',
-                      padding: '4px',
+                      width: isMobile ? '100%' : '60px',
+                      padding: isMobile ? '12px 8px' : '4px',
                       borderRadius: '4px',
                       border: '1px solid #555',
                       backgroundColor: '#333',
-                      color: 'white'
+                      color: 'white',
+                      fontSize: isMobile ? '16px' : '14px', // Prevent zoom on iOS
+                      minHeight: isMobile ? '44px' : 'auto', // Touch-friendly on mobile
+                      textAlign: 'center'
                     }}
                   />
                 </div>
@@ -574,25 +619,35 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
             </div>
           );
         })}
+
+        {/* Add New Team Card - styled like other team cards */}
+        <div className="team-card">
+          <div className="team-card-header">
+            <h3 style={{ marginTop: '0', marginBottom: '20px', color: 'white', textAlign: 'center' }}>
+              Add New Team
+            </h3>
+            <input
+              type="text"
+              placeholder="New Team Name"
+              value={newTeamName}
+              onChange={(e) => setNewTeamName(e.target.value)}
+              className="team-search-input"
+              style={{ marginBottom: '15px' }}
+            />
+            <button 
+              onClick={handleAddTeam} 
+              className="draft-action-btn"
+              style={{ width: '100%' }}
+            >
+              Add Team
+            </button>
+          </div>
+        </div>
       </div>
 
       <button onClick={handleSaveTeams} disabled={isSaving} className="save-teams-btn">
         {isSaving ? 'Saving...' : 'Save All Teams'}
       </button>
-
-      <div className="team-add-card">
-        <h2 style={{marginTop: '0', marginBottom: '20px'}}>Add New Team</h2>
-        <input
-          type="text"
-          placeholder="New Team Name"
-          value={newTeamName}
-          onChange={(e) => setNewTeamName(e.target.value)}
-          className="team-add-input"
-        />
-        <button onClick={handleAddTeam} className="team-add-btn">
-          Add Team
-        </button>
-      </div>
 
     </div>
   );

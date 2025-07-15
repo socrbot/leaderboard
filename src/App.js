@@ -209,18 +209,40 @@ function App() {
       const tournamentData = await response.json();
       setTeams(tournamentData.teams || []);
       
-      // Calculate draft picks from teams
+      // Calculate draft picks from teams using snake draft pattern
       const allPicks = [];
-      let pickNumber = 1;
-      (tournamentData.teams || []).forEach(team => {
-        team.golferNames.forEach(golferName => {
-          allPicks.push({
-            pickNumber: pickNumber++,
-            teamName: team.name,
-            playerName: golferName
-          });
+      
+      // Sort teams by draft order first
+      const sortedTeams = [...(tournamentData.teams || [])]
+        .filter(team => team.draftOrder !== null && team.draftOrder !== undefined)
+        .sort((a, b) => a.draftOrder - b.draftOrder);
+      
+      if (sortedTeams.length === 0) {
+        setDraftPicks([]);
+        return;
+      }
+      
+      // Determine maximum number of players per team to calculate rounds
+      const maxPlayersPerTeam = Math.max(...sortedTeams.map(team => team.golferNames.length));
+      
+      // Build picks using snake draft pattern
+      for (let round = 0; round < maxPlayersPerTeam; round++) {
+        const isOddRound = (round % 2) === 0; // 0-indexed, so round 0 is "1st round" (odd)
+        const teamsThisRound = isOddRound ? sortedTeams : [...sortedTeams].reverse();
+        
+        teamsThisRound.forEach(team => {
+          if (team.golferNames[round]) { // Check if team has a player for this round
+            allPicks.push({
+              pickNumber: allPicks.length + 1,
+              teamName: team.name,
+              playerName: team.golferNames[round],
+              draftOrder: team.draftOrder,
+              round: round + 1
+            });
+          }
         });
-      });
+      }
+      
       setDraftPicks(allPicks);
     } catch (error) {
       console.error("Error loading teams:", error);
