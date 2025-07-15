@@ -88,6 +88,10 @@ function App() {
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
   const [draftBoardError, setDraftBoardError] = useState(null);
 
+  // State for teams and draft picks
+  const [teams, setTeams] = useState([]);
+  const [draftPicks, setDraftPicks] = useState([]);
+
   // --- Draft Status State ---
   const [draftStatus, setDraftStatus] = useState({
     IsDraftStarted: false,
@@ -190,11 +194,47 @@ function App() {
 
   
 
+  // Load teams for the selected tournament
+  const loadTeams = useCallback(async () => {
+    if (!selectedTournamentId) {
+      setTeams([]);
+      setDraftPicks([]);
+      return;
+    }
+    try {
+      const response = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const tournamentData = await response.json();
+      setTeams(tournamentData.teams || []);
+      
+      // Calculate draft picks from teams
+      const allPicks = [];
+      let pickNumber = 1;
+      (tournamentData.teams || []).forEach(team => {
+        team.golferNames.forEach(golferName => {
+          allPicks.push({
+            pickNumber: pickNumber++,
+            teamName: team.name,
+            playerName: golferName
+          });
+        });
+      });
+      setDraftPicks(allPicks);
+    } catch (error) {
+      console.error("Error loading teams:", error);
+      setTeams([]);
+      setDraftPicks([]);
+    }
+  }, [selectedTournamentId]);
+
   // Callback to trigger a refresh when teams are updated, a new tournament is created, or manual odds are updated
   const handleDataUpdated = useCallback(() => {
     setRefreshTrigger(prev => prev + 1);
     setLeaderboardRefreshKey(prev => prev + 1);
-  }, []);
+    loadTeams(); // Reload teams when data is updated
+  }, [loadTeams]);
 
   // Modify onClick for Show Leaderboard to update leaderboardRefreshKey
   const handleShowLeaderboardClick = () => {
@@ -300,6 +340,10 @@ function App() {
     fetchDraftStatus();
   }, [fetchDraftStatus]);
 
+  useEffect(() => {
+    loadTeams();
+  }, [loadTeams]);
+
   // Sorting Logic
   const handleHeaderClick = (column) => {
     if (sortColumn === column) {
@@ -352,13 +396,15 @@ function App() {
 
     return draftBoardPlayers.map(player => {
       const teamName = selectedTeamGolfersMap[player.name];
+      const draftPick = draftPicks.find(pick => pick.playerName === player.name);
       return {
         ...player,
         teamAssigned: teamName,
-        teamColor: teamName ? teamColors[teamName] || '#FFCDD2' : null
+        teamColor: teamName ? teamColors[teamName] || '#FFCDD2' : null,
+        pickNumber: draftPick ? draftPick.pickNumber : null
       };
     });
-  }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors]);
+  }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors, draftPicks]);
 
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
@@ -442,6 +488,8 @@ function App() {
                 error={draftBoardError}
                 oddsId={tournamentOddsId}
                 hasManualDraftOdds={hasManualDraftOdds}
+                teams={teams}
+                draftPicks={draftPicks}
               />
             ) : shouldShowLeaderboard ? (
               (effectiveLoading || draftStatusLoading || !effectiveRawData) ? (

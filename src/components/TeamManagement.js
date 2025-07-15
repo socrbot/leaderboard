@@ -109,7 +109,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         alert("A team with this name already exists!");
         return;
     }
-    setTeams([...teams, { name: newTeamName.trim(), golferNames: [] }]);
+    setTeams([...teams, { name: newTeamName.trim(), golferNames: [], draftOrder: null }]);
     setNewTeamName('');
   };
 
@@ -129,8 +129,18 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     const updatedTeams = [...teams];
     const team = updatedTeams[teamIndex];
 
+    // Check if player is already in this team
     if (team.golferNames.includes(playerToAdd)) {
         alert(`${playerToAdd} is already in ${team.name}!`);
+        return;
+    }
+
+    // Check if player is already in any other team
+    const existingTeam = updatedTeams.find((otherTeam, otherIndex) => 
+      otherIndex !== teamIndex && otherTeam.golferNames.includes(playerToAdd)
+    );
+    if (existingTeam) {
+        alert(`${playerToAdd} is already assigned to ${existingTeam.name}! Please remove them from that team first.`);
         return;
     }
 
@@ -150,6 +160,39 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     updatedTeams[teamIndex].golferNames = updatedTeams[teamIndex].golferNames.filter(
       (player) => player !== playerToRemove
     );
+    setTeams(updatedTeams);
+  };
+
+  const handleDraftOrderChange = (teamIndex, newDraftOrder) => {
+    const updatedTeams = [...teams];
+    
+    // Allow empty string or store the raw value while typing
+    if (newDraftOrder === '') {
+      updatedTeams[teamIndex].draftOrder = null;
+      setTeams(updatedTeams);
+      return;
+    }
+    
+    const orderNum = parseInt(newDraftOrder);
+    
+    // Only validate if it's a complete valid number
+    if (isNaN(orderNum) || orderNum < 1) {
+      // For invalid input, just store null but don't alert during typing
+      updatedTeams[teamIndex].draftOrder = null;
+      setTeams(updatedTeams);
+      return;
+    }
+    
+    // Check if this draft order is already taken by another team
+    const existingTeam = updatedTeams.find((team, index) => 
+      index !== teamIndex && team.draftOrder === orderNum
+    );
+    if (existingTeam) {
+      alert(`Draft order ${orderNum} is already assigned to ${existingTeam.name}!`);
+      return;
+    }
+    
+    updatedTeams[teamIndex].draftOrder = orderNum;
     setTeams(updatedTeams);
   };
 
@@ -453,6 +496,25 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                 <h3 style={{ marginTop: '0', marginBottom: '5px', color: 'white' }}>
                   {team.name}
                 </h3>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '10px' }}>
+                  <label style={{ color: 'white', fontSize: '0.9em' }}>Draft Order:</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max={teams.length}
+                    value={team.draftOrder || ''}
+                    onChange={(e) => handleDraftOrderChange(teamIndex, e.target.value)}
+                    placeholder="Order"
+                    style={{
+                      width: '60px',
+                      padding: '4px',
+                      borderRadius: '4px',
+                      border: '1px solid #555',
+                      backgroundColor: '#333',
+                      color: 'white'
+                    }}
+                  />
+                </div>
                 <button
                   onClick={() => handleRemoveTeam(teamIndex)}
                   className="team-remove-btn"
