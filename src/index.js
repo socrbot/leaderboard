@@ -17,6 +17,21 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         console.log('SW registered: ', registration);
+        
+        // Check for updates every time the page loads
+        registration.addEventListener('updatefound', () => {
+          const newWorker = registration.installing;
+          newWorker.addEventListener('statechange', () => {
+            if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+              // New update available - notify user or auto-refresh
+              console.log('New update available! Refreshing...');
+              window.location.reload();
+            }
+          });
+        });
+        
+        // Force update check
+        registration.update();
       })
       .catch(registrationError => {
         console.log('SW registration failed: ', registrationError);

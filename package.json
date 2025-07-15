@@ -14,7 +14,8 @@
   },
   "scripts": {
     "start": "react-scripts start",
-    "build": "react-scripts build",
+    "build": "node scripts/update-cache-version.js && react-scripts build",
+    "build:no-cache": "react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject"
   },

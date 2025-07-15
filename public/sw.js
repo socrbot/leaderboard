@@ -1,6 +1,6 @@
 // public/sw.js
-const CACHE_NAME = 'leaderboard-cache-v1';
-const API_CACHE_NAME = 'leaderboard-api-cache-v1';
+const CACHE_NAME = 'leaderboard-cache-v2'; // Updated version number
+const API_CACHE_NAME = 'leaderboard-api-cache-v2'; // Updated version number
 const STATIC_CACHE_TIME = 24 * 60 * 60 * 1000; // 24 hours
 const API_CACHE_TIME = 5 * 60 * 1000; // 5 minutes
 
