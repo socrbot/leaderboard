@@ -285,8 +285,15 @@ export const useGolfLeaderboard = (
     }, [tournamentId, refreshDependency]);
 
     useEffect(() => {
+        // If tournament is not in progress, check if draft is complete and we have teams
         if (!isTournamentInProgress) {
-            setRawData([]);
+            if (isDraftStarted && teamAssignments.length > 0) {
+                // Create empty team data for completed draft without tournament scores
+                const emptyTeamData = transformPlayersToTeams([], teamAssignments, tournamentSpecifics.par);
+                setRawData(emptyTeamData);
+            } else {
+                setRawData([]);
+            }
             setLoading(false);
             return;
         }
@@ -345,7 +352,7 @@ export const useGolfLeaderboard = (
             setLoading(false);
             setRawData([]);
         }
-    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, refreshDependency]);
+    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, isDraftStarted, refreshDependency]);
     const selectedTeamGolfersMap = useMemo(() => {
         const newMap = {};
         if (teamAssignments && teamAssignments.length > 0) {

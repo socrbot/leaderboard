@@ -521,7 +521,23 @@ function App() {
               ) : effectiveError ? (
                 <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {effectiveError}</div>
               ) : sortedLeaderboardData.length > 0 ? (
-                <table className="leaderboard-table">
+                <>
+                  {!isTournamentInProgress && draftStatus.IsDraftComplete && (
+                    <div style={{ 
+                      textAlign: 'center', 
+                      padding: '20px', 
+                      margin: '20px 0',
+                      backgroundColor: '#2a2a2a',
+                      borderRadius: '8px',
+                      border: '1px solid #555'
+                    }}>
+                      <h3 style={{ color: '#FFD700', margin: '0 0 10px 0' }}>Draft Complete - Tournament Awaiting Start</h3>
+                      <p style={{ color: '#ccc', margin: 0 }}>
+                        All teams have been drafted and are ready to compete. Scores will appear once the tournament begins.
+                      </p>
+                    </div>
+                  )}
+                  <table className="leaderboard-table">
                   <thead>
                     <tr>
                       <th>POS</th>
@@ -574,7 +590,8 @@ function App() {
                       </React.Fragment>
                     ))}
                   </tbody>
-                </table>
+                  </table>
+                </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
                   <p>No leaderboard data available for this tournament.</p>
