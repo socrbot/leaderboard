@@ -10,18 +10,6 @@ const GlobalTeamsManagement = () => {
   const [searchTerms, setSearchTerms] = useState({});
   const [playerLoading, setPlayerLoading] = useState(false);
   const [playerError, setPlayerError] = useState(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [isMobile, setIsMobile] = useState(false);
-
-  // Check for mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    return () => window.removeEventListener('resize', checkMobile);
-  }, []);
 
   // Load global teams
   const loadGlobalTeams = useCallback(async () => {
