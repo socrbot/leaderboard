@@ -86,7 +86,7 @@ const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
             } else {
                 // Placeholder golfer for missing player
                 teamPlayers.push({
-                    name: `${golferName} (N/A)`,
+                    name: golferName,
                     status: '',
                     r1: { score: null, isLive: false },
                     r2: { score: null, isLive: false },

@@ -14,13 +14,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   
   //const [availablePlayers, setAvailablePlayers] = useState([]);
 
-  // States for creating a new tournament
-  const [newTournamentName, setNewTournamentName] = useState('');
-  const [newOrgId, setNewOrgId] = useState('');
-  const [newTournId, setNewTournId] = useState('');
-  const [newYear, setNewYear] = useState('');
-  const [newOddsId, setNewOddsId] = useState('');
-
   // States for adding a new team
   const [newTeamName, setNewTeamName] = useState('');
 
@@ -124,7 +117,12 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
         alert("A team with this name already exists!");
         return;
     }
-    setTeams([...teams, { name: newTeamName.trim(), golferNames: [], draftOrder: null }]);
+    setTeams([...teams, { 
+      name: newTeamName.trim(), 
+      golferNames: [], 
+      draftOrder: null,
+      participatesInAnnual: true // Default to participating in Annual Championship
+    }]);
     setNewTeamName('');
   };
 
@@ -211,6 +209,12 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     setTeams(updatedTeams);
   };
 
+  const handleAnnualParticipationChange = (teamIndex, participates) => {
+    const updatedTeams = [...teams];
+    updatedTeams[teamIndex].participatesInAnnual = participates;
+    setTeams(updatedTeams);
+  };
+
   const handleSaveTeams = async () => {
     if (!tournamentId) {
       alert("No tournament selected. Please select or create one to save teams.");
@@ -242,54 +246,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       alert(`Failed to save teams: ${error.message}`);
     } finally {
       setIsSaving(false);
-    }
-  };
-
-  const handleCreateTournament = async () => {
-    if (newTournamentName.trim() === '') {
-      alert("Please enter a name for the new tournament.");
-      return;
-    }
-    if (newOrgId.trim() === '' || newTournId.trim() === '' || newYear.trim() === '' || newOddsId.trim() === '') {
-        alert("Please enter values for Tournament Name, Org ID, Tourn ID, Year, or Odds ID.");
-        return;
-    }
-
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          name: newTournamentName.trim(),
-          orgId: newOrgId.trim(),
-          tournId: newTournId.trim(),
-          year: newYear.trim(),
-          oddsId: newOddsId.trim()
-        }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(`HTTP error! status: ${response.status}. ${errorData.error || errorData.message}`);
-      }
-
-      const newTourn = await response.json();
-      alert(`New tournament "${newTourn.name}" created with ID: ${newTourn.id}`);
-      setNewTournamentName('');
-      setNewOrgId('');
-      setNewTournId('');
-      setNewYear('');
-      setNewOddsId('');
-
-      if (onTournamentCreated) {
-        onTournamentCreated();
-      }
-
-    } catch (error) {
-      console.error("Error creating new tournament:", error);
-      alert(`Failed to create new tournament: ${error.message}`);
     }
   };
 
@@ -377,64 +333,9 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
   return (
     <div className="team-management-container">
-      <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Manage Teams</h1>
+      <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
 
-      {/* Create New Tournament UI - Applying Card and Grid Layout */}
-      <div className="tournament-form-card">
-        <h2 style={{marginTop: '0', marginBottom: '20px'}}>Create New Tournament</h2>
-        <div className="tournament-form-grid">
-            <div style={{width: '100%'}}>
-                <input
-                    type="text"
-                    placeholder="Tournament Name"
-                    value={newTournamentName}
-                    onChange={(e) => setNewTournamentName(e.target.value)}
-                    className="tournament-input"
-                />
-            </div>
-            <div style={{width: '100%'}}>
-                <input
-                    type="text"
-                    placeholder="Leaderboard Org ID"
-                    value={newOrgId}
-                    onChange={(e) => setNewOrgId(e.target.value)}
-                    className="tournament-input"
-                />
-            </div>
-            <div style={{width: '100%'}}>
-                <input
-                    type="text"
-                    placeholder="Leaderboard Tourn ID"
-                    value={newTournId}
-                    onChange={(e) => setNewTournId(e.target.value)}
-                    className="tournament-input"
-                />
-            </div>
-            <div style={{width: '100%'}}>
-                <input
-                    type="text"
-                    placeholder="Leaderboard Year"
-                    value={newYear}
-                    onChange={(e) => setNewYear(e.target.value)}
-                    className="tournament-input"
-                />
-            </div>
-            <div style={{width: '100%'}}>
-                <input
-                    type="text"
-                    placeholder="Odds API Tournament ID"
-                    value={newOddsId}
-                    onChange={(e) => setNewOddsId(e.target.value)}
-                    className="tournament-input"
-                />
-            </div>
-        </div>
-        <button onClick={handleCreateTournament} className="tournament-form-btn">
-          Create Tournament
-        </button>
-      </div>
-
-      {/* NEW: Draft Actions Section */}
+      {/* Draft Actions Section */}
       <div className="draft-actions-card">
         <h2 style={{marginTop: '0', marginBottom: '20px'}}>Draft Actions</h2>
 
@@ -559,6 +460,34 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                       textAlign: 'center'
                     }}
                   />
+                </div>
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '10px', 
+                  marginBottom: '10px',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'stretch' : 'center'
+                }}>
+                  <label style={{ 
+                    color: 'white', 
+                    fontSize: isMobile ? '1em' : '0.9em',
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: '8px',
+                    cursor: 'pointer'
+                  }}>
+                    <input
+                      type="checkbox"
+                      checked={team.participatesInAnnual !== false} // Default to true if undefined
+                      onChange={(e) => handleAnnualParticipationChange(teamIndex, e.target.checked)}
+                      style={{
+                        width: '16px',
+                        height: '16px',
+                        accentColor: '#4CAF50'
+                      }}
+                    />
+                    Annual Championship Participant
+                  </label>
                 </div>
                 <button
                   onClick={() => handleRemoveTeam(teamIndex)}

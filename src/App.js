@@ -1,8 +1,9 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
-import TeamManagement from './components/TeamManagement';
+import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
+import AnnualChampionship from './components/AnnualChampionship';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
 function App() {
@@ -64,7 +65,8 @@ function App() {
     };
   }, []);
 
-  const [showTeamManagement, setShowTeamManagement] = useState(false);
+  const [showSetup, setShowSetup] = useState(false);
+  const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
   const [loadingTournaments, setLoadingTournaments] = useState(true);
@@ -260,7 +262,8 @@ function App() {
 
   // Modify onClick for Show Leaderboard to update leaderboardRefreshKey
   const handleShowLeaderboardClick = () => {
-    setShowTeamManagement(false);
+    setShowSetup(false);
+    setShowAnnualChampionship(false);
     setLeaderboardRefreshKey(prev => prev + 1);
   };
 
@@ -448,48 +451,112 @@ function App() {
 
   return (
     <div className="App">
-      <header className="App-header">
-        <h1>Alumni Golf Tournament</h1>
-        {/* Tournament Selector */}
-        <div>
-          
-          <select
-            id="tournament-select"
-            value={selectedTournamentId}
-            onChange={(e) => {
-              const newTournamentId = e.target.value;
-              console.log('Tournament selection changed to:', newTournamentId);
-              setSelectedTournamentId(newTournamentId);
-              setLeaderboardRefreshKey(prev => prev + 1);
-              // Don't trigger tournament re-fetch when user manually selects a tournament
-            }}
-          >
-            {tournaments.length === 0 ? (
-              <option value="">No Tournaments Available</option>
-            ) : (
-              tournaments.map((tournament) => (
-                <option key={tournament.id} value={tournament.id}>
-                  {tournament.name}
-                </option>
-              ))
-            )}
-          </select>
+      <header className="modern-header">
+        <div className="header-container">
+          {/* Logo/Brand Section */}
+          <div className="brand-section">
+            <div className="logo-container">
+              <div className="wv-golf-logo">
+                <span className="golf-icon">⛳</span>
+              </div>
+            </div>
+            <div className="brand-text">
+              <h1 className="app-title">Alumni Golf Tournament</h1>
+              <p className="app-subtitle">West Virginia</p>
+            </div>
+          </div>
+
+          {/* Tournament Selector Section */}
+          <div className="tournament-section">
+            <label htmlFor="tournament-select" className="tournament-label">
+              Select Tournament
+            </label>
+            <div className="select-wrapper">
+              <select
+                id="tournament-select"
+                className="modern-select"
+                value={selectedTournamentId}
+                onChange={(e) => {
+                  const newTournamentId = e.target.value;
+                  console.log('Tournament selection changed to:', newTournamentId);
+                  setSelectedTournamentId(newTournamentId);
+                  setLeaderboardRefreshKey(prev => prev + 1);
+                }}
+              >
+                {tournaments.length === 0 ? (
+                  <option value="">No Tournaments Available</option>
+                ) : (
+                  tournaments.map((tournament) => (
+                    <option key={tournament.id} value={tournament.id}>
+                      {tournament.name}
+                    </option>
+                  ))
+                )}
+              </select>
+              <span className="select-arrow">▼</span>
+            </div>
+          </div>
+
+          {/* Navigation Section */}
+          <nav className="modern-nav">
+            <button 
+              className={`nav-button ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={handleShowLeaderboardClick} 
+              disabled={!selectedTournamentId}
+            >
+              <span className="button-icon">📊</span>
+              <span className="button-text">Leaderboard</span>
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => {
+                setShowSetup(true);
+                setShowAnnualChampionship(false);
+              }}
+            >
+              <span className="button-icon">⚙️</span>
+              <span className="button-text">Setup</span>
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => {
+                setShowAnnualChampionship(true);
+                setShowSetup(false);
+              }}
+            >
+              <span className="button-icon">🏆</span>
+              <span className="button-text">Annual Championship</span>
+            </button>
+          </nav>
         </div>
 
-        {/* Navigation Buttons */}
-        <nav style={{ margin: '10px 0' }}>
-          <button onClick={handleShowLeaderboardClick} disabled={!selectedTournamentId}>
-            Leaderboard
-          </button>
-          <button onClick={() => setShowTeamManagement(true)} disabled={!selectedTournamentId}>
-            Manage Teams
-          </button>
-        </nav>
+        {/* Tournament Status Bar */}
+        {selectedTournamentId && (
+          <div className="status-bar">
+            <div className="status-container">
+              <div className="status-item">
+                <span className="status-label">Status:</span>
+                <span className={`status-value ${draftStatus.IsDraftComplete ? 'complete' : draftStatus.IsDraftStarted ? 'active' : 'pending'}`}>
+                  {draftStatus.IsDraftComplete ? 'Draft Complete' : 
+                   draftStatus.IsDraftStarted ? 'Draft In Progress' : 'Draft Pending'}
+                </span>
+              </div>
+              {draftStatus.IsDraftComplete && (
+                <div className="status-item">
+                  <span className="status-label">Tournament:</span>
+                  <span className={`status-value ${isTournamentInProgress ? 'live' : 'upcoming'}`}>
+                    {isTournamentInProgress ? 'Live' : 'Upcoming'}
+                  </span>
+                </div>
+              )}
+            </div>
+          </div>
+        )}
       </header>
 
       {selectedTournamentId ? (
-        showTeamManagement ? (
-          <TeamManagement
+        showSetup ? (
+          <Setup
             tournamentId={selectedTournamentId}
             onTournamentCreated={handleDataUpdated}
             onTeamsSaved={handleDataUpdated}
@@ -499,6 +566,8 @@ function App() {
             onDraftStarted={handleDataUpdated}
             onManualOddsUpdated={handleDataUpdated}
           />
+        ) : showAnnualChampionship ? (
+          <AnnualChampionship />
         ) : (
           <main>
             {draftStatusLoading ? (
@@ -522,21 +591,6 @@ function App() {
                 <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {effectiveError}</div>
               ) : sortedLeaderboardData.length > 0 ? (
                 <>
-                  {!isTournamentInProgress && draftStatus.IsDraftComplete && (
-                    <div style={{ 
-                      textAlign: 'center', 
-                      padding: '20px', 
-                      margin: '20px 0',
-                      backgroundColor: '#2a2a2a',
-                      borderRadius: '8px',
-                      border: '1px solid #555'
-                    }}>
-                      <h3 style={{ color: '#FFD700', margin: '0 0 10px 0' }}>Draft Complete - Tournament Awaiting Start</h3>
-                      <p style={{ color: '#ccc', margin: 0 }}>
-                        All teams have been drafted and are ready to compete. Scores will appear once the tournament begins.
-                      </p>
-                    </div>
-                  )}
                   <table className="leaderboard-table">
                   <thead>
                     <tr>
@@ -608,10 +662,28 @@ function App() {
           </main>
         )
       ) : (
-        <div style={{ padding: '20px', textAlign: 'center' }}>
-          Please create or select a tournament to get started.
-          <br /><br />
-        </div>
+        showSetup ? (
+          <Setup
+            tournamentId={null}
+            onTournamentCreated={handleDataUpdated}
+            onTeamsSaved={handleDataUpdated}
+            tournamentOddsId={null}
+            isDraftStarted={false}
+            hasManualDraftOdds={false}
+            onDraftStarted={handleDataUpdated}
+            onManualOddsUpdated={handleDataUpdated}
+          />
+        ) : showAnnualChampionship ? (
+          <AnnualChampionship />
+        ) : (
+          <div style={{ padding: '20px', textAlign: 'center' }}>
+            Please create or select a tournament to get started.
+            <br /><br />
+            <p style={{ color: '#ccc', fontSize: '0.9rem' }}>
+              You can manage Global Teams in Setup or view the Annual Championship anytime using the buttons above.
+            </p>
+          </div>
+        )
       )}
     </div>
   );
