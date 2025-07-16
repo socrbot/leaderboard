@@ -1,20 +1,16 @@
 // src/components/GlobalTeamsManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { BACKEND_BASE_URL, PLAYER_ODDS_API_ENDPOINT } from '../apiConfig';
+import { BACKEND_BASE_URL } from '../apiConfig';
 import '../App.css';
 
 const GlobalTeamsManagement = () => {
   const [globalTeams, setGlobalTeams] = useState([]);
-  const [allPlayersWithOdds, setAllPlayersWithOdds] = useState([]);
   const [newTeamName, setNewTeamName] = useState('');
-  const [searchTerms, setSearchTerms] = useState({});
-  const [playerLoading, setPlayerLoading] = useState(false);
-  const [playerError, setPlayerError] = useState(null);
 
   // Load global teams
   const loadGlobalTeams = useCallback(async () => {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams`);
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams`);
       if (!response.ok) {
         throw new Error(`Failed to fetch global teams: ${response.status}`);
       }
@@ -25,45 +21,22 @@ const GlobalTeamsManagement = () => {
     }
   }, []);
 
-  // Load players with odds (for demo purposes, using a sample tournament)
-  const loadPlayersWithOdds = useCallback(async () => {
-    setPlayerLoading(true);
-    setPlayerError(null);
-    try {
-      // Use a default tournament for player odds (you may want to make this configurable)
-      const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=497`);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch player odds: ${response.status}`);
-      }
-      const playersData = await response.json();
-      setAllPlayersWithOdds(playersData || []);
-    } catch (error) {
-      console.error('Error loading players:', error);
-      setPlayerError(error.message);
-    } finally {
-      setPlayerLoading(false);
-    }
-  }, []);
-
   // Initial load
   useEffect(() => {
     loadGlobalTeams();
-    loadPlayersWithOdds();
-  }, [loadGlobalTeams, loadPlayersWithOdds]);
+  }, [loadGlobalTeams]);
 
   // Add new team
   const handleAddTeam = async () => {
     if (!newTeamName.trim()) return;
 
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newTeamName.trim(),
-          golferNames: [],
-          participatesInAnnual: true,
-          draftOrder: globalTeams.length + 1
+          participatesInAnnual: true
         })
       });
 
@@ -83,7 +56,7 @@ const GlobalTeamsManagement = () => {
   // Update team
   const updateTeam = async (teamId, updateData) => {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams/${teamId}`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams/${teamId}`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(updateData)
@@ -106,7 +79,7 @@ const GlobalTeamsManagement = () => {
     if (!window.confirm('Are you sure you want to delete this team?')) return;
 
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams/${teamId}`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams/${teamId}`, {
         method: 'DELETE'
       });
 
@@ -138,38 +111,6 @@ const GlobalTeamsManagement = () => {
   // Handle annual participation change
   const handleAnnualParticipationChange = async (teamId, participates) => {
     await updateTeam(teamId, { participatesInAnnual: participates });
-  };
-
-  // Handle draft order change
-  const handleDraftOrderChange = async (teamId, newOrder) => {
-    await updateTeam(teamId, { draftOrder: parseInt(newOrder) || 0 });
-  };
-
-  // Handle golfer assignment
-  const handleAddGolferToTeam = async (teamId, golferName) => {
-    const team = globalTeams.find(t => t.id === teamId);
-    if (!team) return;
-
-    const updatedGolfers = [...(team.golferNames || []), golferName];
-    await updateTeam(teamId, { golferNames: updatedGolfers });
-  };
-
-  // Handle golfer removal
-  const handleRemoveGolferFromTeam = async (teamId, golferIndex) => {
-    const team = globalTeams.find(t => t.id === teamId);
-    if (!team) return;
-
-    const updatedGolfers = [...(team.golferNames || [])];
-    updatedGolfers.splice(golferIndex, 1);
-    await updateTeam(teamId, { golferNames: updatedGolfers });
-  };
-
-  // Filter players for search
-  const getFilteredPlayers = (teamId) => {
-    const searchTerm = searchTerms[teamId] || '';
-    return allPlayersWithOdds.filter(player => 
-      player.name.toLowerCase().includes(searchTerm.toLowerCase())
-    );
   };
 
   return (
@@ -232,89 +173,6 @@ const GlobalTeamsManagement = () => {
                   >
                     ✕
                   </button>
-                </div>
-
-                {/* Draft Order */}
-                <div className="draft-order-section">
-                  <label>
-                    Draft Order:
-                    <input
-                      type="number"
-                      value={team.draftOrder || 0}
-                      onChange={(e) => handleDraftOrderChange(team.id, e.target.value)}
-                      min="0"
-                      className="draft-order-input"
-                    />
-                  </label>
-                </div>
-
-                {/* Golfers Section */}
-                <div className="golfers-section">
-                  <h4>Golfers ({(team.golferNames || []).length}/4)</h4>
-                  
-                  {/* Current Golfers */}
-                  <div className="current-golfers">
-                    {(team.golferNames || []).map((golferName, index) => (
-                      <div key={index} className="golfer-item">
-                        <span>{golferName}</span>
-                        <button
-                          onClick={() => handleRemoveGolferFromTeam(team.id, index)}
-                          className="remove-golfer-btn"
-                          title="Remove golfer"
-                        >
-                          ✕
-                        </button>
-                      </div>
-                    ))}
-                  </div>
-
-                  {/* Add Golfer Section */}
-                  {(team.golferNames || []).length < 4 && (
-                    <div className="add-golfer-section">
-                      <input
-                        type="text"
-                        placeholder="Search golfers..."
-                        value={searchTerms[team.id] || ''}
-                        onChange={(e) => setSearchTerms(prev => ({
-                          ...prev,
-                          [team.id]: e.target.value
-                        }))}
-                        className="golfer-search-input"
-                      />
-                      
-                      {searchTerms[team.id] && (
-                        <div className="golfer-dropdown">
-                          {playerLoading ? (
-                            <div className="dropdown-item">Loading players...</div>
-                          ) : playerError ? (
-                            <div className="dropdown-item error">Error: {playerError}</div>
-                          ) : (
-                            getFilteredPlayers(team.id)
-                              .filter(player => !(team.golferNames || []).includes(player.name))
-                              .slice(0, 5)
-                              .map((player, index) => (
-                                <div
-                                  key={index}
-                                  className="dropdown-item"
-                                  onClick={() => {
-                                    handleAddGolferToTeam(team.id, player.name);
-                                    setSearchTerms(prev => ({ ...prev, [team.id]: '' }));
-                                  }}
-                                >
-                                  {player.name}
-                                  {player.averageOdds && (
-                                    <span className="odds"> ({player.averageOdds > 0 ? '+' : ''}{player.averageOdds})</span>
-                                  )}
-                                </div>
-                              ))
-                          )}
-                          {!playerLoading && !playerError && getFilteredPlayers(team.id).length === 0 && (
-                            <div className="dropdown-item">No players found</div>
-                          )}
-                        </div>
-                      )}
-                    </div>
-                  )}
                 </div>
               </div>
             ))}

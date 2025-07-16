@@ -1174,19 +1174,6 @@ select:focus {
   background: #b71c1c;
 }
 
-.draft-order-section {
-  margin-bottom: 15px;
-}
-
-.draft-order-input {
-  width: 60px;
-  padding: 4px 8px;
-  margin-left: 8px;
-  border: 1px solid rgba(46, 125, 50, 0.3);
-  border-radius: 4px;
-  background: rgba(255, 255, 255, 0.9);
-}
-
 .golfers-section h4 {
   margin: 0 0 10px 0;
   color: #2e7d32;

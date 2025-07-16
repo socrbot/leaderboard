@@ -17,7 +17,17 @@ const getHighestNonCutScore = (leaderboardRows, roundNumber) => {
   leaderboardRows.forEach(row => {
     // Exclude cut and withdrawn players
     if (row.status !== 'cut' && row.status !== 'wd') {
-      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      // Try to find by roundId first
+      let round = row.rounds && row.rounds.find(r => {
+        const id = parseInt(r.roundId?.$numberInt || r.roundId);
+        return !isNaN(id) && id === roundNumber;
+      });
+      
+      // If roundId is not available or empty, use array index (0-based to 1-based)
+      if (!round && row.rounds && row.rounds.length >= roundNumber) {
+        round = row.rounds[roundNumber - 1];
+      }
+      
       if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
         const scoreToPar = parseNumericScore(round.scoreToPar);
         if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
@@ -29,7 +39,17 @@ const getHighestNonCutScore = (leaderboardRows, roundNumber) => {
   // If no valid score found, fallback to highest available scoreToPar for the round
   if (highestScoreToPar === null) {
     leaderboardRows.forEach(row => {
-      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
+      // Try to find by roundId first
+      let round = row.rounds && row.rounds.find(r => {
+        const id = parseInt(r.roundId?.$numberInt || r.roundId);
+        return !isNaN(id) && id === roundNumber;
+      });
+      
+      // If roundId is not available or empty, use array index (0-based to 1-based)
+      if (!round && row.rounds && row.rounds.length >= roundNumber) {
+        round = row.rounds[roundNumber - 1];
+      }
+      
       if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
         const scoreToPar = parseNumericScore(round.scoreToPar);
         if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
@@ -52,7 +72,17 @@ const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
             ];
             penalties.forEach(({ round, value }) => {
                 if (value !== null) {
-                    const roundIdx = newRounds.findIndex(r => parseInt(r.roundId?.$numberInt || r.roundId) === round);
+                    // Try to find by roundId first
+                    let roundIdx = newRounds.findIndex(r => {
+                        const id = parseInt(r.roundId?.$numberInt || r.roundId);
+                        return !isNaN(id) && id === round;
+                    });
+                    
+                    // If roundId is not available, use array index (0-based to 1-based)
+                    if (roundIdx === -1 && newRounds.length >= round) {
+                        roundIdx = round - 1;
+                    }
+                    
                     const patchedRound = {
                         courseId: newRounds[0]?.courseId || "608",
                         courseName: newRounds[0]?.courseName || "Unknown",
@@ -68,9 +98,12 @@ const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
                     }
                 }
             });
-            newRounds = newRounds.sort((a, b) =>
-                parseInt(a.roundId?.$numberInt || a.roundId) - parseInt(b.roundId?.$numberInt || b.roundId)
-            );
+            newRounds = newRounds.sort((a, b) => {
+                const aId = parseInt(a.roundId?.$numberInt || a.roundId);
+                const bId = parseInt(b.roundId?.$numberInt || b.roundId);
+                // If roundId is not available, use array index
+                return (!isNaN(aId) && !isNaN(bId)) ? aId - bId : 0;
+            });
             return { ...player, rounds: newRounds };
         }
         return player;
@@ -80,12 +113,24 @@ const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
 // Helper function to get golfer round score (simplified version)
 const getGolferRoundScore = (player, roundNum, currentPar) => {
     if (player.rounds && Array.isArray(player.rounds)) {
-        const round = player.rounds.find(r => parseInt(r.roundId?.$numberInt || r.roundId) === roundNum);
+        // Try to find by roundId first
+        let round = player.rounds.find(r => {
+            const id = parseInt(r.roundId?.$numberInt || r.roundId);
+            return !isNaN(id) && id === roundNum;
+        });
+        
+        // If roundId is not available or empty, use array index (0-based to 1-based)
+        if (!round && player.rounds.length >= roundNum) {
+            round = player.rounds[roundNum - 1];
+        }
+        
         if (round && round.strokes !== undefined && round.strokes !== null) {
             const strokes = typeof round.strokes === 'object' && round.strokes.$numberInt !== undefined
-                ? round.strokes.$numberInt
-                : round.strokes;
-            return { score: parseNumericScore(strokes) - currentPar, isLive: false };
+                ? parseInt(round.strokes.$numberInt)
+                : parseInt(round.strokes);
+            if (!isNaN(strokes)) {
+                return { score: strokes - currentPar, isLive: false };
+            }
         }
     }
     return { score: null, isLive: false };
@@ -106,7 +151,7 @@ const sumBestNScores = (scoresArray, n) => {
 // Function to fetch global teams that participate in annual championship
 const fetchGlobalAnnualTeams = async () => {
     try {
-        const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams`);
+        const response = await fetch(`${BACKEND_BASE_URL}/global_teams`);
         if (!response.ok) {
             throw new Error(`Failed to fetch global teams: ${response.status}`);
         }
@@ -123,12 +168,8 @@ const fetchGlobalAnnualTeams = async () => {
 const transformPlayersToTeams = (players, teamAssignments, currentPar) => {
     const teamsData = [];
 
-    // Only process teams that participate in the Annual Championship
-    const annualTeams = (teamAssignments || []).filter(teamDef => 
-        teamDef.participatesInAnnual !== false // Default to true if undefined
-    );
-
-    annualTeams.forEach(teamDef => {
+    // Process all provided teams (already filtered to annual participants)
+    (teamAssignments || []).forEach(teamDef => {
         const teamPlayers = [];
         let teamRoundsRelative = { r1: [], r2: [], r3: [], r4: [] };
 
@@ -203,10 +244,12 @@ const AnnualChampionship = () => {
       setLoading(true);
       setError(null);
       try {
+        console.log('🔍 Annual Championship: Starting to fetch tournaments...');
         const response = await fetch(TOURNAMENTS_API_ENDPOINT);
         if (!response.ok) throw new Error('Failed to fetch tournaments');
         
         const allTournaments = await response.json();
+        console.log('📅 Annual Championship: Found tournaments:', allTournaments.length);
         
         // Filter tournaments by year and only include completed drafts
         const yearTournaments = allTournaments.filter(tournament => {
@@ -219,6 +262,7 @@ const AnnualChampionship = () => {
         const tournamentDetails = await Promise.all(
           yearTournaments.map(async (tournament) => {
             try {
+              console.log(`🏌️ Annual Championship: Processing tournament ${tournament.name} (${tournament.id})`);
               // Get full tournament data first
               const tournamentResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}`);
               const fullTournamentData = await tournamentResponse.json();
@@ -230,7 +274,10 @@ const AnnualChampionship = () => {
                 new Date(fullTournamentData.date).getFullYear() :
                 selectedYear; // Default to selected year if no date info
               
+              console.log(`📅 Tournament ${tournament.name} year: ${tournamentYear} (looking for ${selectedYear})`);
+              
               if (tournamentYear !== selectedYear) {
+                console.log(`⏭️ Skipping ${tournament.name} - wrong year`);
                 return null;
               }
               
@@ -238,7 +285,10 @@ const AnnualChampionship = () => {
               const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
               const status = await statusResponse.json();
               
+              console.log(`📝 Draft status for ${tournament.name}:`, status);
+              
               if (!status.IsDraftComplete) {
+                console.log(`⏭️ Skipping ${tournament.name} - draft not complete`);
                 return null;
               }
 
@@ -297,12 +347,24 @@ const AnnualChampionship = () => {
                 round4Penalty
               );
               
-              // Transform players to teams using global annual teams
-              const globalAnnualTeams = await fetchGlobalAnnualTeams();
-              console.log(`Global annual teams:`, globalAnnualTeams.length, 'teams');
+              // Get the tournament's team assignments
+              const tournamentTeams = fullTournamentData.teams || [];
+              console.log(`Tournament teams for ${tournament.name}:`, tournamentTeams.length, 'teams');
               
-              const teamLeaderboardData = transformPlayersToTeams(patchedPlayers, globalAnnualTeams, currentPar);
-              console.log(`Team leaderboard data for ${tournament.name}:`, teamLeaderboardData);
+              // Get global annual teams to filter which teams participate
+              const globalAnnualTeams = await fetchGlobalAnnualTeams();
+              const annualTeamNames = globalAnnualTeams.map(team => team.name);
+              console.log(`Global annual team names:`, annualTeamNames);
+              
+              // Filter tournament teams to only include those that participate in annual championship
+              const annualTournamentTeams = tournamentTeams.filter(team => 
+                annualTeamNames.includes(team.name)
+              );
+              console.log(`🏆 Annual tournament teams for ${tournament.name}:`, annualTournamentTeams.length, 'teams');
+              console.log(`🏆 Annual tournament teams detail:`, annualTournamentTeams);
+              
+              const teamLeaderboardData = transformPlayersToTeams(patchedPlayers, annualTournamentTeams, currentPar);
+              console.log(`📊 Team leaderboard data for ${tournament.name}:`, teamLeaderboardData);
               
               return {
                 ...tournament,
@@ -312,20 +374,22 @@ const AnnualChampionship = () => {
                 hasLeaderboard: true
               };
             } catch (error) {
-              console.error(`Error fetching data for tournament ${tournament.id}:`, error);
+              console.error(`💥 Error fetching data for tournament ${tournament.id}:`, error);
               return null;
             }
           })
         );
 
         const validTournaments = tournamentDetails.filter(Boolean);
+        console.log(`✅ Valid tournaments for Annual Championship:`, validTournaments.length);
+        console.log(`📋 Valid tournaments detail:`, validTournaments.map(t => ({name: t.name, hasLeaderboard: t.hasLeaderboard, teamCount: t.leaderboardData?.length || 0})));
         setTournaments(validTournaments);
         
         // Calculate annual standings
         calculateAnnualStandings(validTournaments);
         
       } catch (error) {
-        console.error('Error fetching tournaments:', error);
+        console.error('💥 Error fetching tournaments:', error);
         setError('Failed to load annual championship data');
       } finally {
         setLoading(false);
@@ -336,6 +400,7 @@ const AnnualChampionship = () => {
   }, [selectedYear]);
 
   const calculateAnnualStandings = (tournaments) => {
+    console.log(`🧮 Calculating annual standings from ${tournaments.length} tournaments...`);
     const teamScores = {};
 
     // Process each tournament
@@ -385,7 +450,9 @@ const AnnualChampionship = () => {
 
   const availableYears = useMemo(() => {
     const currentYear = new Date().getFullYear();
-    return [currentYear - 2, currentYear - 1, currentYear];
+    // Only show 2025 and later years
+    const startYear = Math.max(2025, currentYear);
+    return [startYear];
   }, []);
 
   if (loading) {

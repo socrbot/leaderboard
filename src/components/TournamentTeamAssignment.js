@@ -12,7 +12,7 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
   // Load global teams
   const loadGlobalTeams = useCallback(async () => {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/global_teams`);
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams`);
       if (!response.ok) {
         throw new Error(`Failed to fetch global teams: ${response.status}`);
       }
@@ -29,7 +29,7 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
     
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/api/tournaments/${tournamentId}/team_assignments`);
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/team_assignments`);
       if (!response.ok) {
         throw new Error(`Failed to fetch team assignments: ${response.status}`);
       }
@@ -70,7 +70,7 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
         globalTeamId: teamId
       }));
 
-      const response = await fetch(`${BACKEND_BASE_URL}/api/tournaments/${tournamentId}/team_assignments`, {
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/team_assignments`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teamAssignments })
@@ -91,7 +91,7 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
           draftOrder: team.draftOrder || 0
         }));
 
-      const legacyResponse = await fetch(`${BACKEND_BASE_URL}/api/tournaments/${tournamentId}/teams`, {
+      const legacyResponse = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/teams`, {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ teams: legacyTeams })
