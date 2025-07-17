@@ -1052,3 +1052,874 @@ select:focus {
   }
 }
 
+/* Setup Component Styles */
+.setup-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem;
+  background: #f8f9fa;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.setup-header {
+  text-align: center;
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  color: white;
+  border-radius: 8px;
+}
+
+.setup-header h2 {
+  margin: 0 0 0.5rem 0;
+  font-size: 2rem;
+  font-weight: 600;
+}
+
+.setup-subtitle {
+  margin: 0;
+  font-size: 1.1rem;
+  opacity: 0.9;
+}
+
+/* Tab Navigation */
+.setup-tabs {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 2rem;
+  background: white;
+  padding: 0.5rem;
+  border-radius: 8px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  overflow-x: auto;
+}
+
+.setup-tab {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1rem;
+  background: #f3f4f6;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+  min-width: fit-content;
+}
+
+.setup-tab:hover {
+  background: #e5e7eb;
+}
+
+.setup-tab.active {
+  background: #3b82f6;
+  color: white;
+}
+
+.setup-tab.disabled {
+  background: #d1d5db;
+  color: #6b7280;
+  cursor: not-allowed;
+}
+
+.tab-icon {
+  font-size: 1.2rem;
+}
+
+.tab-label {
+  font-weight: 500;
+}
+
+.tab-requirement {
+  font-size: 0.7rem;
+  background: rgba(255, 255, 255, 0.2);
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  margin-left: 0.5rem;
+}
+
+/* Setup Content */
+.setup-content {
+  background: white;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+/* Setup Help */
+.setup-help {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.help-section h4 {
+  color: #0369a1;
+  margin: 0 0 1rem 0;
+  font-size: 1.1rem;
+}
+
+.help-section ol {
+  margin: 0;
+  padding-left: 1.5rem;
+}
+
+.help-section li {
+  margin-bottom: 0.5rem;
+  line-height: 1.5;
+}
+
+.help-section strong {
+  color: #0369a1;
+}
+
+/* Tournament Creation Form Styles */
+.tournament-form {
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.form-group {
+  margin-bottom: 1.5rem;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 0.5rem;
+  font-weight: 500;
+  color: #374151;
+}
+
+.form-group input[type="text"],
+.form-group input[type="number"],
+.form-group select {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s ease;
+}
+
+.form-group input:focus,
+.form-group select:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-actions {
+  display: flex;
+  gap: 1rem;
+  justify-content: center;
+  margin-top: 2rem;
+}
+
+.btn-primary {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-primary:hover {
+  background: #2563eb;
+}
+
+.btn-primary:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #6b7280;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s ease;
+}
+
+.btn-secondary:hover {
+  background: #4b5563;
+}
+
+/* Global Teams Management */
+.teams-section {
+  margin-bottom: 2rem;
+}
+
+.teams-section h3 {
+  color: #374151;
+  margin-bottom: 1rem;
+  font-size: 1.3rem;
+}
+
+.team-add-form {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.team-add-form input {
+  flex: 1;
+  min-width: 200px;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+}
+
+.team-add-form button {
+  padding: 0.5rem 1rem;
+  background: #10b981;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.team-add-form button:hover {
+  background: #059669;
+}
+
+.teams-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+  gap: 1rem;
+}
+
+.team-card {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  padding: 1rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.team-card h4 {
+  margin: 0;
+  color: #374151;
+}
+
+.team-actions {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.btn-danger {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+/* Team Assignment Styles */
+.assignment-section {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 2rem;
+  margin-bottom: 2rem;
+}
+
+.available-teams,
+.selected-teams {
+  background: #f9fafb;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+}
+
+.available-teams h3,
+.selected-teams h3 {
+  margin-top: 0;
+  color: #374151;
+}
+
+.team-list {
+  max-height: 300px;
+  overflow-y: auto;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  background: white;
+}
+
+.team-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.team-item:last-child {
+  border-bottom: none;
+}
+
+.team-item button {
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.875rem;
+}
+
+.add-team-btn {
+  background: #10b981;
+  color: white;
+}
+
+.add-team-btn:hover {
+  background: #059669;
+}
+
+.remove-team-btn {
+  background: #ef4444;
+  color: white;
+}
+
+.remove-team-btn:hover {
+  background: #dc2626;
+}
+
+/* Draft Management Styles */
+.draft-section {
+  margin-bottom: 2rem;
+}
+
+.draft-controls {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.odds-status {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 6px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.odds-status.locked {
+  background: #dcfce7;
+  border-color: #10b981;
+}
+
+.odds-status h4 {
+  margin: 0 0 0.5rem 0;
+  color: #92400e;
+}
+
+.odds-status.locked h4 {
+  color: #047857;
+}
+
+/* Team Management / Draft Management Specific Styles */
+.team-management-container {
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.draft-actions-card {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.draft-actions-card h3 {
+  color: #0369a1;
+  margin: 0 0 1rem 0;
+  font-size: 1.3rem;
+}
+
+.draft-clear-btn {
+  background: #f59e0b;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.draft-clear-btn:hover {
+  background: #d97706;
+}
+
+.draft-action-btn {
+  background: #3b82f6;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  margin-right: 1rem;
+  margin-bottom: 0.5rem;
+}
+
+.draft-action-btn:hover {
+  background: #2563eb;
+}
+
+.draft-action-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+.teams-flex-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.team-card {
+  background: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1.5rem;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.team-card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.team-card-header h4 {
+  margin: 0;
+  color: #374151;
+  font-size: 1.2rem;
+}
+
+.team-remove-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.5rem;
+  border-radius: 4px;
+  cursor: pointer;
+  font-size: 0.875rem;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.team-remove-btn:hover {
+  background: #dc2626;
+}
+
+.team-card-golfers {
+  margin-bottom: 1rem;
+}
+
+.team-golfer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  max-height: 200px;
+  overflow-y: auto;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  background: #f9fafb;
+}
+
+.team-golfer-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-bottom: 1px solid #e5e7eb;
+  font-size: 0.9rem;
+}
+
+.team-golfer-list li:last-child {
+  border-bottom: none;
+}
+
+.team-golfer-remove-btn {
+  background: #ef4444;
+  color: white;
+  border: none;
+  padding: 0.25rem 0.5rem;
+  border-radius: 3px;
+  cursor: pointer;
+  font-size: 0.75rem;
+}
+
+.team-golfer-remove-btn:hover {
+  background: #dc2626;
+}
+
+.team-card-search {
+  position: relative;
+}
+
+.team-search-input {
+  width: 100%;
+  padding: 0.5rem;
+  border: 1px solid #d1d5db;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.team-search-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.team-search-list {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  right: 0;
+  background: white;
+  border: 1px solid #d1d5db;
+  border-top: none;
+  border-radius: 0 0 6px 6px;
+  max-height: 200px;
+  overflow-y: auto;
+  z-index: 10;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+.team-search-list li {
+  padding: 0.5rem 0.75rem;
+  cursor: pointer;
+  border-bottom: 1px solid #f3f4f6;
+  font-size: 0.85rem;
+  transition: background-color 0.2s ease;
+}
+
+.team-search-list li:hover {
+  background: #f3f4f6;
+}
+
+.team-search-list li:last-child {
+  border-bottom: none;
+}
+
+.save-teams-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: 600;
+  font-size: 1.1rem;
+  display: block;
+  margin: 2rem auto 0;
+  transition: background-color 0.2s ease;
+}
+
+.save-teams-btn:hover {
+  background: #059669;
+}
+
+.save-teams-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Tournament Team Assignment Specific Styles */
+.tournament-team-assignment {
+  max-width: 1000px;
+  margin: 0 auto;
+}
+
+.tournament-team-assignment h3 {
+  color: #374151;
+  margin-bottom: 0.5rem;
+  font-size: 1.5rem;
+}
+
+.no-teams-message {
+  background: #fef3c7;
+  border: 1px solid #f59e0b;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+  color: #92400e;
+}
+
+.team-selection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+  gap: 1rem;
+  margin-bottom: 2rem;
+}
+
+.team-selection-card {
+  background: white;
+  border: 2px solid #e5e7eb;
+  border-radius: 8px;
+  padding: 1rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.team-selection-card:hover {
+  border-color: #3b82f6;
+  box-shadow: 0 2px 8px rgba(59, 130, 246, 0.1);
+}
+
+.team-selection-card.selected {
+  border-color: #10b981;
+  background: #f0fdf4;
+  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
+}
+
+.team-selection-label {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.team-selection-label input[type="checkbox"] {
+  margin-top: 0.25rem;
+  width: 18px;
+  height: 18px;
+  cursor: pointer;
+}
+
+.team-info {
+  flex: 1;
+}
+
+.team-info h4 {
+  margin: 0 0 0.5rem 0;
+  color: #374151;
+  font-size: 1.1rem;
+}
+
+.team-details {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  flex-wrap: wrap;
+}
+
+.golfer-count {
+  background: #e5e7eb;
+  color: #374151;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.annual-badge {
+  background: #fbbf24;
+  color: #92400e;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.golfer-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.25rem;
+}
+
+.golfer-name {
+  background: #f3f4f6;
+  color: #374151;
+  padding: 0.2rem 0.4rem;
+  border-radius: 3px;
+  font-size: 0.75rem;
+}
+
+.assignment-summary {
+  background: #f0f9ff;
+  border: 1px solid #0ea5e9;
+  border-radius: 8px;
+  padding: 1.5rem;
+  text-align: center;
+}
+
+.assignment-summary h4 {
+  color: #0369a1;
+  margin: 0 0 1rem 0;
+  font-size: 1.2rem;
+}
+
+.save-assignments-btn {
+  background: #10b981;
+  color: white;
+  border: none;
+  padding: 0.75rem 2rem;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 1rem;
+}
+
+.save-assignments-btn:hover {
+  background: #059669;
+}
+
+.save-assignments-btn:disabled {
+  background: #9ca3af;
+  cursor: not-allowed;
+}
+
+/* Mobile Responsive Styles for Setup Components */
+@media (max-width: 768px) {
+  /* Tournament Creation Mobile */
+  .form-grid {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .help-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  /* Global Teams Management Mobile */
+  .add-team-section .form-group {
+    flex-direction: column;
+  }
+  
+  .add-team-section input {
+    min-width: unset;
+  }
+  
+  .team-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.75rem;
+  }
+  
+  .annual-participation-label {
+    justify-content: center;
+  }
+  
+  /* Team Management Mobile */
+  .teams-flex-container {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+  
+  .team-card-header {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+  
+  .team-remove-btn {
+    align-self: flex-end;
+    width: auto;
+    padding: 0.5rem 1rem;
+  }
+  
+  /* Tournament Team Assignment Mobile */
+  .team-selection-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .team-details {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+}
+
+@media (max-width: 480px) {
+  /* Setup Container Mobile */
+  .setup-container {
+    padding: 0.25rem;
+    margin: 0;
+    border-radius: 0;
+  }
+  
+  .setup-header {
+    padding: 1rem 0.5rem;
+  }
+  
+  .setup-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .setup-subtitle {
+    font-size: 0.9rem;
+  }
+  
+  .setup-content {
+    padding: 1rem 0.5rem;
+  }
+  
+  /* Tournament Creation Small Mobile */
+  .tournament-creation h3 {
+    font-size: 1.2rem;
+  }
+  
+  .api-help {
+    padding: 1rem;
+  }
+  
+  /* Team Management Small Mobile */
+  .draft-actions-card {
+    padding: 1rem;
+  }
+  
+  .team-card {
+    padding: 1rem;
+  }
+  
+  .team-golfer-list {
+    max-height: 150px;
+  }
+  
+  /* Global Teams Small Mobile */
+  .team-management h2 {
+    font-size: 1.4rem;
+  }
+  
+  .add-team-section {
+    padding: 1rem;
+  }
+}
+
