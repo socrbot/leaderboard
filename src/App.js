@@ -510,22 +510,23 @@ function App() {
             <button 
               className="nav-button"
               onClick={() => {
-                setShowSetup(true);
-                setShowAnnualChampionship(false);
-              }}
-            >
-              <span className="button-icon">⚙️</span>
-              <span className="button-text">Setup</span>
-            </button>
-            <button 
-              className="nav-button"
-              onClick={() => {
-                setShowAnnualChampionship(true);
                 setShowSetup(false);
+                setShowAnnualChampionship(true);
               }}
             >
               <span className="button-icon">🏆</span>
               <span className="button-text">Annual Championship</span>
+            </button>
+            <button 
+              className="nav-button"
+              onClick={() => {
+                setShowAnnualChampionship(false);
+                setShowSetup(true);
+              }}
+            >
+              
+              <span className="button-icon">⚙️</span>
+              <span className="button-text">Setup</span>
             </button>
           </nav>
         </div>
@@ -554,22 +555,23 @@ function App() {
         )}
       </header>
 
-      {selectedTournamentId ? (
-        showSetup ? (
-          <Setup
-            tournamentId={selectedTournamentId}
-            onTournamentCreated={handleDataUpdated}
-            onTeamsSaved={handleDataUpdated}
-            tournamentOddsId={tournamentOddsId}
-            isDraftStarted={draftStatus.IsDraftStarted}
-            hasManualDraftOdds={hasManualDraftOdds}
-            onDraftStarted={handleDataUpdated}
-            onManualOddsUpdated={handleDataUpdated}
-          />
-        ) : showAnnualChampionship ? (
-          <AnnualChampionship />
-        ) : (
-          <main>
+      <div className="main-content">
+        {selectedTournamentId ? (
+          showSetup ? (
+            <Setup
+              tournamentId={selectedTournamentId}
+              onTournamentCreated={handleDataUpdated}
+              onTeamsSaved={handleDataUpdated}
+              tournamentOddsId={tournamentOddsId}
+              isDraftStarted={draftStatus.IsDraftStarted}
+              hasManualDraftOdds={hasManualDraftOdds}
+              onDraftStarted={handleDataUpdated}
+              onManualOddsUpdated={handleDataUpdated}
+            />
+          ) : showAnnualChampionship ? (
+            <AnnualChampionship />
+          ) : (
+            <main>
             {draftStatusLoading ? (
               <div>Loading draft status...</div>
             ) : shouldShowDraftBoard ? (
@@ -591,60 +593,62 @@ function App() {
                 <div style={{ color: 'red', textAlign: 'center', padding: '50px' }}>Error: {effectiveError}</div>
               ) : sortedLeaderboardData.length > 0 ? (
                 <>
-                  <table className="leaderboard-table">
-                  <thead>
-                    <tr>
-                      <th>POS</th>
-                      <th className="team-golfer-header">TEAM / GOLFER</th>
-                      <th onClick={() => handleHeaderClick('total')} className="sortable-header">
-                        TOTAL{renderSortArrow('total')}
-                      </th>
-                      <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
-                        R1{renderSortArrow('r1')}
-                      </th>
-                      <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
-                        R2{renderSortArrow('r2')}
-                      </th>
-                      <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
-                        R3{renderSortArrow('r3')}
-                      </th>
-                      <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
-                        R4{renderSortArrow('r4')}
-                      </th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {sortedLeaderboardData.map((team) => (
-                      <React.Fragment key={`team-${team.team}`}>
-                        <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-                          <td>{team.position}</td>
-                          <td className="team-name-cell">{team.team}</td>
-                          <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
-                          <td>{formatScoreForDisplay(team.r1)}</td>
-                          <td>{formatScoreForDisplay(team.r2)}</td>
-                          <td>{formatScoreForDisplay(team.r3)}</td>
-                          <td>{formatScoreForDisplay(team.r4)}</td>
-                        </tr>
-                        {team.golfers && team.golfers.map((golfer, golferIndex) => (
-                          <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
-                            <td></td>
-                            <td className="golfer-name-cell">
-                              {golfer.name}
-                              {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
-                                <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
-                              )}
-                            </td>
-                            <td></td>
-                            <td>{formatScoreForDisplay(golfer.r1)}</td>
-                            <td>{formatScoreForDisplay(golfer.r2)}</td>
-                            <td>{formatScoreForDisplay(golfer.r3)}</td>
-                            <td>{formatScoreForDisplay(golfer.r4)}</td>
+                  <div className="leaderboard-container">
+                    <table className="leaderboard-table">
+                    <thead>
+                      <tr>
+                        <th>POS</th>
+                        <th className="team-golfer-header">TEAM / GOLFER</th>
+                        <th onClick={() => handleHeaderClick('total')} className="sortable-header">
+                          TOTAL{renderSortArrow('total')}
+                        </th>
+                        <th onClick={() => handleHeaderClick('r1')} className="sortable-header">
+                          R1{renderSortArrow('r1')}
+                        </th>
+                        <th onClick={() => handleHeaderClick('r2')} className="sortable-header">
+                          R2{renderSortArrow('r2')}
+                        </th>
+                        <th onClick={() => handleHeaderClick('r3')} className="sortable-header">
+                          R3{renderSortArrow('r3')}
+                        </th>
+                        <th onClick={() => handleHeaderClick('r4')} className="sortable-header">
+                          R4{renderSortArrow('r4')}
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {sortedLeaderboardData.map((team) => (
+                        <React.Fragment key={`team-${team.team}`}>
+                          <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                            <td>{team.position}</td>
+                            <td className="team-name-cell">{team.team}</td>
+                            <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
+                            <td>{formatScoreForDisplay(team.r1)}</td>
+                            <td>{formatScoreForDisplay(team.r2)}</td>
+                            <td>{formatScoreForDisplay(team.r3)}</td>
+                            <td>{formatScoreForDisplay(team.r4)}</td>
                           </tr>
-                        ))}
-                      </React.Fragment>
-                    ))}
-                  </tbody>
-                  </table>
+                          {team.golfers && team.golfers.map((golfer, golferIndex) => (
+                            <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
+                              <td></td>
+                              <td className="golfer-name-cell">
+                                {golfer.name}
+                                {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
+                                  <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
+                                )}
+                              </td>
+                              <td></td>
+                              <td>{formatScoreForDisplay(golfer.r1)}</td>
+                              <td>{formatScoreForDisplay(golfer.r2)}</td>
+                              <td>{formatScoreForDisplay(golfer.r3)}</td>
+                              <td>{formatScoreForDisplay(golfer.r4)}</td>
+                            </tr>
+                          ))}
+                        </React.Fragment>
+                      ))}
+                    </tbody>
+                    </table>
+                  </div>
                 </>
               ) : (
                 <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
@@ -660,31 +664,31 @@ function App() {
               <div>No tournament data available. Tournament may not have started yet.</div>
             )}
           </main>
-        )
-      ) : (
-        showSetup ? (
-          <Setup
-            tournamentId={null}
-            onTournamentCreated={handleDataUpdated}
-            onTeamsSaved={handleDataUpdated}
-            tournamentOddsId={null}
-            isDraftStarted={false}
-            hasManualDraftOdds={false}
-            onDraftStarted={handleDataUpdated}
-            onManualOddsUpdated={handleDataUpdated}
-          />
-        ) : showAnnualChampionship ? (
-          <AnnualChampionship />
-        ) : (
-          <div style={{ padding: '20px', textAlign: 'center' }}>
-            Please create or select a tournament to get started.
-            <br /><br />
-            <p style={{ color: '#ccc', fontSize: '0.9rem' }}>
-              You can manage Global Teams in Setup or view the Annual Championship anytime using the buttons above.
-            </p>
-          </div>
-        )
-      )}
+        )) : (
+          showSetup ? (
+            <Setup
+              tournamentId={null}
+              onTournamentCreated={handleDataUpdated}
+              onTeamsSaved={handleDataUpdated}
+              tournamentOddsId={null}
+              isDraftStarted={false}
+              hasManualDraftOdds={false}
+              onDraftStarted={handleDataUpdated}
+              onManualOddsUpdated={handleDataUpdated}
+            />
+          ) : showAnnualChampionship ? (
+            <AnnualChampionship />
+          ) : (
+            <div style={{ padding: '20px', textAlign: 'center' }}>
+              Please create or select a tournament to get started.
+              <br /><br />
+              <p style={{ color: '#ccc', fontSize: '0.9rem' }}>
+                You can manage Global Teams in Setup or view the Annual Championship anytime using the buttons above.
+              </p>
+            </div>
+          )
+        )}
+      </div>
     </div>
   );
 }

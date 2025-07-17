@@ -1,0 +1,2523 @@
+/* Critical CSS - inline this in HTML head */
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background-color: #1e1e1e;
+  color: white;
+  contain: layout style paint;
+  /* Smooth scrolling and mobile optimizations */
+  -webkit-overflow-scrolling: touch;
+  scroll-behavior: smooth;
+  /* Prevent horizontal scroll and ensure proper mobile scrolling */
+  overflow-x: hidden;
+  position: relative;
+}
+
+html {
+  overflow-x: hidden;
+  height: 100%;
+}
+
+.App {
+  text-align: center;
+  min-height: 100vh;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* Add main content container with proper spacing */
+.main-content {
+  padding-top: 1rem;
+}
+
+/* Modern Header Styles */
+.modern-header {
+  background: linear-gradient(135deg, #006400 0%, #228b22 100%);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  position: static; /* Remove sticky completely */
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.header-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 1rem 2rem;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  justify-items: center; /* Center items in their grid areas */
+  gap: 2rem;
+}
+
+/* Brand Section */
+.brand-section {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-self: start;
+}
+
+.logo-container {
+  font-size: 2.5rem;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 0.5rem;
+  backdrop-filter: blur(10px);
+}
+
+.brand-text {
+  text-align: left;
+}
+
+.app-title {
+  margin: 0;
+  font-size: 1.8rem;
+  font-weight: 700;
+  background: linear-gradient(45deg, #ffffff, #e8f5e8);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.app-subtitle {
+  margin: 0.25rem 0 0 0;
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.8);
+  font-weight: 400;
+}
+
+/* Tournament Selector */
+.tournament-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  justify-self: center;
+}
+
+.tournament-label {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+  font-weight: 500;
+  margin: 0;
+}
+
+.select-wrapper {
+  position: relative;
+  display: inline-block;
+}
+
+.modern-select {
+  appearance: none;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
+  color: white;
+  font-size: 1rem;
+  font-weight: 500;
+  padding: 0.75rem 2.5rem 0.75rem 1rem;
+  min-width: 200px;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+}
+
+.modern-select option {
+  background-color: #2a2a2a;
+  color: white;
+  padding: 0.5rem;
+}
+
+.modern-select option:hover {
+  background-color: #3a3a3a;
+  color: white;
+}
+
+.modern-select option:checked {
+  background-color: #006400;
+  color: white;
+}
+
+.modern-select:focus {
+  outline: none;
+  border-color: rgba(255, 255, 255, 0.5);
+  background: rgba(255, 255, 255, 0.15);
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
+}
+
+.select-arrow {
+  position: absolute;
+  right: 1rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  font-size: 0.8rem;
+}
+
+/* Modern Navigation */
+.modern-nav {
+  display: flex;
+  gap: 0.5rem;
+  justify-self: end;
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.nav-button {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: rgba(255, 255, 255, 0.1);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  border-radius: 10px;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 500;
+  padding: 0.6rem 1rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  white-space: nowrap;
+  min-width: fit-content;
+  max-width: 140px;
+}
+
+.nav-button:not(.disabled):hover {
+  background: rgba(255, 255, 255, 0.2);
+  border-color: rgba(255, 255, 255, 0.4);
+  transform: translateY(-2px);
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.2);
+}
+
+.nav-button:not(.disabled):active {
+  transform: translateY(0);
+}
+
+.nav-button.disabled {
+  background: rgba(255, 255, 255, 0.05);
+  border-color: rgba(255, 255, 255, 0.1);
+  color: rgba(255, 255, 255, 0.4);
+  cursor: not-allowed;
+  transform: none;
+}
+
+.button-icon {
+  font-size: 1rem;
+}
+
+.button-text {
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0.025em;
+  font-size: 0.85rem;
+}
+
+/* Status Bar */
+.status-bar {
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+}
+
+.status-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0.75rem 2rem;
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.status-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.status-label {
+  font-size: 0.85rem;
+  color: rgba(255, 255, 255, 0.7);
+  font-weight: 400;
+}
+
+.status-value {
+  font-size: 0.85rem;
+  font-weight: 600;
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.status-value.pending {
+  background: rgba(255, 193, 7, 0.2);
+  color: #ffc107;
+  border: 1px solid rgba(255, 193, 7, 0.3);
+}
+
+.status-value.active {
+  background: rgba(0, 123, 255, 0.2);
+  color: #007bff;
+  border: 1px solid rgba(0, 123, 255, 0.3);
+}
+
+.status-value.complete {
+  background: rgba(40, 167, 69, 0.2);
+  color: #28a745;
+  border: 1px solid rgba(40, 167, 69, 0.3);
+}
+
+.status-value.live {
+  background: rgba(220, 53, 69, 0.2);
+  color: #dc3545;
+  border: 1px solid rgba(220, 53, 69, 0.3);
+  animation: pulse 2s infinite;
+}
+
+.status-value.upcoming {
+  background: rgba(108, 117, 125, 0.2);
+  color: #6c757d;
+  border: 1px solid rgba(108, 117, 125, 0.3);
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; }
+  100% { opacity: 1; }
+}
+
+/* Mobile Responsive */
+@media (max-width: 768px) {
+  html, body {
+    height: auto;
+    min-height: 100vh;
+    position: static;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.85rem;
+    width: 100%;
+    margin: 0;
+    min-width: 700px; /* Increased minimum width to prevent column collapse */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Prevent text wrapping on mobile */
+  }
+  
+  .team-golfer-header {
+    min-width: 120px;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    text-align: left;
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .golfer-row td {
+    padding-left: 15px; /* Reduce indent on mobile */
+  }
+  
+  /* Mobile scroll indicator for Annual Championship */
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+}
+
+@media (max-width: 480px) {
+  html, body {
+    -webkit-text-size-adjust: 100%; /* Prevent text scaling on iOS */
+    touch-action: manipulation; /* Improve touch response */
+  }
+  
+  .header-container {
+    padding: 0.5rem 0.75rem;
+    gap: 0.75rem;
+  }
+  
+  .brand-section {
+    gap: 0.4rem;
+  }
+  
+  .logo-container {
+    font-size: 1.8rem;
+    padding: 0.25rem;
+  }
+  
+  .app-title {
+    font-size: 1.1rem;
+  }
+  
+  .app-subtitle {
+    font-size: 0.7rem;
+  }
+  
+  .modern-select {
+    min-width: 160px;
+    font-size: 0.9rem;
+    padding: 0.5rem;
+  }
+  
+  .modern-nav {
+    max-width: 350px; /* Slightly wider to accommodate text */
+    gap: 0.4rem; /* Tighter spacing */
+  }
+  
+  .nav-button {
+    font-size: 0.65rem; /* Smaller text */
+    padding: 0.35rem 0.4rem; /* Tighter padding */
+    min-width: 85px;
+    max-width: 105px;
+    min-height: 40px; /* Slightly smaller but still touch-friendly */
+  }
+  
+  /* Keep text visible even on small screens */
+  .button-text {
+    display: inline;
+    font-size: 0.65rem; /* Match button font size */
+  }
+  
+  .status-item {
+    font-size: 0.7rem;
+    padding: 0.2rem 0.4rem;
+  }
+  
+  /* Extra small screens - further optimize table */
+  .leaderboard-container {
+    width: 100%;
+    margin: 5px auto;
+  }
+  
+  .leaderboard-table {
+    font-size: 0.75rem;
+    min-width: 650px; /* Ensure enough space for all columns */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 4px 2px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    min-width: 100px;
+    max-width: 150px;
+  }
+  
+  .golfer-row td {
+    padding-left: 10px; /* Further reduce indent on small screens */
+  }
+  
+  /* Remove the column hiding rule to keep all round scores visible */
+  /* Users can scroll horizontally to see all data */
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Legacy header styles - kept for backward compatibility if needed */
+.App-header {
+  background-color: #006400;
+  padding: 20px;
+  color: white;
+  will-change: transform;
+}
+
+/* Use CSS Grid for better performance */
+table {
+  margin: 20px auto;
+  border-collapse: collapse;
+  width: 90%;
+  background-color: #333333;
+  color: white;
+  contain: layout style;
+}
+
+/* Leaderboard table container for mobile scrolling */
+.leaderboard-container {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  margin: 20px auto;
+  width: 95%;
+  max-width: 1200px;
+  border-radius: 8px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-table {
+  width: 100%;
+  min-width: 600px; /* Ensure minimum width to prevent column collapse */
+  margin: 0;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+th, td {
+  border: 1px solid #444;
+  padding: 8px;
+  text-align: center;
+}
+
+th {
+  background-color: #006400;
+  color: white;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+/* Optimized row styling */
+tbody tr:nth-child(even) {
+  background-color: #2b2b2b;
+}
+
+tbody tr:hover {
+  background-color: #444;
+  transform: translateZ(0); /* Force GPU acceleration */
+}
+
+.total {
+  color: red;
+  font-weight: bold;
+  font-variant-numeric: tabular-nums;
+}
+
+/* Additions for team and golfer rows below */
+/* Making this rule more specific to override nth-child(even) */
+tbody .team-row {
+  font-weight: bold;
+  background-color: #004d00 !important; /* A darker green for team rows to stand out */
+}
+
+/* Optional: remove hover effect for team rows if you want only golfers to highlight */
+tbody .team-row:hover { /* Also make this more specific */
+  background-color: #004d00; /* Keep the same background on hover */
+}
+
+.golfer-row {
+  font-size: 0.9em; /* Slightly smaller text for golfers */
+  color: #ccc; /* Slightly muted color for golfer names */
+  background-color: #262626; /* A bit darker than even rows, lighter than body */
+}
+
+.golfer-row td {
+  padding-left: 30px; /* Indent golfer rows to visually group them under the team */
+  text-align: left; /* Align golfer names to the left for better readability */
+}
+
+/* Optional: Add hover effect to golfer rows */
+.golfer-row:hover {
+  background-color: #3a3a3a; /* Hover effect for golfer rows */
+}
+
+/* Legacy button styles - replaced by modern nav buttons */
+/* 
+nav button {
+  background-color: Grey;
+  color: white;
+  border: none;
+  padding: 10px 20px;
+  margin: 0 10px;
+  border-radius: 5px;
+  cursor: pointer;
+  font-size: 1em;
+  transition: background-color 0.3s ease;
+}
+
+nav button:hover:not(:disabled) {
+  background-color: #45a049;
+}
+
+nav button:disabled {
+  background-color: #666;
+  cursor: not-allowed;
+}
+*/
+
+/* Tournament Selector Styling */
+select {
+    padding: 8px;
+    border-radius: 5px;
+    border: 1px solid #555;
+    background-color: #333;
+    color: white;
+    margin-left: 10px;
+    font-size: 1em;
+}
+
+select:focus {
+    outline: none;
+    border-color: #4CAF50;
+}
+
+
+.teams-container {
+  display: flex; /* Enables flexbox */
+  flex-wrap: wrap; /* Allows items to wrap to the next line if space runs out */
+  gap: 20px; /* Provides space between the cards */
+  justify-content: center; /* Centers the cards horizontally within the container */
+  padding: 20px; /* Optional: adds padding around all cards */
+}
+
+.team-card {
+  background-color: #333; /* Darker background for cards */
+  border: 1px solid #555; /* Subtle border */
+  border-radius: 8px; /* Rounded corners */
+  padding: 15px; /* Internal spacing within each card */
+  margin-bottom: 10px; /* Space below each card when wrapped */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2); /* Soft shadow for depth */
+  flex: 1 1 calc(33% - 40px); /* Adjusts card width for responsiveness */
+  min-width: 280px; /* Minimum width for each card */
+  max-width: 350px; /* Maximum width for each card (optional) */
+  box-sizing: border-box; /* Ensures padding/border are included in width calculation */
+  color: #eee; /* Light text color */
+}
+
+@media (max-width: 1024px) {
+  .team-card {
+    flex: 1 1 calc(50% - 40px); /* On medium screens, try for 2 cards per row */
+  }
+}
+
+@media (max-width: 768px) {
+  .team-card {
+    flex: 1 1 calc(100% - 20px); /* On small screens, stack cards vertically (1 per row) */
+  }
+  
+  /* Mobile optimizations for TeamManagement */
+  .team-management-container {
+    padding: 10px;
+  }
+  
+  .tournament-form-grid {
+    grid-template-columns: 1fr; /* Single column on mobile */
+    gap: 10px;
+  }
+  
+  .tournament-form-card {
+    margin: 15px 10px;
+    padding: 12px;
+    max-width: none; /* Remove max-width constraint on mobile */
+  }
+  
+  .draft-actions-card {
+    margin: 15px 10px;
+    padding: 12px;
+  }
+  
+  .team-add-card {
+    margin: 15px 10px;
+    padding: 12px;
+  }
+  
+  /* Make team cards more mobile-friendly */
+  .team-card {
+    min-width: calc(100% - 20px);
+    margin: 10px;
+  }
+  
+  .team-card-header {
+    padding: 12px;
+  }
+  
+  .team-search-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  .tournament-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  .team-add-input {
+    font-size: 16px; /* Prevent zoom on iOS */
+    padding: 12px 8px; /* Larger touch targets */
+  }
+  
+  /* Improve button touch targets on mobile */
+  .tournament-form-btn,
+  .draft-action-btn,
+  .draft-clear-btn,
+  .team-add-btn,
+  .save-teams-btn {
+    min-height: 44px; /* iOS recommended touch target */
+    padding: 12px 20px;
+    font-size: 1em;
+  }
+  
+  .team-remove-btn,
+  .team-golfer-remove-btn {
+    min-height: 36px;
+    padding: 8px 12px;
+    font-size: 0.9em;
+  }
+}
+
+/* TeamManagement main container */
+.team-management-container {
+  padding: 20px;
+  color: white;
+}
+
+/* Tournament Form Card */
+.tournament-form-card {
+  margin-bottom: 30px;
+  border: 1px solid #555;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  margin: 30px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.tournament-form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 15px;
+  width: 100%;
+  margin-bottom: 20px;
+}
+
+.tournament-input {
+  width: calc(100% - 16px);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #666;
+  background-color: #444;
+  color: white;
+}
+
+.tournament-form-btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+/* Draft Actions Card */
+.draft-actions-card {
+  text-align: center;
+  margin: 20px auto;
+  max-width: 500px;
+  padding: 15px;
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: #333;
+  box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+}
+
+.draft-clear-btn {
+  background-color: #DC143C;
+  color: white;
+  padding: 8px 15px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.9em;
+  transition: background-color 0.3s ease;
+}
+
+.draft-start-btn {
+  background-color: #FF5722;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+  font-size: 1.1em;
+  transition: background-color 0.3s ease;
+}
+
+/* Teams Flexbox Container */
+.teams-flex-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  justify-content: center;
+  padding: 10px 0;
+}
+
+.team-card {
+  border: 1px solid #555;
+  border-radius: 8px;
+  background-color: #444;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  flex: 1 1 calc(33% - 20px);
+  min-width: 280px;
+  max-width: 400px;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  overflow: hidden;
+}
+
+.team-card-header {
+  background-color: #383838;
+  padding: 10px 15px;
+  border-radius: 8px 8px 0 0;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+}
+
+.team-remove-btn {
+  background-color: #f44336;
+  color: white;
+  padding: 3px 8px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+  font-size: 0.75em;
+  max-width: 120px;
+}
+
+.team-card-golfers {
+  background-color: #404040;
+  padding: 8px 15px;
+  width: 100%;
+  box-sizing: border-box;
+  text-align: center;
+  color: #ccc;
+  font-weight: bold;
+}
+
+.team-golfer-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  flex-grow: 1;
+  width: 100%;
+}
+
+.team-golfer-list li {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 8px 15px;
+  background-color: #4A4A4A;
+  border-bottom: 1px dotted #555;
+}
+
+.team-golfer-list li:nth-child(even) {
+  background-color: #525252;
+}
+
+.team-golfer-remove-btn {
+  background-color: #f44336;
+  color: white;
+  font-size: 0.8em;
+  padding: 3px 6px;
+  border-radius: 3px;
+  border: none;
+  cursor: pointer;
+}
+
+.team-card-search {
+  margin-top: 0px;
+  background-color: #555;
+  padding: 10px;
+  border-radius: 0 0 8px 8px;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.team-search-input {
+  width: calc(100% - 20px);
+  padding: 8px;
+  border-radius: 4px;
+  border: 1px solid #777;
+  background-color: #666;
+  color: white;
+}
+
+.team-search-list {
+  max-height: 150px;
+  overflow-y: auto;
+  border: 1px solid #777;
+  list-style: none;
+  padding: 5px;
+  background-color: #666;
+  margin: 10px 0 0 0;
+  border-radius: 4px;
+}
+
+.team-search-list li {
+  cursor: pointer;
+  padding: 5px;
+  border-bottom: 1px solid #777;
+  transition: background-color 0.2s;
+  background-color: #666;
+}
+
+.team-search-list li:hover {
+  background-color: #777;
+}
+
+.team-add-card {
+  margin-top: 20px;
+  border: 1px solid #555;
+  padding: 15px;
+  border-radius: 8px;
+  background-color: #333;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  max-width: 500px;
+  margin: 20px auto;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+.team-add-input {
+  width: calc(100% - 16px);
+  padding: 8px;
+  margin-right: 0px;
+  margin-bottom: 20px;
+  border-radius: 4px;
+  border: 1px solid #666;
+  background-color: #444;
+  color: white;
+}
+
+.team-add-btn {
+  background-color: #2196F3;
+  color: white;
+  padding: 10px 20px;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+.save-teams-btn {
+  margin-top: 20px;
+  padding: 10px 20px;
+  font-size: 1.2em;
+  background-color: #4CAF50;
+  color: white;
+  border-radius: 4px;
+  border: none;
+  cursor: pointer;
+}
+
+/* WV Golf Logo Mobile Optimizations */
+.wv-golf-logo {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.3rem;
+}
+
+.mountain-icon,
+.golf-icon {
+  font-size: 1.8rem;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .wv-golf-logo {
+    gap: 0.2rem;
+  }
+  
+  .mountain-icon,
+  .golf-icon {
+    font-size: 1.5rem;
+  }
+}
+
+@media (max-width: 480px) {
+  .mountain-icon,
+  .golf-icon {
+    font-size: 1.3rem;
+  }
+}
+
+/* Annual Championship Styles */
+.annual-championship {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+  word-wrap: break-word;
+  overflow-wrap: break-word;
+}
+
+.annual-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 2px solid #006400;
+  flex-wrap: wrap;
+  gap: 1rem;
+}
+
+.annual-title {
+  color: #FFD700;
+  font-size: 2rem;
+  margin: 0;
+  text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+  word-wrap: break-word;
+}
+
+.year-selector {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-shrink: 0;
+}
+
+.year-selector label {
+  color: white;
+  font-weight: 500;
+  white-space: nowrap;
+}
+
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+ 
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.85rem;
+    width: 100%;
+    margin: 0;
+    min-width: 700px; /* Increased minimum width to prevent column collapse */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Prevent text wrapping on mobile */
+  }
+  
+  .team-golfer-header {
+    min-width: 120px;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    text-align: left;
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .golfer-row td {
+    padding-left: 15px; /* Reduce indent on mobile */
+  }
+  
+  /* Mobile scroll indicator for Annual Championship */
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+
+  
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.85rem;
+    width: 100%;
+    margin: 0;
+    min-width: 700px; /* Increased minimum width to prevent column collapse */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Prevent text wrapping on mobile */
+  }
+  
+  .team-golfer-header {
+    min-width: 120px;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    text-align: left;
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .golfer-row td {
+    padding-left: 15px; /* Reduce indent on mobile */
+  }
+  
+  /* Mobile scroll indicator for Annual Championship */
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+
+  
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.85rem;
+    width: 100%;
+    margin: 0;
+    min-width: 700px; /* Increased minimum width to prevent column collapse */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Prevent text wrapping on mobile */
+  }
+  
+  .team-golfer-header {
+    min-width: 120px;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    text-align: left;
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .golfer-row td {
+    padding-left: 15px; /* Reduce indent on mobile */
+  }
+  
+  /* Mobile scroll indicator for Annual Championship */
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+
+  
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+  
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .leaderboard-table {
+    font-size: 0.85rem;
+    width: 100%;
+    margin: 0;
+    min-width: 700px; /* Increased minimum width to prevent column collapse */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 4px;
+    font-size: 0.8rem;
+    white-space: nowrap; /* Prevent text wrapping on mobile */
+  }
+  
+  .team-golfer-header {
+    min-width: 120px;
+  }
+  
+  .team-name-cell,
+  .golfer-name-cell {
+    text-align: left;
+    min-width: 120px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  .golfer-row td {
+    padding-left: 15px; /* Reduce indent on mobile */
+  }
+  
+  /* Mobile scroll indicator for Annual Championship */
+.annual-table-container {
+  overflow-x: auto;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+  -webkit-overflow-scrolling: touch;
+  position: relative;
+}
+
+/* Add scroll indicator on mobile */
+@media (max-width: 768px) {
+  .annual-table-container::after {
+    content: "← Scroll to see all tournaments →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(255, 215, 0, 0.1);
+    color: #FFD700;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(255, 215, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+  
+  .annual-table-container {
+    margin-bottom: 2rem; /* Add space for the scroll indicator */
+  }
+}
+
+@media (max-width: 480px) {
+  .annual-table-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+/* Mobile scroll indicator for Leaderboard */
+@media (max-width: 768px) {
+  .leaderboard-container {
+    position: relative;
+    margin-bottom: 2.5rem; /* Add space for the scroll indicator */
+  }
+  
+  .leaderboard-container::after {
+    content: "← Scroll to see all rounds →";
+    position: absolute;
+    bottom: -25px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 100, 0, 0.1);
+    color: #28a745;
+    padding: 0.25rem 0.75rem;
+    border-radius: 12px;
+    font-size: 0.7rem;
+    white-space: nowrap;
+    border: 1px solid rgba(0, 100, 0, 0.3);
+    pointer-events: none;
+    z-index: 5;
+  }
+}
+
+@media (max-width: 480px) {
+  .leaderboard-container::after {
+    font-size: 0.6rem;
+    padding: 0.2rem 0.5rem;
+    bottom: -20px;
+  }
+}
+
+
+  
+  .App {
+    position: static;
+    height: auto;
+    min-height: 100vh;
+  }
+  
+  .modern-header {
+    position: static; /* Ensure header is completely static on mobile */
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.15);
+    z-index: auto;
+  }
+  
+  .header-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+    padding: 0.75rem 1rem;
+    text-align: center;
+    max-width: 100%;
+  }
+  
+  .main-content {
+    padding-top: 1rem;
+    min-height: auto;
+    position: static;
+    height: auto;
+  }
+  
+  .brand-section {
+    order: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .tournament-section {
+    order: 2;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    width: 100%;
+  }
+  
+  .modern-nav {
+    order: 3;
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    gap: 0.5rem;
+    max-width: 400px; /* Limit width for better appearance */
+  }
+  
+  .logo-container {
+    font-size: 2rem;
+    padding: 0.3rem;
+  }
+  
+  .brand-text {
+    text-align: left;
+  }
+  
+  .app-title {
+    font-size: 1.3rem;
+    line-height: 1.2;
+  }
+  
+  .app-subtitle {
+    font-size: 0.8rem;
+  }
+  
+  .modern-select {
+    min-height: 44px;
+    font-size: 1rem;
+    min-width: 200px;
+    width: 100%;
+    max-width: 300px;
+  }
+  
+  .nav-button {
+    flex: 1;
+    min-width: 100px;
+    max-width: 120px;
+    min-height: 44px;
+    padding: 0.5rem 0.75rem;
+    font-size: 0.8rem;
+    margin: 0;
+  }
+  
+  /* Keep text visible on mobile screens */
+  .button-text {
+    display: inline;
+  }
+  
+  .status-bar {
+    padding: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    position: static;
+  }
+  
+  .status-container {
+    flex-direction: row; /* Keep status horizontal but compact */
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  .status-item {
+    padding: 0.25rem 0.5rem;
+    min-height: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.8rem;
+  }
+  
+  /* Leaderboard table mobile optimizations */
+  .leaderboard-container {
+    margin: 10px auto;
+    width: 98%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    /* Add scrollbar styling for better UX */
+    scrollbar-width: thin;
+    scrollbar-color: rgba(255, 255, 255, 0.3) rgba(0, 0, 0, 0.1);
+  }
+  
+  /* Webkit scrollbar styling for leaderboard */
+  .leaderboard-container::-webkit-scrollbar {
+    height: 8px;
+  }
+
+  .leaderboard-container::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+  }
+
+  .leaderboard-container::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+  }
+
+  .leaderboard-container::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.5);
+  }

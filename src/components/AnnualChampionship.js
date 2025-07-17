@@ -537,7 +537,6 @@ const AnnualChampionship = () => {
                   <th key={name} className="tournament-column">{name}</th>
                 ))}
                 <th className="total-column">TOTAL</th>
-                <th>PLAYED</th>
               </tr>
             </thead>
             <tbody>
@@ -553,7 +552,6 @@ const AnnualChampionship = () => {
                   <td className="total-cell">
                     <strong>{formatScore(team.totalScore)}</strong>
                   </td>
-                  <td className="played-cell">{team.tournamentsPlayed}</td>
                 </tr>
               ))}
             </tbody>
@@ -564,7 +562,8 @@ const AnnualChampionship = () => {
       <div className="annual-stats">
         <p>
           <strong>{tournaments.length}</strong> tournaments completed • 
-          <strong> {annualTeams.length}</strong> teams participating
+          <strong> {annualTeams.length}</strong> teams participating •
+          <strong> {annualTeams.reduce((total, team) => total + team.tournamentsPlayed, 0)}</strong> total team entries
         </p>
       </div>
     </div>

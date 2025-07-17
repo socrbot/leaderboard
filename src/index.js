@@ -11,27 +11,31 @@ root.render(
   </React.StrictMode>
 );
 
-// Register service worker for caching
-if ('serviceWorker' in navigator) {
+// Register service worker for caching (only in production)
+if ('serviceWorker' in navigator && process.env.NODE_ENV === 'production') {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js')
       .then(registration => {
         console.log('SW registered: ', registration);
         
-        // Check for updates every time the page loads
+        // Check for updates less aggressively
         registration.addEventListener('updatefound', () => {
           const newWorker = registration.installing;
           newWorker.addEventListener('statechange', () => {
             if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-              // New update available - notify user or auto-refresh
-              console.log('New update available! Refreshing...');
-              window.location.reload();
+              // New update available - notify user instead of auto-refresh
+              console.log('New update available! Please refresh the page to get the latest version.');
+              // You could show a notification to the user here instead of auto-reloading
             }
           });
         });
         
-        // Force update check
-        registration.update();
+        // Only check for updates periodically, not on every load
+        if (process.env.NODE_ENV === 'production') {
+          setInterval(() => {
+            registration.update();
+          }, 60000); // Check every minute instead of on every load
+        }
       })
       .catch(registrationError => {
         console.log('SW registration failed: ', registrationError);
