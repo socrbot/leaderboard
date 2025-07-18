@@ -11,23 +11,13 @@ const parseNumericScore = (scoreStr) => {
     return isNaN(num) ? 0 : num;
 };
 
-// Helper to get highest non-cut scoreToPar for a round (copied from useGolfLeaderboard)
+// Helper to get highest non-cut scoreToPar for a round (fixed to match useGolfLeaderboard)
 const getHighestNonCutScore = (leaderboardRows, roundNumber) => {
   let highestScoreToPar = null;
   leaderboardRows.forEach(row => {
     // Exclude cut and withdrawn players
     if (row.status !== 'cut' && row.status !== 'wd') {
-      // Try to find by roundId first
-      let round = row.rounds && row.rounds.find(r => {
-        const id = parseInt(r.roundId?.$numberInt || r.roundId);
-        return !isNaN(id) && id === roundNumber;
-      });
-      
-      // If roundId is not available or empty, use array index (0-based to 1-based)
-      if (!round && row.rounds && row.rounds.length >= roundNumber) {
-        round = row.rounds[roundNumber - 1];
-      }
-      
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
       if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
         const scoreToPar = parseNumericScore(round.scoreToPar);
         if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
@@ -39,17 +29,7 @@ const getHighestNonCutScore = (leaderboardRows, roundNumber) => {
   // If no valid score found, fallback to highest available scoreToPar for the round
   if (highestScoreToPar === null) {
     leaderboardRows.forEach(row => {
-      // Try to find by roundId first
-      let round = row.rounds && row.rounds.find(r => {
-        const id = parseInt(r.roundId?.$numberInt || r.roundId);
-        return !isNaN(id) && id === roundNumber;
-      });
-      
-      // If roundId is not available or empty, use array index (0-based to 1-based)
-      if (!round && row.rounds && row.rounds.length >= roundNumber) {
-        round = row.rounds[roundNumber - 1];
-      }
-      
+      const round = row.rounds && row.rounds.find(r => r.roundId && Number(r.roundId.$numberInt) === roundNumber);
       if (round && round.scoreToPar !== undefined && round.scoreToPar !== null) {
         const scoreToPar = parseNumericScore(round.scoreToPar);
         if (highestScoreToPar === null || scoreToPar > highestScoreToPar) {
@@ -61,7 +41,7 @@ const getHighestNonCutScore = (leaderboardRows, roundNumber) => {
   return highestScoreToPar;
 };
 
-// Patch in penalty rounds for CUT players (copied from useGolfLeaderboard)
+// Patch in penalty rounds for CUT players (fixed to match useGolfLeaderboard)
 const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
     return players.map(player => {
         if (String(player.status).toLowerCase() === 'cut') {
@@ -72,17 +52,7 @@ const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
             ];
             penalties.forEach(({ round, value }) => {
                 if (value !== null) {
-                    // Try to find by roundId first
-                    let roundIdx = newRounds.findIndex(r => {
-                        const id = parseInt(r.roundId?.$numberInt || r.roundId);
-                        return !isNaN(id) && id === round;
-                    });
-                    
-                    // If roundId is not available, use array index (0-based to 1-based)
-                    if (roundIdx === -1 && newRounds.length >= round) {
-                        roundIdx = round - 1;
-                    }
-                    
+                    const roundIdx = newRounds.findIndex(r => parseInt(r.roundId?.$numberInt || r.roundId) === round);
                     const patchedRound = {
                         courseId: newRounds[0]?.courseId || "608",
                         courseName: newRounds[0]?.courseName || "Unknown",
@@ -98,19 +68,16 @@ const patchCutPlayerRounds = (players, par, round3Penalty, round4Penalty) => {
                     }
                 }
             });
-            newRounds = newRounds.sort((a, b) => {
-                const aId = parseInt(a.roundId?.$numberInt || a.roundId);
-                const bId = parseInt(b.roundId?.$numberInt || b.roundId);
-                // If roundId is not available, use array index
-                return (!isNaN(aId) && !isNaN(bId)) ? aId - bId : 0;
-            });
+            newRounds = newRounds.sort((a, b) =>
+                parseInt(a.roundId?.$numberInt || a.roundId) - parseInt(b.roundId?.$numberInt || b.roundId)
+            );
             return { ...player, rounds: newRounds };
         }
         return player;
     });
 };
 
-// Helper function to get golfer round score (simplified version)
+// Helper function to get golfer round score (fixed to match useGolfLeaderboard.js)
 const getGolferRoundScore = (player, roundNum, currentPar) => {
     if (player.rounds && Array.isArray(player.rounds)) {
         // Try to find by roundId first
@@ -125,13 +92,22 @@ const getGolferRoundScore = (player, roundNum, currentPar) => {
         }
         
         if (round && round.strokes !== undefined && round.strokes !== null) {
+            // Support both MongoDB int object and plain number (same as useGolfLeaderboard.js)
             const strokes = typeof round.strokes === 'object' && round.strokes.$numberInt !== undefined
-                ? parseInt(round.strokes.$numberInt)
-                : parseInt(round.strokes);
-            if (!isNaN(strokes)) {
-                return { score: strokes - currentPar, isLive: false };
-            }
+                ? round.strokes.$numberInt
+                : round.strokes;
+            return { score: parseNumericScore(strokes) - currentPar, isLive: false };
         }
+    }
+    // Check for current round score (same as useGolfLeaderboard.js)
+    if (
+        player.currentRound &&
+        parseInt(player.currentRound.$numberInt || player.currentRound) === roundNum &&
+        player.currentRoundScore !== undefined &&
+        player.currentRoundScore !== null &&
+        player.currentRoundScore !== ""
+    ) {
+        return { score: parseNumericScore(player.currentRoundScore), isLive: true };
     }
     return { score: null, isLive: false };
 };
