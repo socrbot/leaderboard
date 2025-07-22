@@ -939,10 +939,21 @@ select:focus {
 }
 
 .annual-table .score-cell,
-.annual-table .total-cell {
+.annual-table .total-cell,
+.annual-table .stats-cell {
   text-align: center;
   min-width: 60px;
   font-variant-numeric: tabular-nums;
+}
+
+.annual-table .stats-cell {
+  background-color: rgba(255, 255, 255, 0.05);
+  font-weight: 500;
+}
+
+.annual-table .stats-column {
+  min-width: 50px;
+  font-size: 0.8rem;
 }
 
 .annual-table .total-cell {
@@ -972,8 +983,16 @@ select:focus {
   
   .annual-table th:nth-child(2), /* TEAM */
   .annual-table td:nth-child(2) {
-    width: 30%;
+    width: 25%;
     min-width: 100px;
+  }
+  
+  .annual-table th:nth-child(3), /* WINS */
+  .annual-table td:nth-child(3),
+  .annual-table th:nth-child(4), /* TOP 3 */
+  .annual-table td:nth-child(4) {
+    width: 8%;
+    min-width: 35px;
   }
   
   .annual-table .tournament-column,
@@ -1035,8 +1054,16 @@ select:focus {
   
   .annual-table th:nth-child(2),
   .annual-table td:nth-child(2) {
-    width: 32%;
+    width: 28%;
     min-width: 80px;
+  }
+  
+  .annual-table th:nth-child(3),
+  .annual-table td:nth-child(3),
+  .annual-table th:nth-child(4),
+  .annual-table td:nth-child(4) {
+    width: 7%;
+    min-width: 28px;
   }
   
   .annual-table .tournament-column,
