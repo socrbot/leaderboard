@@ -137,7 +137,7 @@ function App() {
             if (leaderboardResponse.ok) {
               const leaderboardData = await leaderboardResponse.json();
               preloadedData[tournament.id] = {
-                rawData: leaderboardData,
+                rawData: leaderboardData.teamScores || leaderboardData.teams || leaderboardData,
                 loading: false,
                 error: null,
                 lastUpdated: Date.now()
