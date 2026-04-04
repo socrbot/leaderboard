@@ -284,9 +284,9 @@ function App() {
   const effectiveRawData = useMemo(() => {
     const preloadedData = preloadedTournamentData[selectedTournamentId];
     if (preloadedData && draftStatus.IsDraftComplete) {
-      return preloadedData.rawData;
+      return preloadedData.rawData || [];
     }
-    return rawData;
+    return rawData || [];
   }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, rawData]);
 
   const effectiveLoading = useMemo(() => {
@@ -388,13 +388,26 @@ function App() {
 
   // Memoize the sorted leaderboard data
   const sortedLeaderboardData = useMemo(() => {
-    if (!effectiveRawData || effectiveRawData.length === 0) return [];
+    if (!effectiveRawData || !Array.isArray(effectiveRawData) || effectiveRawData.length === 0) return [];
 
     const sortableData = [...effectiveRawData];
 
     sortableData.sort((a, b) => {
-      const aValue = a[sortColumn];
-      const bValue = b[sortColumn];
+      let aValue, bValue;
+      
+      // Handle different column names for backend compatibility
+      if (sortColumn === 'total') {
+        aValue = a.totalScore !== undefined ? a.totalScore : a.total;
+        bValue = b.totalScore !== undefined ? b.totalScore : b.total;
+      } else if (sortColumn.startsWith('r')) {
+        // Handle round scores from roundDetails
+        const roundKey = sortColumn;
+        aValue = a.roundDetails?.[roundKey]?.score !== undefined ? a.roundDetails[roundKey].score : a[sortColumn];
+        bValue = b.roundDetails?.[roundKey]?.score !== undefined ? b.roundDetails[roundKey].score : b[sortColumn];
+      } else {
+        aValue = a[sortColumn];
+        bValue = b[sortColumn];
+      }
 
       if (aValue === null || aValue === undefined) return sortDirection === 'asc' ? 1 : -1;
       if (bValue === null || bValue === undefined) return sortDirection === 'asc' ? -1 : 1;
@@ -617,19 +630,22 @@ function App() {
                       </tr>
                     </thead>
                     <tbody>
-                      {sortedLeaderboardData.map((team) => (
-                        <React.Fragment key={`team-${team.team}`}>
-                          <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-                            <td>{team.position}</td>
-                            <td className="team-name-cell">{team.team}</td>
-                            <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
-                            <td>{formatScoreForDisplay(team.r1)}</td>
-                            <td>{formatScoreForDisplay(team.r2)}</td>
-                            <td>{formatScoreForDisplay(team.r3)}</td>
-                            <td>{formatScoreForDisplay(team.r4)}</td>
+                      {sortedLeaderboardData.map((team, index) => {
+                        const teamName = team.teamName || team.team || 'Unknown Team';
+                        const teamTotal = team.totalScore !== undefined ? team.totalScore : team.total;
+                        return (
+                        <React.Fragment key={`team-${teamName}-${index}`}>
+                          <tr className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                            <td>{team.position || (index + 1)}</td>
+                            <td className="team-name-cell">{teamName}</td>
+                            <td className="total-cell">{formatScoreForDisplay(teamTotal)}</td>
+                            <td>{formatScoreForDisplay(team.roundDetails?.r1?.score || team.r1)}</td>
+                            <td>{formatScoreForDisplay(team.roundDetails?.r2?.score || team.r2)}</td>
+                            <td>{formatScoreForDisplay(team.roundDetails?.r3?.score || team.r3)}</td>
+                            <td>{formatScoreForDisplay(team.roundDetails?.r4?.score || team.r4)}</td>
                           </tr>
-                          {team.golfers && team.golfers.map((golfer, golferIndex) => (
-                            <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
+                          {(team.players || team.golfers) && (team.players || team.golfers).map((golfer, golferIndex) => (
+                            <tr key={`golfer-${teamName}-${golferIndex}`} className="golfer-row">
                               <td></td>
                               <td className="golfer-name-cell">
                                 {golfer.name}
@@ -638,14 +654,15 @@ function App() {
                                 )}
                               </td>
                               <td></td>
-                              <td>{formatScoreForDisplay(golfer.r1)}</td>
-                              <td>{formatScoreForDisplay(golfer.r2)}</td>
-                              <td>{formatScoreForDisplay(golfer.r3)}</td>
-                              <td>{formatScoreForDisplay(golfer.r4)}</td>
+                              <td>{formatScoreForDisplay(golfer.r1?.score)}</td>
+                              <td>{formatScoreForDisplay(golfer.r2?.score)}</td>
+                              <td>{formatScoreForDisplay(golfer.r3?.score)}</td>
+                              <td>{formatScoreForDisplay(golfer.r4?.score)}</td>
                             </tr>
                           ))}
                         </React.Fragment>
-                      ))}
+                        );
+                      })}
                     </tbody>
                     </table>
                   </div>

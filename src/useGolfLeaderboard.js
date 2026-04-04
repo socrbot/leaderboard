@@ -143,9 +143,10 @@ export const useGolfLeaderboard = (
                     throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
                 }
 
-                // Backend returns calculated team data directly
-                const calculatedTeamData = result.teams || [];
+                // Backend returns calculated team data directly in teamScores field
+                const calculatedTeamData = result.teamScores || result.teams || [];
                 console.log('🏆 Calculated team data:', calculatedTeamData);
+                console.log('🔍 First team structure:', calculatedTeamData[0]);
                 
                 setRawData(calculatedTeamData);
                 setLoading(false);
