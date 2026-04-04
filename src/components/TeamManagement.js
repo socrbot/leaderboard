@@ -498,33 +498,39 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               </ul>
 
               <div className="team-card-search">
-                <input
-                  type="text"
-                  placeholder="Search players to add"
-                  value={currentSearchTerm}
-                  onChange={(e) => handleSearchTermChange(teamIndex, e.target.value)}
-                  className="team-search-input"
-                />
-                {playerLoading ? (
-                  <p style={{ margin: '10px 0 0 0', color: '#ccc' }}>Loading potential players...</p>
-                ) : playerError ? (
-                  <p style={{ color: 'red', margin: '10px 0 0 0' }}>{playerError}</p>
+                {draftStatus.IsDraftStarted ? (
+                  <>
+                    <input
+                      type="text"
+                      placeholder="Search players to add"
+                      value={currentSearchTerm}
+                      onChange={(e) => handleSearchTermChange(teamIndex, e.target.value)}
+                      className="team-search-input"
+                    />
+                    {playerLoading ? (
+                      <p style={{ margin: '10px 0 0 0', color: '#ccc' }}>Loading potential players...</p>
+                    ) : playerError ? (
+                      <p style={{ color: '#ff9800', margin: '10px 0 0 0', fontSize: '0.85em' }}>Player search unavailable — odds data not loaded.</p>
+                    ) : (
+                      currentSearchTerm && filteredPlayersForThisTeam.length > 0 && (
+                        <ul className="team-search-list">
+                          {filteredPlayersForThisTeam.map((player) => (
+                            <li
+                              key={player}
+                              onClick={() => handleAddPlayerToTeam(teamIndex, player)}
+                            >
+                              {player}
+                            </li>
+                          ))}
+                        </ul>
+                      )
+                    )}
+                    {currentSearchTerm && filteredPlayersForThisTeam.length === 0 && !playerLoading && !playerError && (
+                      <p style={{ marginTop: '10px', color: '#ccc' }}>No players found matching "{currentSearchTerm}"</p>
+                    )}
+                  </>
                 ) : (
-                  currentSearchTerm && filteredPlayersForThisTeam.length > 0 && (
-                    <ul className="team-search-list">
-                      {filteredPlayersForThisTeam.map((player) => (
-                        <li
-                          key={player}
-                          onClick={() => handleAddPlayerToTeam(teamIndex, player)}
-                        >
-                          {player}
-                        </li>
-                      ))}
-                    </ul>
-                  )
-                )}
-                {currentSearchTerm && filteredPlayersForThisTeam.length === 0 && !playerLoading && !playerError && (
-                  <p style={{ marginTop: '10px', color: '#ccc' }}>No players found matching "{currentSearchTerm}"</p>
+                  <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85em' }}>Player search available after draft starts</p>
                 )}
               </div>
             </div>
