@@ -2,7 +2,6 @@
 import React, { useState } from 'react';
 import TournamentCreation from './TournamentCreation';
 import GlobalTeamsManagement from './GlobalTeamsManagement';
-import TournamentTeamAssignment from './TournamentTeamAssignment';
 import TeamManagement from './TeamManagement';
 import '../App.css';
 
@@ -32,18 +31,6 @@ const Setup = ({
       icon: '👥',
       component: <GlobalTeamsManagement />,
       requiresTournament: false
-    },
-    {
-      id: 'tournament-teams',
-      label: 'Tournament Teams',
-      icon: '⚙️',
-      component: (
-        <TournamentTeamAssignment 
-          tournamentId={tournamentId}
-          onTeamsSaved={onTeamsSaved}
-        />
-      ),
-      requiresTournament: true
     },
     {
       id: 'draft-management',

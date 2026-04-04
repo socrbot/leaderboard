@@ -67,6 +67,8 @@ function App() {
 
   const [showSetup, setShowSetup] = useState(false);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
+  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [availableYears, setAvailableYears] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
   const [loadingTournaments, setLoadingTournaments] = useState(true);
@@ -154,13 +156,36 @@ function App() {
     setPreloadedTournamentData(preloadedData);
   }, []);
 
-  // Fetch available tournaments from your Flask Backend
+  // Fetch available years
+  useEffect(() => {
+    const fetchYears = async () => {
+      try {
+        const response = await fetch(`${TOURNAMENTS_API_ENDPOINT}/years`);
+        if (response.ok) {
+          const years = await response.json();
+          setAvailableYears(years);
+          // If current selectedYear isn't in the list, default to the most recent year
+          if (years.length > 0 && !years.includes(selectedYear)) {
+            setSelectedYear(years[0]);
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching tournament years:', error);
+      }
+    };
+    fetchYears();
+  }, [refreshTrigger]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Fetch available tournaments from your Flask Backend (filtered by year)
   useEffect(() => {
     const fetchTournaments = async () => {
       setLoadingTournaments(true);
       setTournamentError(null);
       try {
-        const response = await fetch(TOURNAMENTS_API_ENDPOINT);
+        const url = selectedYear
+          ? `${TOURNAMENTS_API_ENDPOINT}?year=${selectedYear}`
+          : TOURNAMENTS_API_ENDPOINT;
+        const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -192,7 +217,7 @@ function App() {
       }
     };
     fetchTournaments();
-  }, [refreshTrigger, preloadTournamentData]);
+  }, [refreshTrigger, selectedYear, preloadTournamentData]);
 
   
 
@@ -481,32 +506,62 @@ function App() {
 
           {/* Tournament Selector Section */}
           <div className="tournament-section">
-            <label htmlFor="tournament-select" className="tournament-label">
-              Select Tournament
-            </label>
-            <div className="select-wrapper">
-              <select
-                id="tournament-select"
-                className="modern-select"
-                value={selectedTournamentId}
-                onChange={(e) => {
-                  const newTournamentId = e.target.value;
-                  console.log('Tournament selection changed to:', newTournamentId);
-                  setSelectedTournamentId(newTournamentId);
-                  setLeaderboardRefreshKey(prev => prev + 1);
-                }}
-              >
-                {tournaments.length === 0 ? (
-                  <option value="">No Tournaments Available</option>
-                ) : (
-                  tournaments.map((tournament) => (
-                    <option key={tournament.id} value={tournament.id}>
-                      {tournament.name}
-                    </option>
-                  ))
-                )}
-              </select>
-              <span className="select-arrow">▼</span>
+            <div className="tournament-selectors">
+              <div className="year-selector">
+                <label htmlFor="year-select" className="tournament-label">
+                  Year
+                </label>
+                <div className="select-wrapper">
+                  <select
+                    id="year-select"
+                    className="modern-select year-select"
+                    value={selectedYear}
+                    onChange={(e) => {
+                      setSelectedYear(e.target.value);
+                    }}
+                  >
+                    {availableYears.length === 0 ? (
+                      <option value="">{new Date().getFullYear()}</option>
+                    ) : (
+                      availableYears.map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <span className="select-arrow">▼</span>
+                </div>
+              </div>
+              <div className="tournament-selector">
+                <label htmlFor="tournament-select" className="tournament-label">
+                  Select Tournament
+                </label>
+                <div className="select-wrapper">
+                  <select
+                    id="tournament-select"
+                    className="modern-select"
+                    value={selectedTournamentId}
+                    onChange={(e) => {
+                      const newTournamentId = e.target.value;
+                      console.log('Tournament selection changed to:', newTournamentId);
+                      setSelectedTournamentId(newTournamentId);
+                      setLeaderboardRefreshKey(prev => prev + 1);
+                    }}
+                  >
+                    {tournaments.length === 0 ? (
+                      <option value="">No Tournaments Available</option>
+                    ) : (
+                      tournaments.map((tournament) => (
+                        <option key={tournament.id} value={tournament.id}>
+                          {tournament.name}
+                        </option>
+                      ))
+                    )}
+                  </select>
+                  <span className="select-arrow">▼</span>
+                </div>
+              </div>
             </div>
           </div>
 

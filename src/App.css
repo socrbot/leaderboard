@@ -145,6 +145,28 @@ body {
   justify-self: center;
 }
 
+.tournament-selectors {
+  display: flex;
+  gap: 1rem;
+  align-items: flex-end;
+}
+
+.year-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.tournament-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.year-select {
+  min-width: 90px !important;
+}
+
 .tournament-label {
   font-size: 0.9rem;
   color: rgba(255, 255, 255, 0.9);
@@ -603,6 +625,12 @@ select:focus {
   .tournament-section {
     order: 2;
     width: 100%;
+  }
+
+  .tournament-selectors {
+    flex-direction: row;
+    width: 100%;
+    justify-content: center;
   }
   
   .modern-nav {

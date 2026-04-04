@@ -14,9 +14,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   
   //const [availablePlayers, setAvailablePlayers] = useState([]);
 
-  // States for adding a new team
-  const [newTeamName, setNewTeamName] = useState('');
-
   // States for player search within teams
   const [searchTerms, setSearchTerms] = useState({});
 
@@ -110,21 +107,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
 
 
   // --- Event Handlers for Team/Player Management (mostly unchanged) ---
-
-  const handleAddTeam = () => {
-    if (newTeamName.trim() === '') return;
-    if (teams.some(team => team.name.toLowerCase() === newTeamName.trim().toLowerCase())) {
-        alert("A team with this name already exists!");
-        return;
-    }
-    setTeams([...teams, { 
-      name: newTeamName.trim(), 
-      golferNames: [], 
-      draftOrder: null,
-      participatesInAnnual: true // Default to participating in Annual Championship
-    }]);
-    setNewTeamName('');
-  };
 
   const handleRemoveTeam = (teamIndex) => {
     const updatedTeams = teams.filter((_, index) => index !== teamIndex);
@@ -548,30 +530,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
             </div>
           );
         })}
-
-        {/* Add New Team Card - styled like other team cards */}
-        <div className="team-card">
-          <div className="team-card-header">
-            <h3 style={{ marginTop: '0', marginBottom: '20px', color: 'white', textAlign: 'center' }}>
-              Add New Team
-            </h3>
-            <input
-              type="text"
-              placeholder="New Team Name"
-              value={newTeamName}
-              onChange={(e) => setNewTeamName(e.target.value)}
-              className="team-search-input"
-              style={{ marginBottom: '15px' }}
-            />
-            <button 
-              onClick={handleAddTeam} 
-              className="draft-action-btn"
-              style={{ width: '100%' }}
-            >
-              Add Team
-            </button>
-          </div>
-        </div>
       </div>
 
       <button onClick={handleSaveTeams} disabled={isSaving} className="save-teams-btn">
