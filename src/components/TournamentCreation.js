@@ -6,14 +6,13 @@ import '../App.css';
 const TournamentCreation = ({ onTournamentCreated }) => {
   // States for creating a new tournament
   const [newTournamentName, setNewTournamentName] = useState('');
-  const [newOrgId, setNewOrgId] = useState('');
   const [newTournId, setNewTournId] = useState('');
-  const [newYear, setNewYear] = useState('');
+  const [newYear, setNewYear] = useState(new Date().getFullYear().toString());
   const [newOddsId, setNewOddsId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
   const handleCreateTournament = async () => {
-    if (!newTournamentName.trim() || !newOrgId.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()) {
+    if (!newTournamentName.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()) {
       alert('Please fill in all fields');
       return;
     }
@@ -25,7 +24,7 @@ const TournamentCreation = ({ onTournamentCreated }) => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newTournamentName.trim(),
-          orgId: newOrgId.trim(),
+          orgId: '1',
           tournId: newTournId.trim(),
           year: newYear.trim(),
           oddsId: newOddsId.trim()
@@ -41,9 +40,8 @@ const TournamentCreation = ({ onTournamentCreated }) => {
       
       // Clear form
       setNewTournamentName('');
-      setNewOrgId('');
       setNewTournId('');
-      setNewYear('');
+      setNewYear(new Date().getFullYear().toString());
       setNewOddsId('');
 
       alert(`Tournament "${result.name}" created successfully!`);
@@ -77,19 +75,6 @@ const TournamentCreation = ({ onTournamentCreated }) => {
               className="form-input"
             />
             <small className="form-help">Display name for the tournament</small>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="org-id">Organization ID</label>
-            <input
-              id="org-id"
-              type="text"
-              placeholder="e.g., 1"
-              value={newOrgId}
-              onChange={(e) => setNewOrgId(e.target.value)}
-              className="form-input"
-            />
-            <small className="form-help">API Organization identifier</small>
           </div>
 
           <div className="form-group">
@@ -135,7 +120,7 @@ const TournamentCreation = ({ onTournamentCreated }) => {
         <div className="form-actions">
           <button
             onClick={handleCreateTournament}
-            disabled={isCreating || !newTournamentName.trim() || !newOrgId.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()}
+            disabled={isCreating || !newTournamentName.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()}
             className="create-tournament-btn"
           >
             {isCreating ? 'Creating Tournament...' : 'Create Tournament'}
@@ -147,7 +132,7 @@ const TournamentCreation = ({ onTournamentCreated }) => {
         <h4>API Information</h4>
         <div className="help-grid">
           <div className="help-item">
-            <strong>Organization ID & Tournament ID:</strong>
+            <strong>Tournament ID:</strong>
             <p>Found in the RapidAPI Live Golf Data leaderboard endpoint parameters</p>
           </div>
           <div className="help-item">
