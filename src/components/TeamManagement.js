@@ -408,21 +408,20 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               className="team-card"
             >
               <div className="team-card-header">
-                <h3 style={{ marginTop: '0', marginBottom: '5px', color: 'white' }}>
+                <h3 style={{ margin: '0', color: 'white' }}>
                   {team.name}
                 </h3>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '10px', 
-                  marginBottom: '10px',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  alignItems: isMobile ? 'stretch' : 'center'
-                }}>
-                  <label style={{ 
-                    color: 'white', 
-                    fontSize: isMobile ? '1em' : '0.9em',
-                    textAlign: isMobile ? 'center' : 'left'
-                  }}>Draft Order:</label>
+                <button
+                  onClick={() => handleRemoveTeam(teamIndex)}
+                  className="team-remove-btn"
+                >
+                  Remove Team
+                </button>
+              </div>
+
+              <div className="team-card-options">
+                <div className="team-card-option">
+                  <label>Draft Order:</label>
                   <input
                     type="number"
                     min="1"
@@ -430,53 +429,19 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     value={team.draftOrder || ''}
                     onChange={(e) => handleDraftOrderChange(teamIndex, e.target.value)}
                     placeholder="Order"
-                    style={{
-                      width: isMobile ? '100%' : '60px',
-                      padding: isMobile ? '12px 8px' : '4px',
-                      borderRadius: '4px',
-                      border: '1px solid #555',
-                      backgroundColor: '#333',
-                      color: 'white',
-                      fontSize: isMobile ? '16px' : '14px', // Prevent zoom on iOS
-                      minHeight: isMobile ? '44px' : 'auto', // Touch-friendly on mobile
-                      textAlign: 'center'
-                    }}
+                    className="draft-order-input"
                   />
                 </div>
-                <div style={{ 
-                  display: 'flex', 
-                  gap: '10px', 
-                  marginBottom: '10px',
-                  flexDirection: isMobile ? 'column' : 'row',
-                  alignItems: isMobile ? 'stretch' : 'center'
-                }}>
-                  <label style={{ 
-                    color: 'white', 
-                    fontSize: isMobile ? '1em' : '0.9em',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '8px',
-                    cursor: 'pointer'
-                  }}>
+                <div className="team-card-option">
+                  <label className="checkbox-label">
                     <input
                       type="checkbox"
-                      checked={team.participatesInAnnual !== false} // Default to true if undefined
+                      checked={team.participatesInAnnual !== false}
                       onChange={(e) => handleAnnualParticipationChange(teamIndex, e.target.checked)}
-                      style={{
-                        width: '16px',
-                        height: '16px',
-                        accentColor: '#4CAF50'
-                      }}
                     />
                     Annual Championship Participant
                   </label>
                 </div>
-                <button
-                  onClick={() => handleRemoveTeam(teamIndex)}
-                  className="team-remove-btn"
-                >
-                  Remove Team
-                </button>
               </div>
 
               <div className="team-card-golfers">
