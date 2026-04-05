@@ -65,10 +65,10 @@ body {
   margin: 0 auto;
   padding: 1rem 2rem;
   display: grid;
-  grid-template-columns: 1fr auto 1fr;
+  grid-template-columns: auto 1fr;
+  grid-template-rows: auto auto;
   align-items: center;
-  justify-items: center;
-  gap: 2rem;
+  gap: 1rem 2rem;
   transition: padding 0.3s ease;
 }
 
@@ -78,6 +78,19 @@ body {
   align-items: center;
   gap: 1rem;
   justify-self: start;
+}
+
+.tournament-section {
+  justify-self: end;
+}
+
+/* Navigation */
+.modern-nav {
+  grid-column: 1 / -1;
+  display: flex;
+  gap: 0.5rem;
+  justify-content: center;
+  align-items: center;
 }
 
 .logo-container {
@@ -225,15 +238,6 @@ body {
 }
 
 /* Navigation */
-.modern-nav {
-  display: flex;
-  gap: 0.5rem;
-  justify-self: end;
-  flex-wrap: nowrap;
-  justify-content: center;
-  align-items: center;
-}
-
 .nav-button {
   display: flex;
   align-items: center;
