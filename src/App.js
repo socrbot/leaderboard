@@ -298,6 +298,7 @@ function App() {
     loading,
     error,
     isTournamentInProgress,
+    isTournamentOver,
     tournamentOddsId,
     selectedTeamGolfersMap,
     teamColors,
@@ -604,20 +605,20 @@ function App() {
             <div className="status-container">
               <div className="status-item">
                 <span className="status-label">Status:</span>
-                <span className={`status-value ${draftStatus.IsDraftComplete ? 'complete' : draftStatus.IsDraftStarted ? 'active' : draftStatus.IsDraftLocked ? 'active' : 'pending'}`}>
-                  {draftStatus.IsDraftComplete ? 'Draft Complete' : 
-                   draftStatus.IsDraftStarted ? 'Draft In Progress' : 
-                   draftStatus.IsDraftLocked ? 'Odds Locked - Set Draft Order' : 'Draft Pending'}
+                <span className={`status-value ${
+                  isTournamentOver ? 'complete' :
+                  isTournamentInProgress ? 'live' :
+                  draftStatus.IsDraftComplete ? 'complete' :
+                  draftStatus.IsDraftStarted ? 'active' :
+                  draftStatus.IsDraftLocked ? 'active' : 'pending'
+                }`}>
+                  {isTournamentOver ? 'Tournament Complete' :
+                   isTournamentInProgress ? 'Tournament Live' :
+                   draftStatus.IsDraftComplete ? 'Draft Complete' :
+                   draftStatus.IsDraftStarted ? 'Draft In Progress' :
+                   draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
                 </span>
               </div>
-              {draftStatus.IsDraftComplete && (
-                <div className="status-item">
-                  <span className="status-label">Tournament:</span>
-                  <span className={`status-value ${isTournamentInProgress ? 'live' : 'upcoming'}`}>
-                    {isTournamentInProgress ? 'Live' : 'Upcoming'}
-                  </span>
-                </div>
-              )}
             </div>
           </div>
         )}

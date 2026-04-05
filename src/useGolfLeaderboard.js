@@ -10,6 +10,7 @@ export const useGolfLeaderboard = (
     const [error, setError] = useState(null);
     const [teamAssignments, setTeamAssignments] = useState([]);
     const [isTournamentInProgress, setIsTournamentInProgress] = useState(false);
+    const [isTournamentOver, setIsTournamentOver] = useState(false);
     const [tournamentOddsId, setTournamentOddsId] = useState('');
     const [isDraftStarted, setIsDraftStarted] = useState(false);
     const [hasManualDraftOdds, setHasManualDraftOdds] = useState(false);
@@ -28,6 +29,7 @@ export const useGolfLeaderboard = (
                 setTeamAssignments([]);
                 setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
                 setIsTournamentInProgress(false);
+                setIsTournamentOver(false);
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
@@ -54,6 +56,7 @@ export const useGolfLeaderboard = (
                     par: tournamentData.par || 71
                 });
                 setIsTournamentInProgress(tournamentData.IsInProgress || false);
+                setIsTournamentOver(tournamentData.IsOver || false);
                 setTournamentOddsId(tournamentData.oddsId || '');
                 setIsDraftStarted(tournamentData.IsDraftStarted || false);
                 setHasManualDraftOdds(tournamentData.hasManualDraftOdds || false);
@@ -68,6 +71,7 @@ export const useGolfLeaderboard = (
                 setTeamAssignments([]);
                 setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
                 setIsTournamentInProgress(false);
+                setIsTournamentOver(false);
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
@@ -191,6 +195,7 @@ export const useGolfLeaderboard = (
         loading,
         error,
         isTournamentInProgress,
+        isTournamentOver,
         tournamentOddsId,
         teamAssignments,
         selectedTeamGolfersMap,
