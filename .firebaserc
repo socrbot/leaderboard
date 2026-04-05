@@ -1,5 +1,6 @@
 {
   "projects": {
-    "default": "alumni-golf-tournament"
+    "default": "alumni-golf-tournament",
+    "staging": "alumni-golf-tournament-staging"
   }
 }

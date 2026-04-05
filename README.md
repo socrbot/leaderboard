@@ -37,11 +37,26 @@ This repository powers a dynamic, team-based golf tournament leaderboard for alu
     The app will run at [http://localhost:3000](http://localhost:3000).
 
 4. **Configure backend API (if needed):**
-    - By default, the frontend points to a live backend API at:
-      ```
-      https://leaderboard-backend-628169335141.us-east1.run.app/api
-      ```
-    - For development or custom backends, edit the relevant URL in `src/App.js` and `src/useGolfLeaderboard.js`.
+    - The backend URL is controlled by environment variables via `src/apiConfig.js`.
+    - **Production** (default): `https://leaderboard-backend-628169335141.us-east1.run.app/api`
+    - **Staging**: `https://leaderboard-backend-staging-1056126670188.us-east1.run.app/api`
+    - For local development, set `REACT_APP_BACKEND_URL` in a `.env.local` file.
+
+## Build & Deploy
+
+### Production
+```bash
+npm run build
+firebase deploy --only hosting
+```
+
+### Staging
+```bash
+npm run build:staging
+firebase deploy --only hosting --project staging
+```
+
+The staging build uses `.env.staging` (via `env-cmd`) to set the backend URL. Firebase project aliases are configured in `.firebaserc`.
 
 ## Folder Structure
 
