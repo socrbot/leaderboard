@@ -472,10 +472,8 @@ function App() {
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
     // Show draft board if:
-    // 1. Draft has started 
-    // 2. Draft is not complete
-    return draftStatus.IsDraftStarted && 
-           !draftStatus.IsDraftComplete;
+    // 1. Draft is not complete (show pre-draft tiers AND active draft)
+    return !draftStatus.IsDraftComplete;
   }, [draftStatus]);
 
   const shouldShowLeaderboard = useMemo(() => {
@@ -651,6 +649,7 @@ function App() {
                 hasManualDraftOdds={hasManualDraftOdds}
                 teams={teams}
                 draftPicks={draftPicks}
+                isDraftStarted={draftStatus.IsDraftStarted}
               />
             ) : shouldShowLeaderboard ? (
               (effectiveLoading || draftStatusLoading || !effectiveRawData) ? (
@@ -727,13 +726,8 @@ function App() {
                   <p>No leaderboard data available for this tournament.</p>
                 </div>
               )
-            ) : draftStatus.IsDraftStarted && !draftStatus.IsDraftLocked ? (
-              <div style={{ padding: '20px', textAlign: 'center' }}>
-                <h3>Draft Started - Waiting for Odds to be Locked</h3>
-                <p>The draft has been started but odds are not yet locked. Please lock the odds to view the draft board.</p>
-              </div>
             ) : (
-              <div>No tournament data available. Tournament may not have started yet.</div>
+              <div>No tournament data available.</div>
             )}
           </main>
         )) : (

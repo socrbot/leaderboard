@@ -1,7 +1,7 @@
 // src/components/DraftBoard.js
 import React, { useState, useEffect } from 'react';
 
-const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks }) => { // NEW: Receive teams and draftPicks props
+const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted }) => {
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
   const [currentTierView, setCurrentTierView] = useState(0); // 0 = Tiers 1&2, 1 = Tiers 3&4
@@ -84,26 +84,29 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                 flex: isMobile ? 'none' : 1 
               }}>
                 {[...teams]
-                  .filter(team => team.draftOrder !== null && team.draftOrder !== undefined)
-                  .sort((a, b) => a.draftOrder - b.draftOrder)
+                  .filter(team => !isDraftStarted || (team.draftOrder !== null && team.draftOrder !== undefined))
+                  .sort((a, b) => {
+                    if (!isDraftStarted) return (a.name || '').localeCompare(b.name || '');
+                    return (a.draftOrder || 999) - (b.draftOrder || 999);
+                  })
                   .map((team, index) => (
                     <div key={team.name} style={{
                       padding: isMobile ? '10px' : '8px',
                       marginBottom: '5px',
-                      backgroundColor: getCurrentDraftingTeam()?.name === team.name ? '#FFD700' : '#4A4A4A',
-                      color: getCurrentDraftingTeam()?.name === team.name ? '#000' : '#fff',
+                      backgroundColor: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#FFD700' : '#4A4A4A',
+                      color: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#000' : '#fff',
                       borderRadius: '4px',
                       fontSize: isMobile ? '1em' : '0.9em',
-                      border: getCurrentDraftingTeam()?.name === team.name ? '2px solid #FFD700' : '1px solid #666',
+                      border: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '2px solid #FFD700' : '1px solid #666',
                       minHeight: isMobile ? '44px' : 'auto',
                       display: 'flex',
                       flexDirection: 'column',
                       justifyContent: 'center'
                     }}>
-                      <div style={{ fontWeight: 'bold' }}>{team.draftOrder}. {team.name}</div>
+                      <div style={{ fontWeight: 'bold' }}>{isDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}</div>
                       <div style={{ 
                         fontSize: isMobile ? '0.9em' : '0.8em', 
-                        color: getCurrentDraftingTeam()?.name === team.name ? '#333' : '#ccc',
+                        color: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#333' : '#ccc',
                         marginTop: '2px' 
                       }}>
                         {team.golferNames.length} player{team.golferNames.length !== 1 ? 's' : ''}
@@ -137,6 +140,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
           flexDirection: 'column'
         }}>
           {/* Next Pick Header */}
+          {isDraftStarted && (
           <div style={{ 
             textAlign: 'center', 
             padding: isMobile ? '12px' : '8px', 
@@ -160,6 +164,30 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
               </div>
             )}
           </div>
+          )}
+          {!isDraftStarted && (
+          <div style={{ 
+            textAlign: 'center', 
+            padding: isMobile ? '12px' : '8px', 
+            backgroundColor: '#1a1a1a', 
+            borderRadius: '4px',
+            fontSize: isMobile ? '1em' : '1.1em',
+            marginBottom: '15px',
+            minHeight: isMobile ? '44px' : 'auto',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center'
+          }}>
+            <div style={{ fontWeight: 'bold' }}>Draft Tiers Preview</div>
+            <div style={{ 
+              color: '#ccc', 
+              marginTop: '4px', 
+              fontSize: isMobile ? '0.9em' : '0.8em' 
+            }}>
+              Draft order will appear once the draft starts
+            </div>
+          </div>
+          )}
           
           {loading ? (
             <p style={{ textAlign: 'center', color: '#ccc' }}>Loading draft board players...</p>
