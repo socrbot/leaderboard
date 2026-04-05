@@ -1142,6 +1142,7 @@ select:focus {
 /* Tab Navigation */
 .setup-tabs {
   display: flex;
+  justify-content: center;
   gap: 0.5rem;
   margin-bottom: 2rem;
   background: #333333;
