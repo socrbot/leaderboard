@@ -178,13 +178,13 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
             flexDirection: 'column',
             justifyContent: 'center'
           }}>
-            <div style={{ fontWeight: 'bold' }}>Draft Tiers Preview</div>
+            <div style={{ fontWeight: 'bold' }}>Draft Tiers</div>
             <div style={{ 
               color: '#ccc', 
               marginTop: '4px', 
               fontSize: isMobile ? '0.9em' : '0.8em' 
             }}>
-              Draft order will appear once the draft starts
+              Set draft order in Setup, then start the draft
             </div>
           </div>
           )}

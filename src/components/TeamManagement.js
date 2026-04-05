@@ -258,14 +258,14 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     let endpoint = '';
     let confirmMsg = '';
     let successMsg = '';
-    if (!draftStatus.IsDraftStarted) {
-      endpoint = `/tournaments/${tournamentId}/start_draft_flag`;
-      confirmMsg = 'Are you sure you want to start the draft?';
-      successMsg = 'Draft started!';
-    } else if (!draftStatus.IsDraftLocked) {
+    if (!draftStatus.IsDraftLocked) {
       endpoint = `/tournaments/${tournamentId}/lock_draft_odds`;
-      confirmMsg = 'Are you sure you want to lock the draft odds?';
-      successMsg = 'Draft odds locked!';
+      confirmMsg = 'Are you sure you want to lock the draft odds? This will snapshot the current odds for the draft tiers.';
+      successMsg = 'Draft odds locked! Tiers are now visible on the leaderboard.';
+    } else if (!draftStatus.IsDraftStarted) {
+      endpoint = `/tournaments/${tournamentId}/start_draft_flag`;
+      confirmMsg = 'Are you sure you want to start the draft? Make sure draft order is set for all teams.';
+      successMsg = 'Draft started! Draft order is now visible.';
     } else if (!draftStatus.IsDraftComplete) {
       endpoint = `/tournaments/${tournamentId}/complete_draft`;
       confirmMsg = 'Are you sure you want to complete the draft?';
@@ -332,7 +332,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               Using Live SportsData.io Odds.
             </p>
           )}
-          {hasManualDraftOdds && !draftStatus.IsDraftStarted && (
+          {hasManualDraftOdds && !draftStatus.IsDraftLocked && (
             <button
               onClick={handleClearManualOdds}
               disabled={isClearingManualOdds || !tournamentId}
@@ -341,9 +341,14 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
             </button>
           )}
+          {draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted && (
+            <p style={{ color: '#90EE90', marginTop: '10px' }}>
+              Odds locked! Set draft order for all teams below, then start the draft.
+            </p>
+          )}
           {draftStatus.IsDraftStarted && (
             <p style={{ color: '#90EE90', marginTop: '10px' }}>
-              Draft has started. Odds are locked in!
+              Draft is in progress. Assign golfers to teams.
             </p>
           )}
         </div>
@@ -357,10 +362,10 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
           >
             {isDraftActionLoading
               ? 'Processing...'
-              : !draftStatus.IsDraftStarted
-                ? 'Start Draft'
-                : !draftStatus.IsDraftLocked
-                  ? 'Lock Draft Odds'
+              : !draftStatus.IsDraftLocked
+                ? 'Lock Draft Odds'
+                : !draftStatus.IsDraftStarted
+                  ? 'Start Draft'
                   : 'Complete Draft'}
           </button>
         )}

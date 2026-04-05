@@ -472,8 +472,9 @@ function App() {
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
     // Show draft board if:
-    // 1. Draft is not complete (show pre-draft tiers AND active draft)
-    return !draftStatus.IsDraftComplete;
+    // 1. Odds are locked (tiers visible)
+    // 2. Draft is not complete
+    return draftStatus.IsDraftLocked && !draftStatus.IsDraftComplete;
   }, [draftStatus]);
 
   const shouldShowLeaderboard = useMemo(() => {
@@ -603,9 +604,10 @@ function App() {
             <div className="status-container">
               <div className="status-item">
                 <span className="status-label">Status:</span>
-                <span className={`status-value ${draftStatus.IsDraftComplete ? 'complete' : draftStatus.IsDraftStarted ? 'active' : 'pending'}`}>
+                <span className={`status-value ${draftStatus.IsDraftComplete ? 'complete' : draftStatus.IsDraftStarted ? 'active' : draftStatus.IsDraftLocked ? 'active' : 'pending'}`}>
                   {draftStatus.IsDraftComplete ? 'Draft Complete' : 
-                   draftStatus.IsDraftStarted ? 'Draft In Progress' : 'Draft Pending'}
+                   draftStatus.IsDraftStarted ? 'Draft In Progress' : 
+                   draftStatus.IsDraftLocked ? 'Odds Locked - Set Draft Order' : 'Draft Pending'}
                 </span>
               </div>
               {draftStatus.IsDraftComplete && (
@@ -727,7 +729,9 @@ function App() {
                 </div>
               )
             ) : (
-              <div>No tournament data available.</div>
+              <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
+                <p>Lock the draft odds in Setup to view the draft tiers.</p>
+              </div>
             )}
           </main>
         )) : (
