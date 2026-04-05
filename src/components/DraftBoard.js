@@ -1,7 +1,7 @@
 // src/components/DraftBoard.js
 import React, { useState, useEffect } from 'react';
 
-const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted }) => {
+const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted, tournamentInfo }) => {
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
   const [currentTierView, setCurrentTierView] = useState(0); // 0 = Tiers 1&2, 1 = Tiers 3&4
@@ -168,23 +168,32 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
           {!isDraftStarted && (
           <div style={{ 
             textAlign: 'center', 
-            padding: isMobile ? '12px' : '8px', 
+            padding: isMobile ? '12px' : '10px', 
             backgroundColor: '#1a1a1a', 
             borderRadius: '4px',
             fontSize: isMobile ? '1em' : '1.1em',
             marginBottom: '15px',
-            minHeight: isMobile ? '44px' : 'auto',
             display: 'flex',
             flexDirection: 'column',
             justifyContent: 'center'
           }}>
             <div style={{ fontWeight: 'bold' }}>Draft Tiers</div>
+            {tournamentInfo && (
+              <div style={{ color: '#ccc', marginTop: '6px', fontSize: isMobile ? '0.85em' : '0.8em', lineHeight: '1.4' }}>
+                {tournamentInfo.Name && <div>{tournamentInfo.Name}</div>}
+                {tournamentInfo.Venue && <div>{tournamentInfo.Venue}{tournamentInfo.Location ? ` — ${tournamentInfo.Location}` : ''}</div>}
+                {tournamentInfo.StartDate && (
+                  <div>{new Date(tournamentInfo.StartDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })} – {tournamentInfo.EndDate ? new Date(tournamentInfo.EndDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' }) : ''}</div>
+                )}
+              </div>
+            )}
             <div style={{ 
-              color: '#ccc', 
-              marginTop: '4px', 
-              fontSize: isMobile ? '0.9em' : '0.8em' 
+              color: '#888', 
+              marginTop: '6px', 
+              fontSize: isMobile ? '0.75em' : '0.7em',
+              fontStyle: 'italic'
             }}>
-              Set draft order in Setup, then start the draft
+              Odds averaged across major sportsbooks via SportsData.io
             </div>
           </div>
           )}

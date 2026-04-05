@@ -14,6 +14,7 @@ export const useGolfLeaderboard = (
     const [tournamentOddsId, setTournamentOddsId] = useState('');
     const [isDraftStarted, setIsDraftStarted] = useState(false);
     const [hasManualDraftOdds, setHasManualDraftOdds] = useState(false);
+    const [tournamentInfo, setTournamentInfo] = useState(null);
 
     const [tournamentSpecifics, setTournamentSpecifics] = useState({
         orgId: '1',
@@ -33,6 +34,7 @@ export const useGolfLeaderboard = (
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
+                setTournamentInfo(null);
                 setLoading(false);
                 return;
             }
@@ -60,6 +62,7 @@ export const useGolfLeaderboard = (
                 setTournamentOddsId(tournamentData.oddsId || '');
                 setIsDraftStarted(tournamentData.IsDraftStarted || false);
                 setHasManualDraftOdds(tournamentData.hasManualDraftOdds || false);
+                setTournamentInfo(tournamentData.Tournament || null);
 
                 if (!tournamentData.teams || tournamentData.teams.length === 0) {
                     setLoading(false);
@@ -75,6 +78,7 @@ export const useGolfLeaderboard = (
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
+                setTournamentInfo(null);
                 setLoading(false);
             }
         };
@@ -201,6 +205,7 @@ export const useGolfLeaderboard = (
         selectedTeamGolfersMap,
         teamColors,
         isDraftStarted,
-        hasManualDraftOdds
+        hasManualDraftOdds,
+        tournamentInfo
     };
 };

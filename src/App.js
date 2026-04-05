@@ -303,7 +303,8 @@ function App() {
     selectedTeamGolfersMap,
     teamColors,
     isDraftStarted,
-    hasManualDraftOdds
+    hasManualDraftOdds,
+    tournamentInfo
   } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
   // Use preloaded data if available and tournament has completed draft
@@ -653,6 +654,7 @@ function App() {
                 teams={teams}
                 draftPicks={draftPicks}
                 isDraftStarted={draftStatus.IsDraftStarted}
+                tournamentInfo={tournamentInfo}
               />
             ) : shouldShowLeaderboard ? (
               (effectiveLoading || draftStatusLoading || !effectiveRawData) ? (
