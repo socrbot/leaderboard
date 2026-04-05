@@ -229,8 +229,9 @@ body {
   display: flex;
   gap: 0.5rem;
   justify-self: end;
-  flex-wrap: wrap;
+  flex-wrap: nowrap;
   justify-content: center;
+  align-items: center;
 }
 
 .nav-button {
@@ -250,8 +251,6 @@ body {
   position: relative;
   overflow: hidden;
   white-space: nowrap;
-  min-width: fit-content;
-  max-width: 180px; /* Increased from 140px to accommodate "Annual Championship" */
 }
 
 .nav-button:not(.disabled):hover {
