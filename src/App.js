@@ -477,7 +477,14 @@ function App() {
       return [];
     }
 
-    return teams.map((team, teamIndex) => {
+    // Sort teams by draft order
+    const sortedTeams = [...teams].sort((a, b) => {
+      const orderA = a.draftOrder !== null && a.draftOrder !== undefined ? a.draftOrder : 999;
+      const orderB = b.draftOrder !== null && b.draftOrder !== undefined ? b.draftOrder : 999;
+      return orderA - orderB;
+    });
+
+    return sortedTeams.map((team, teamIndex) => {
       // Get the drafted golfers for this team
       const draftedGolfers = team.golferNames || [];
       
@@ -501,7 +508,7 @@ function App() {
 
       return {
         team: team.name,
-        position: teamIndex + 1,
+        position: team.draftOrder || (teamIndex + 1),
         golfers: golferRows,
         teamColor: teamColors[team.name] || '#FFCDD2'
       };
