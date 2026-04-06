@@ -304,8 +304,7 @@ function App() {
     teamColors,
     isDraftStarted,
     hasManualDraftOdds,
-    tournamentInfo,
-    teamAssignments
+    tournamentInfo
   } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
   // Use preloaded data if available and tournament has completed draft
@@ -474,11 +473,11 @@ function App() {
 
   // Memoize the Team/Golfer table data for draft display
   const teamGolferTableData = useMemo(() => {
-    if (!teamAssignments || teamAssignments.length === 0) {
+    if (!teams || teams.length === 0) {
       return [];
     }
 
-    return teamAssignments.map((team, teamIndex) => {
+    return teams.map((team, teamIndex) => {
       // Get the drafted golfers for this team
       const draftedGolfers = team.golferNames || [];
       
@@ -507,7 +506,7 @@ function App() {
         teamColor: teamColors[team.name] || '#FFCDD2'
       };
     });
-  }, [teamAssignments, teamColors]);
+  }, [teams, teamColors]);
 
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
