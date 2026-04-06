@@ -304,7 +304,8 @@ function App() {
     teamColors,
     isDraftStarted,
     hasManualDraftOdds,
-    tournamentInfo
+    tournamentInfo,
+    teamAssignments
   } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
   // Use preloaded data if available and tournament has completed draft
@@ -470,6 +471,43 @@ function App() {
       };
     });
   }, [draftBoardPlayers, selectedTeamGolfersMap, teamColors, draftPicks]);
+
+  // Memoize the Team/Golfer table data for draft display
+  const teamGolferTableData = useMemo(() => {
+    if (!teamAssignments || teamAssignments.length === 0) {
+      return [];
+    }
+
+    return teamAssignments.map((team, teamIndex) => {
+      // Get the drafted golfers for this team
+      const draftedGolfers = team.golferNames || [];
+      
+      // Create golfer rows (always 4 rows per team)
+      const golferRows = [];
+      for (let i = 0; i < 4; i++) {
+        if (i < draftedGolfers.length) {
+          // Drafted golfer
+          golferRows.push({
+            name: draftedGolfers[i],
+            isDrafted: true
+          });
+        } else {
+          // Blank row for undrafted slot
+          golferRows.push({
+            name: '- - -',
+            isDrafted: false
+          });
+        }
+      }
+
+      return {
+        team: team.name,
+        position: teamIndex + 1,
+        golfers: golferRows,
+        teamColor: teamColors[team.name] || '#FFCDD2'
+      };
+    });
+  }, [teamAssignments, teamColors]);
 
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
@@ -645,17 +683,71 @@ function App() {
             {draftStatusLoading ? (
               <div>Loading draft status...</div>
             ) : shouldShowDraftBoard ? (
-              <DraftBoard
-                topPlayers={augmentedDraftBoardPlayers}
-                loading={draftBoardLoading}
-                error={draftBoardError}
-                oddsId={tournamentOddsId}
-                hasManualDraftOdds={hasManualDraftOdds}
-                teams={teams}
-                draftPicks={draftPicks}
-                isDraftStarted={draftStatus.IsDraftStarted}
-                tournamentInfo={tournamentInfo}
-              />
+              <>
+                <DraftBoard
+                  topPlayers={augmentedDraftBoardPlayers}
+                  loading={draftBoardLoading}
+                  error={draftBoardError}
+                  oddsId={tournamentOddsId}
+                  hasManualDraftOdds={hasManualDraftOdds}
+                  teams={teams}
+                  draftPicks={draftPicks}
+                  isDraftStarted={draftStatus.IsDraftStarted}
+                  tournamentInfo={tournamentInfo}
+                />
+                
+                {/* Team/Golfer Table - Shows teams and their drafted golfers during draft */}
+                {teamGolferTableData.length > 0 && (
+                  <div style={{ marginTop: '40px' }}>
+                    <h2 style={{ textAlign: 'center', color: '#fff', marginBottom: '20px', fontSize: '1.8rem' }}>Team Rosters</h2>
+                    <div className="leaderboard-container">
+                      <table className="leaderboard-table">
+                        <thead>
+                          <tr>
+                            <th>POS</th>
+                            <th className="team-golfer-header">TEAM / GOLFER</th>
+                            <th>TOTAL</th>
+                            <th>R1</th>
+                            <th>R2</th>
+                            <th>R3</th>
+                            <th>R4</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {teamGolferTableData.map((team) => (
+                            <React.Fragment key={`team-${team.team}`}>
+                              <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                                <td>{team.position}</td>
+                                <td className="team-name-cell">{team.team}</td>
+                                <td className="total-cell">-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                                <td>-</td>
+                              </tr>
+                              {team.golfers && team.golfers.map((golfer, golferIndex) => (
+                                <tr 
+                                  key={`golfer-${team.team}-${golferIndex}`} 
+                                  className="golfer-row"
+                                  style={{ opacity: golfer.isDrafted ? 1 : 0.4 }}
+                                >
+                                  <td></td>
+                                  <td className="golfer-name-cell">{golfer.name}</td>
+                                  <td></td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                  <td>-</td>
+                                </tr>
+                              ))}
+                            </React.Fragment>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+                )}
+              </>
             ) : shouldShowLeaderboard ? (
               (effectiveLoading || draftStatusLoading || !effectiveRawData) ? (
                 <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
