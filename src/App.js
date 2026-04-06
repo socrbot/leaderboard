@@ -473,11 +473,14 @@ function App() {
 
   // Memoize the Team/Golfer table data for draft display
   const teamGolferTableData = useMemo(() => {
+    console.log('🔍 teamGolferTableData - teams:', teams);
+    
     if (!teams || teams.length === 0) {
+      console.log('❌ No teams data available for Team/Golfer table');
       return [];
     }
 
-    return teams.map((team, teamIndex) => {
+    const tableData = teams.map((team, teamIndex) => {
       // Get the drafted golfers for this team
       const draftedGolfers = team.golferNames || [];
       
@@ -506,6 +509,9 @@ function App() {
         teamColor: teamColors[team.name] || '#FFCDD2'
       };
     });
+    
+    console.log('✅ teamGolferTableData generated:', tableData.length, 'teams');
+    return tableData;
   }, [teams, teamColors]);
 
   // --- Determine what to show based on draft and tournament status ---
@@ -696,7 +702,7 @@ function App() {
                 />
                 
                 {/* Team/Golfer Table - Shows teams and their drafted golfers during draft */}
-                {teamGolferTableData.length > 0 && (
+                {teamGolferTableData.length > 0 ? (
                   <div style={{ marginTop: '40px' }}>
                     <h2 style={{ textAlign: 'center', color: '#fff', marginBottom: '20px', fontSize: '1.8rem' }}>Team Rosters</h2>
                     <div className="leaderboard-container">
@@ -744,6 +750,11 @@ function App() {
                         </tbody>
                       </table>
                     </div>
+                  </div>
+                ) : (
+                  <div style={{ marginTop: '40px', textAlign: 'center', color: '#ff9800', padding: '20px' }}>
+                    <p>⚠️ Team Rosters table not displaying. Teams data: {teams ? teams.length : 'null'}</p>
+                    <p>Check browser console for debug logs.</p>
                   </div>
                 )}
               </>
