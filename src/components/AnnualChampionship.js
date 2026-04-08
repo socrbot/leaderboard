@@ -112,8 +112,6 @@ const AnnualChampionship = ({ selectedYear }) => {
                 <tr>
                   <th>POS</th>
                   <th>TEAM</th>
-                  <th className="stats-column">WINS</th>
-                  <th className="stats-column">TOP 3</th>
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
                       {tournament.name}
@@ -127,8 +125,6 @@ const AnnualChampionship = ({ selectedYear }) => {
                   <tr key={team.teamName} className="annual-team-row">
                     <td className="position-cell">{index + 1}</td>
                     <td className="team-name-cell">{team.teamName}</td>
-                    <td className="stats-cell">{team.wins || 0}</td>
-                    <td className="stats-cell">{team.top3 || 0}</td>
                     {tournaments.map(tournament => {
                       const teamTournament = team.tournaments?.find(t => t.tournamentId === tournament.tournamentId);
                       return (
