@@ -16,7 +16,25 @@ This repository powers a dynamic, team-based golf tournament leaderboard for alu
 - **Live scoring** and team data are fetched from a backend and the Rapid Golf API.
 - Team scores per round use the best 3 available golfer scores. If fewer than 3 golfers have a score, the team’s round score shows as "-".
 - The leaderboard automatically updates as new scores come in.
+## Annual Championship Scoring
 
+The application tracks an annual championship across multiple tournaments throughout the season.
+
+### Team Scoring Per Tournament
+- Each round uses the **best 3 of 4 golfer scores**
+- If fewer than 3 golfers have scores, the round shows as "-"
+- **Cut Penalty**: Players who miss the cut receive a penalty score equal to the highest non-cut score + 1 stroke
+- Team's total score is the sum of all round scores
+
+### Championship Points System
+Teams earn points based on their finish position in each completed tournament:
+- **Formula**: `points = max(0, number_of_teams - position + 1)`
+- **Example** (8 teams): 1st place = 8 points, 2nd = 7 points, ..., 8th = 1 point
+
+### Annual Championship Standings
+- Only **completed tournaments** with `participatesInAnnual: true` count toward the championship
+- Final standings are sorted by **total points** accumulated across all eligible tournaments
+- Each team's results show their position, score, and points earned per tournament
 ## Getting Started
 
 1. **Clone the repo:**

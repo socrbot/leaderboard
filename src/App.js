@@ -683,7 +683,7 @@ function App() {
               onManualOddsUpdated={handleDataUpdated}
             />
           ) : showAnnualChampionship ? (
-            <AnnualChampionship />
+            <AnnualChampionship selectedYear={selectedYear} />
           ) : (
             <main>
             {draftStatusLoading ? (
@@ -848,7 +848,7 @@ function App() {
               onManualOddsUpdated={handleDataUpdated}
             />
           ) : showAnnualChampionship ? (
-            <AnnualChampionship />
+            <AnnualChampionship selectedYear={selectedYear} />
           ) : (
             <div style={{ padding: '20px', textAlign: 'center' }}>
               Please create or select a tournament to get started.

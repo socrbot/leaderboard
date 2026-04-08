@@ -1,11 +1,10 @@
-import React, { useState, useEffect, useMemo } from 'react';
+import React, { useState, useEffect } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 
-const AnnualChampionship = () => {
+const AnnualChampionship = ({ selectedYear }) => {
   const [annualData, setAnnualData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
 
   // Fetch annual championship data from backend
   useEffect(() => {
@@ -41,13 +40,6 @@ const AnnualChampionship = () => {
     return score > 0 ? `+${score}` : score.toString();
   };
 
-  const availableYears = useMemo(() => {
-    const currentYear = new Date().getFullYear();
-    // Only show 2025 and later years
-    const startYear = Math.max(2025, currentYear);
-    return [startYear];
-  }, []);
-
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
@@ -71,20 +63,7 @@ const AnnualChampionship = () => {
   return (
     <div className="annual-championship">
       <div className="annual-header">
-        <h2 className="annual-title">🏆 Annual Golf Championship</h2>
-        <div className="year-selector">
-          <label htmlFor="year-select">Year:</label>
-          <select
-            id="year-select"
-            value={selectedYear}
-            onChange={(e) => setSelectedYear(parseInt(e.target.value))}
-            className="modern-select"
-          >
-            {availableYears.map(year => (
-              <option key={year} value={year}>{year}</option>
-            ))}
-          </select>
-        </div>
+        <h2 className="annual-title">🏆 {selectedYear} Annual Golf Championship</h2>
       </div>
 
       {tournaments.length === 0 ? (
