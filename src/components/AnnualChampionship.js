@@ -105,7 +105,7 @@ const AnnualChampionship = ({ selectedYear }) => {
         </div>
       ) : (
         <>
-          {/* Points-based standings table */}
+          {/* Score-based standings table */}
           <div className="annual-table-container">
             <table className="annual-table">
               <thead>
@@ -117,7 +117,7 @@ const AnnualChampionship = ({ selectedYear }) => {
                       {tournament.name}
                     </th>
                   ))}
-                  <th className="total-column">TOTAL POINTS</th>
+                  <th className="total-column">TOTAL SCORE</th>
                 </tr>
               </thead>
               <tbody>
@@ -130,17 +130,15 @@ const AnnualChampionship = ({ selectedYear }) => {
                       return (
                         <td key={tournament.tournamentId} className="score-cell">
                           {teamTournament ? (
-                            <span title={`Position: ${teamTournament.position}, Score: ${formatScore(teamTournament.score)}`}>
-                              {teamTournament.points}pts
-                              <br />
-                              <small style={{ color: '#888' }}>({formatScore(teamTournament.score)})</small>
+                            <span title={`Position: ${teamTournament.position}`}>
+                              {formatScore(teamTournament.score)}
                             </span>
                           ) : '-'}
                         </td>
                       );
                     })}
                     <td className="total-cell">
-                      <strong>{team.totalPoints}</strong>
+                      <strong>{formatScore(team.totalScore)}</strong>
                     </td>
                   </tr>
                 ))}
@@ -155,7 +153,7 @@ const AnnualChampionship = ({ selectedYear }) => {
               <strong> {standings.reduce((total, team) => total + (team.tournaments?.length || 0), 0)}</strong> total team entries
             </p>
             <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '10px' }}>
-              Points are awarded based on tournament position. Higher positions earn more points.
+              Total score is the cumulative sum of tournament scores. Lower total scores are better.
               {metadata.calculatedAt && (
                 <span> • Last updated: {new Date(metadata.calculatedAt).toLocaleString()}</span>
               )}

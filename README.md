@@ -26,15 +26,16 @@ The application tracks an annual championship across multiple tournaments throug
 - **Cut Penalty**: Players who miss the cut receive a penalty score equal to the highest non-cut score + 1 stroke
 - Team's total score is the sum of all round scores
 
-### Championship Points System
-Teams earn points based on their finish position in each completed tournament:
-- **Formula**: `points = max(0, number_of_teams - position + 1)`
-- **Example** (8 teams): 1st place = 8 points, 2nd = 7 points, ..., 8th = 1 point
+### Annual Championship Scoring
+The annual championship uses **cumulative stroke scoring**:
+- Each team's total score is the **sum of their tournament scores** across all completed tournaments
+- **Lower total score wins** (standard golf scoring)
+- **Example**: Team A scores +5, +8, +3 = +16 total | Team B scores +10, +2, +6 = +18 total → Team A wins
 
 ### Annual Championship Standings
 - Only **completed tournaments** with `participatesInAnnual: true` count toward the championship
-- Final standings are sorted by **total points** accumulated across all eligible tournaments
-- Each team's results show their position, score, and points earned per tournament
+- Final standings are sorted by **lowest total score** (best in golf)
+- Each team's results show their tournament scores and cumulative total
 ## Getting Started
 
 1. **Clone the repo:**
