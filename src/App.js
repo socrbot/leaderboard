@@ -674,6 +674,7 @@ function App() {
           showSetup ? (
             <Setup
               tournamentId={selectedTournamentId}
+              selectedYear={selectedYear}
               onTournamentCreated={handleDataUpdated}
               onTeamsSaved={handleDataUpdated}
               tournamentOddsId={tournamentOddsId}
@@ -839,6 +840,7 @@ function App() {
           showSetup ? (
             <Setup
               tournamentId={null}
+              selectedYear={selectedYear}
               onTournamentCreated={handleDataUpdated}
               onTeamsSaved={handleDataUpdated}
               tournamentOddsId={null}

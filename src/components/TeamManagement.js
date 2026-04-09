@@ -191,12 +191,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     setTeams(updatedTeams);
   };
 
-  const handleAnnualParticipationChange = (teamIndex, participates) => {
-    const updatedTeams = [...teams];
-    updatedTeams[teamIndex].participatesInAnnual = participates;
-    setTeams(updatedTeams);
-  };
-
   const handleSaveTeams = async () => {
     if (!tournamentId) {
       alert("No tournament selected. Please select or create one to save teams.");
@@ -436,16 +430,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                     placeholder="Order"
                     className="draft-order-input"
                   />
-                </div>
-                <div className="team-card-option">
-                  <label className="checkbox-label">
-                    <input
-                      type="checkbox"
-                      checked={team.participatesInAnnual !== false}
-                      onChange={(e) => handleAnnualParticipationChange(teamIndex, e.target.checked)}
-                    />
-                    Annual Championship Participant
-                  </label>
                 </div>
               </div>
 

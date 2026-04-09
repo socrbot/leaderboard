@@ -3,14 +3,15 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 import '../App.css';
 
-const GlobalTeamsManagement = () => {
+const GlobalTeamsManagement = ({ selectedYear }) => {
   const [globalTeams, setGlobalTeams] = useState([]);
   const [newTeamName, setNewTeamName] = useState('');
+  const [isCopying, setIsCopying] = useState(false);
 
-  // Load global teams
+  // Load global teams for the selected year
   const loadGlobalTeams = useCallback(async () => {
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/global_teams`);
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams?year=${selectedYear}`);
       if (!response.ok) {
         throw new Error(`Failed to fetch global teams: ${response.status}`);
       }
@@ -19,9 +20,9 @@ const GlobalTeamsManagement = () => {
     } catch (error) {
       console.error('Error loading global teams:', error);
     }
-  }, []);
+  }, [selectedYear]);
 
-  // Initial load
+  // Initial load and reload when year changes
   useEffect(() => {
     loadGlobalTeams();
   }, [loadGlobalTeams]);
@@ -36,6 +37,7 @@ const GlobalTeamsManagement = () => {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           name: newTeamName.trim(),
+          year: selectedYear,
           participatesInAnnual: true
         })
       });
@@ -113,10 +115,60 @@ const GlobalTeamsManagement = () => {
     await updateTeam(teamId, { participatesInAnnual: participates });
   };
 
+  // Copy teams from previous year
+  const handleCopyFromPreviousYear = async () => {
+    const previousYear = (parseInt(selectedYear) - 1).toString();
+    const confirmed = window.confirm(
+      `Copy all teams from ${previousYear} to ${selectedYear}?\n\n` +
+      `Golfer assignments will be cleared and need to be set during the draft.`
+    );
+
+    if (!confirmed) return;
+
+    setIsCopying(true);
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/global_teams/copy_year`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          fromYear: previousYear,
+          toYear: selectedYear
+        })
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || 'Failed to copy teams');
+      }
+
+      const result = await response.json();
+      alert(result.message);
+      await loadGlobalTeams();
+    } catch (error) {
+      console.error('Error copying teams:', error);
+      alert(`Error copying teams: ${error.message}`);
+    } finally {
+      setIsCopying(false);
+    }
+  };
+
   return (
     <div className="team-management">
-      <h2>Global Teams Management</h2>
-      <p className="subtitle">Manage teams globally - settings apply across all tournaments</p>
+      <h2>Global Teams Management - {selectedYear} Season</h2>
+      <p className="subtitle">Manage teams globally - settings apply across all {selectedYear} tournaments</p>
+
+      {/* Copy from Previous Year */}
+      {globalTeams.length === 0 && (
+        <div className="copy-teams-section">
+          <button 
+            onClick={handleCopyFromPreviousYear}
+            disabled={isCopying}
+            className="copy-teams-btn"
+          >
+            {isCopying ? 'Copying...' : `📋 Copy Teams from ${parseInt(selectedYear) - 1}`}
+          </button>
+        </div>
+      )}
 
       {/* Add New Team Section */}
       <div className="add-team-section">

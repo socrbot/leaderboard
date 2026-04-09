@@ -7,6 +7,7 @@ import '../App.css';
 
 const Setup = ({ 
   tournamentId, 
+  selectedYear,
   onTournamentCreated, 
   onTeamsSaved, 
   tournamentOddsId, 
@@ -29,7 +30,7 @@ const Setup = ({
       id: 'global-teams',
       label: 'Global Teams',
       icon: '👥',
-      component: <GlobalTeamsManagement />,
+      component: <GlobalTeamsManagement selectedYear={selectedYear} />,
       requiresTournament: false
     },
     {
