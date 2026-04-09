@@ -127,8 +127,11 @@ export const useGolfLeaderboard = (
             return;
         }
 
-        const fetchLeaderboardData = async () => {
-            setLoading(true);
+        const fetchLeaderboardData = async (isInitialLoad = true) => {
+            // Only show loading spinner on initial load, not on auto-refresh
+            if (isInitialLoad) {
+                setLoading(true);
+            }
             setError(null);
             try {
                 console.log('🏌️ useGolfLeaderboard: Fetching leaderboard with team calculations...');
@@ -167,7 +170,22 @@ export const useGolfLeaderboard = (
             }
         };
 
-        fetchLeaderboardData();
+        // Initial fetch
+        fetchLeaderboardData(true);
+
+        // Set up auto-refresh polling every 30 minutes for live tournaments
+        // Aligns with backend recommended interval and conserves API rate limits
+        const AUTO_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
+        const pollInterval = setInterval(() => {
+            console.log('🔄 Auto-refreshing leaderboard data...');
+            fetchLeaderboardData(false); // Don't show loading spinner on auto-refresh
+        }, AUTO_REFRESH_INTERVAL);
+
+        // Cleanup: Clear interval when component unmounts or dependencies change
+        return () => {
+            console.log('🛑 Clearing leaderboard auto-refresh interval');
+            clearInterval(pollInterval);
+        };
     }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, isDraftStarted, refreshDependency]);
 
     // Create golfer-to-team mapping
