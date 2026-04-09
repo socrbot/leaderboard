@@ -46,7 +46,32 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 1. Load existing teams for the selected tournament
+  // 1. Sync teams from global_teams (only if draft hasn't started)
+  const syncTeamsFromGlobal = useCallback(async () => {
+    if (!tournamentId || isDraftStarted) {
+      return; // Don't sync if no tournament or draft has started
+    }
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/sync_teams`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' }
+      });
+      
+      if (response.ok) {
+        console.log('Teams synced from global_teams');
+      } else if (response.status === 403) {
+        // Draft already started, that's ok
+        console.log('Draft already started, teams locked');
+      } else {
+        console.warn('Failed to sync teams:', response.status);
+      }
+    } catch (error) {
+      console.error("Error syncing teams:", error);
+      // Don't show alert - this is a background operation
+    }
+  }, [tournamentId, isDraftStarted]);
+
+  // 2. Load existing teams for the selected tournament
   const loadTeams = useCallback(async () => {
     if (!tournamentId) {
       setTeams([]);
@@ -68,8 +93,13 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   }, [tournamentId]);
 
   useEffect(() => {
-    loadTeams();
-  }, [loadTeams]);
+    // Sync teams before loading if draft hasn't started
+    const initializeTeams = async () => {
+      await syncTeamsFromGlobal();
+      await loadTeams();
+    };
+    initializeTeams();
+  }, [syncTeamsFromGlobal, loadTeams]);
 
 
   // Fetch all players for the search functionality (depends on prop `tournamentOddsId`)

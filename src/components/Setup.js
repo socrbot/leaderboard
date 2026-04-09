@@ -16,21 +16,21 @@ const Setup = ({
   onDraftStarted, 
   onManualOddsUpdated 
 }) => {
-  const [activeTab, setActiveTab] = useState('tournament-creation');
+  const [activeTab, setActiveTab] = useState('global-teams');
 
   const tabs = [
-    {
-      id: 'tournament-creation',
-      label: 'Create Tournament',
-      icon: '🏆',
-      component: <TournamentCreation onTournamentCreated={onTournamentCreated} />,
-      requiresTournament: false
-    },
     {
       id: 'global-teams',
       label: 'Global Teams',
       icon: '👥',
       component: <GlobalTeamsManagement selectedYear={selectedYear} />,
+      requiresTournament: false
+    },
+    {
+      id: 'tournament-creation',
+      label: 'Create Tournament',
+      icon: '🏆',
+      component: <TournamentCreation onTournamentCreated={onTournamentCreated} />,
       requiresTournament: false
     },
     {
@@ -101,11 +101,13 @@ const Setup = ({
         <div className="help-section">
           <h4>Setup Workflow:</h4>
           <ol>
-            <li><strong>Create Tournament:</strong> Set up a new tournament with API connection details</li>
-            <li><strong>Global Teams:</strong> Create and manage teams that can be used across all tournaments</li>
-            <li><strong>Tournament Teams:</strong> Select which global teams will participate in the current tournament</li>
-            <li><strong>Draft Management:</strong> Configure draft settings, lock odds, and manage the draft process</li>
+            <li><strong>Global Teams:</strong> Create teams for the season (select year in header first). Teams automatically apply to all tournaments for that year.</li>
+            <li><strong>Create Tournament:</strong> Set up a new tournament with API details. All global teams for the tournament's year are automatically assigned.</li>
+            <li><strong>Draft Management:</strong> Teams are ready for draft. Configure settings, lock odds, and manage the draft process.</li>
           </ol>
+          <p className="workflow-note">
+            💡 <strong>Tip:</strong> Teams are year-specific. Create global teams for your season before creating tournaments.
+          </p>
         </div>
       </div>
     </div>
