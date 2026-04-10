@@ -307,30 +307,32 @@ function App() {
     tournamentInfo
   } = useGolfLeaderboard(selectedTournamentId, leaderboardRefreshKey);
 
-  // Use preloaded data if available and tournament has completed draft
+  // Use preloaded data if available, tournament has completed draft, and tournament is NOT currently in progress.
+  // When a tournament is still in progress (e.g. Round 1 of the Masters is live), always use fresh
+  // live data so that score updates are reflected immediately rather than serving stale cached data.
   const effectiveRawData = useMemo(() => {
     const preloadedData = preloadedTournamentData[selectedTournamentId];
-    if (preloadedData && draftStatus.IsDraftComplete) {
+    if (preloadedData && draftStatus.IsDraftComplete && !isTournamentInProgress) {
       return preloadedData.rawData || [];
     }
     return rawData || [];
-  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, rawData]);
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, isTournamentInProgress, rawData]);
 
   const effectiveLoading = useMemo(() => {
     const preloadedData = preloadedTournamentData[selectedTournamentId];
-    if (preloadedData && draftStatus.IsDraftComplete) {
+    if (preloadedData && draftStatus.IsDraftComplete && !isTournamentInProgress) {
       return false; // Data is already loaded
     }
     return loading;
-  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, loading]);
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, isTournamentInProgress, loading]);
 
   const effectiveError = useMemo(() => {
     const preloadedData = preloadedTournamentData[selectedTournamentId];
-    if (preloadedData && draftStatus.IsDraftComplete) {
+    if (preloadedData && draftStatus.IsDraftComplete && !isTournamentInProgress) {
       return preloadedData.error;
     }
     return error;
-  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, error]);
+  }, [preloadedTournamentData, selectedTournamentId, draftStatus.IsDraftComplete, isTournamentInProgress, error]);
 
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
