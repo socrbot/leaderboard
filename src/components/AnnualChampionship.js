@@ -68,10 +68,35 @@ const AnnualChampionship = ({ selectedYear }) => {
 
       {tournaments.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
-          <p>No tournaments found for {selectedYear}</p>
-          <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
-            Create tournaments with completed drafts to see annual championship standings.
-          </p>
+          <p>No completed tournaments found for {selectedYear}</p>
+          {metadata.totalTournamentsFound > 0 ? (
+            <div style={{ marginTop: '15px', fontSize: '0.9rem' }}>
+              <p style={{ color: '#ff9800' }}>
+                {metadata.totalTournamentsFound} tournament(s) found in database but none qualified yet.
+              </p>
+              {metadata.skippedTournaments?.length > 0 && (
+                <div style={{ marginTop: '10px', textAlign: 'left', display: 'inline-block' }}>
+                  <p style={{ color: '#888', marginBottom: '5px' }}>Skip reasons:</p>
+                  {metadata.skippedTournaments.map((t, i) => (
+                    <div key={i} style={{ 
+                      padding: '6px 10px',
+                      margin: '4px 0',
+                      backgroundColor: 'rgba(255,255,255,0.05)',
+                      borderRadius: '4px',
+                      fontSize: '0.8rem',
+                      color: '#bbb'
+                    }}>
+                      <strong>{t.name || t.id}</strong>: {t.reason}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          ) : (
+            <p style={{ fontSize: '0.9rem', marginTop: '10px' }}>
+              Create tournaments with completed drafts to see annual championship standings.
+            </p>
+          )}
         </div>
       ) : standings.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
