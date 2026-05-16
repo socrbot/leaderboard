@@ -875,7 +875,7 @@ function App() {
                           {expandedTeams[index] && golfers.map((golfer, golferIndex) => {
                             const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
                             return (
-                              <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''}`}>
+                              <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>
                                 <td></td>
                                 <td className="golfer-name-cell">
                                   <span className="golfer-name-text">{golfer.name}</span>

@@ -414,13 +414,16 @@ table:not(.annual-table) {
 .leaderboard-container {
   width: 100%;
   overflow-x: auto;
+  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
   position: relative;
-  border-radius: 8px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
 
 th, td {
-  border: 1px solid #444;
+  border: none;
   padding: 8px;
   text-align: center;
   font-variant-numeric: tabular-nums;
@@ -444,9 +447,13 @@ th:nth-child(2) {
   text-align: left;
 }
 
-/* Optimized row styling */
-tbody tr:nth-child(even) {
+/* Optimized row styling - scoped away from leaderboard (banded manually) */
+table:not(.annual-table) tbody tr:nth-child(even) {
   background-color: #2b2b2b;
+}
+
+.leaderboard-table tbody tr:nth-child(even) {
+  background-color: unset;
 }
 
 tbody tr:hover {
@@ -501,7 +508,14 @@ tbody .team-row:hover {
 .golfer-row {
   font-size: 0.9em;
   color: #ccc;
-  background-color: #262626;
+}
+
+.golfer-band-a {
+  background-color: #252525;
+}
+
+.golfer-band-b {
+  background-color: #1e1e1e;
 }
 
 .golfer-row-cut {
