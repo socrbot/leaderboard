@@ -40,7 +40,12 @@ body {
 
 /* Main Content Container */
 .main-content {
-  padding-top: 1rem;
+  padding-top: 1.5rem;
+  padding-bottom: 2rem;
+  max-width: 960px;
+  margin: 0 auto;
+  padding-left: 1rem;
+  padding-right: 1rem;
 }
 
 /* =================================================================
@@ -639,9 +644,7 @@ select:focus {
 
   /* Leaderboard mobile optimizations */
   .leaderboard-container {
-    margin: 10px auto;
-    width: 98%;
-    margin-bottom: 1rem;
+    margin: 0 auto 1rem;
   }
 }
 
