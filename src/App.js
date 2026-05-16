@@ -5,7 +5,6 @@ import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
-import LoginPage from './components/LoginPage';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
@@ -68,9 +67,8 @@ function App() {
     };
   }, []);
 
-  const { user, userData, signOut } = useAuth();
+  const { user, userData, signOut, signInWithGoogle } = useAuth();
   const isAdmin = userData?.role === 'admin';
-  const [showLogin, setShowLogin] = useState(false);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -80,7 +78,6 @@ function App() {
   useEffect(() => {
     if (isAdmin && pendingSetup) {
       setPendingSetup(false);
-      setShowLogin(false);
       setShowSetup(true);
     }
   }, [isAdmin, pendingSetup]);
@@ -671,7 +668,7 @@ function App() {
               onClick={() => {
                 if (!isAdmin) {
                   setPendingSetup(true);
-                  setShowLogin(true);
+                  signInWithGoogle();
                   return;
                 }
                 setShowAnnualChampionship(false);
@@ -691,9 +688,7 @@ function App() {
           </nav>
         </div>
 
-        {showLogin && <LoginPage onClose={() => setShowLogin(false)} />}
-
-        {/* Tournament Status Bar */}
+        {/* Tournament Status Bar */}}
         {selectedTournamentId && (
           <div className="status-bar">
             <div className="status-container">
