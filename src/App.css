@@ -53,7 +53,7 @@ body {
    ================================================================= */
 
 .modern-header {
-  background: #0c1a0c;
+  background: #143d14;
   border-bottom: 1px solid rgba(255, 255, 255, 0.08);
   position: sticky;
   top: 0;
@@ -135,7 +135,7 @@ body {
 }
 
 .modern-select option {
-  background-color: #1a2e1a;
+  background-color: #1f4a1f;
   color: white;
 }
 
@@ -231,7 +231,7 @@ body {
   top: calc(100% + 6px);
   left: 50%;
   transform: translateX(-50%);
-  background: #0f240f;
+  background: #1a3d1a;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   padding: 0.4rem 0;
@@ -283,7 +283,7 @@ body {
 
 /* Status Bar */
 .status-bar {
-  background: #0c1a0c;
+  background: #143d14;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 0.6rem 1.5rem;
   text-align: center;
@@ -364,7 +364,7 @@ table:not(.annual-table):not(.leaderboard-table) td {
 }
 
 table:not(.annual-table):not(.leaderboard-table) th {
-  background-color: #0c1a0c;
+  background-color: #143d14;
   color: rgba(255,255,255,0.8);
   font-weight: 600;
   letter-spacing: 0.05em;
@@ -402,7 +402,7 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 
 /* ── Header ── */
 .leaderboard-table thead th {
-  background-color: #0c1a0c;
+  background-color: #143d14;
   color: rgba(255, 255, 255, 0.7);
   padding: 12px 12px;
   font-size: 0.75rem;
@@ -954,7 +954,7 @@ select:focus {
 }
 
 .annual-table th {
-  background-color: #0c1a0c;
+  background-color: #143d14;
   color: rgba(255, 255, 255, 0.7);
   position: sticky;
   top: 0;
