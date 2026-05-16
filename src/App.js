@@ -674,22 +674,22 @@ function App() {
             )}
           </nav>
         </div>
-
-        {/* Tournament Details Bar */}
-        {selectedTournamentId && (
-          <div className="status-bar">
-            <p className="status-section-title">Tournament Details</p>
-            <div className="tournament-picker" ref={pickerRef}>
-              <button
-                className="picker-trigger"
-                onClick={() => setShowTournamentPicker(p => !p)}
-                aria-expanded={showTournamentPicker}
-              >
-                <span className="status-line-name">
-                  {tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name}
-                </span>
-                <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
-              </button>
+      </header>
+      {/* Status bar is outside <header> so its dropdown isn't clipped by the sticky stacking context */}
+      {selectedTournamentId && (
+        <div className="status-bar">
+          <p className="status-section-title">Tournament Details</p>
+          <div className="tournament-picker" ref={pickerRef}>
+            <button
+              className="picker-trigger"
+              onClick={() => setShowTournamentPicker(p => !p)}
+              aria-expanded={showTournamentPicker}
+            >
+              <span className="status-line-name">
+                {tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name}
+              </span>
+              <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
+            </button>
               {showTournamentPicker && (
                 <div className="picker-dropdown">
                   {tournamentsByYear.map(([year, ts]) => (
@@ -712,36 +712,35 @@ function App() {
                   ))}
                 </div>
               )}
-            </div>
-            {tournamentInfo?.StartDate && (
-              <p className="status-line">
-                <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
-              </p>
-            )}
-            {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
-              <p className="status-line">
-                <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
-              </p>
-            )}
-            <p className={`status-line status-line-badge ${
-              isTournamentOver ? 'complete' :
-              isTournamentInProgress ? 'live' :
-              draftStatus.IsDraftComplete ? 'complete' :
-              draftStatus.IsDraftStarted ? 'active' :
-              draftStatus.IsDraftLocked ? 'active' : 'pending'
-            }`}>
-              {isTournamentInProgress && tournamentInfo?.CurrentRound
-                ? `Round ${tournamentInfo.CurrentRound} · `
-                : ''}
-              {isTournamentOver ? 'Tournament Complete' :
-               isTournamentInProgress ? 'Live' :
-               draftStatus.IsDraftComplete ? 'Draft Complete' :
-               draftStatus.IsDraftStarted ? 'Draft In Progress' :
-               draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
-            </p>
           </div>
-        )}
-      </header>
+          {tournamentInfo?.StartDate && (
+            <p className="status-line">
+              <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
+            </p>
+          )}
+          {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+            <p className="status-line">
+              <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+            </p>
+          )}
+          <p className={`status-line status-line-badge ${
+            isTournamentOver ? 'complete' :
+            isTournamentInProgress ? 'live' :
+            draftStatus.IsDraftComplete ? 'complete' :
+            draftStatus.IsDraftStarted ? 'active' :
+            draftStatus.IsDraftLocked ? 'active' : 'pending'
+          }`}>
+            {isTournamentInProgress && tournamentInfo?.CurrentRound
+              ? `Round ${tournamentInfo.CurrentRound} · `
+              : ''}
+            {isTournamentOver ? 'Tournament Complete' :
+             isTournamentInProgress ? 'Live' :
+             draftStatus.IsDraftComplete ? 'Draft Complete' :
+             draftStatus.IsDraftStarted ? 'Draft In Progress' :
+             draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
+          </p>
+        </div>
+      )}
 
       <div className="main-content">
         {selectedTournamentId ? (

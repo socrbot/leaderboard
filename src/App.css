@@ -282,8 +282,11 @@ body {
 /* Status Bar */
 .status-bar {
   background: #0c1a0c;
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 0.6rem 1.5rem;
+  text-align: left;
+  position: relative;
+  z-index: 90;
 }
 
 .status-section-title {
