@@ -70,17 +70,25 @@ function App() {
   const { user, userData, signOut, signInWithGoogle } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const [pendingSetup, setPendingSetup] = useState(false);
+  const [accessDenied, setAccessDenied] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
 
-  // When sign-in completes and the user is admin, open Setup if they
-  // were trying to access it before signing in.
+  // When sign-in completes, either open Setup (admin) or show access denied (non-admin).
   useEffect(() => {
-    if (isAdmin && pendingSetup) {
-      setPendingSetup(false);
-      setShowSetup(true);
+    if (pendingSetup && user !== undefined && user !== null) {
+      // Auth has resolved and user is signed in
+      if (isAdmin) {
+        setPendingSetup(false);
+        setShowSetup(true);
+      } else if (userData !== null) {
+        // Firestore role has loaded and it's not admin
+        setPendingSetup(false);
+        setAccessDenied(true);
+        setTimeout(() => setAccessDenied(false), 4000);
+      }
     }
-  }, [isAdmin, pendingSetup]);
+  }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
@@ -667,8 +675,14 @@ function App() {
               className="nav-button"
               onClick={() => {
                 if (!isAdmin) {
-                  setPendingSetup(true);
-                  signInWithGoogle();
+                  if (user) {
+                    // Already signed in but not admin
+                    setAccessDenied(true);
+                    setTimeout(() => setAccessDenied(false), 4000);
+                  } else {
+                    setPendingSetup(true);
+                    signInWithGoogle();
+                  }
                   return;
                 }
                 setShowAnnualChampionship(false);
@@ -681,6 +695,18 @@ function App() {
             </button>
           </nav>
         </div>
+
+        {accessDenied && (
+          <div style={{
+            background: '#7f1d1d',
+            color: '#fca5a5',
+            padding: '8px 16px',
+            textAlign: 'center',
+            fontSize: '0.875rem',
+          }}>
+            ⛔ Admin access required. Contact the tournament organiser to be granted access.
+          </div>
+        )}
 
         {/* Tournament Status Bar */}
         {selectedTournamentId && (
