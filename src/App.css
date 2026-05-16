@@ -195,10 +195,11 @@ body {
 
 .tournament-picker {
   position: relative;
+  display: inline-block;
 }
 
 .picker-trigger {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   gap: 0.4rem;
   background: none;
@@ -228,7 +229,8 @@ body {
 .picker-dropdown {
   position: absolute;
   top: calc(100% + 6px);
-  left: 0;
+  left: 50%;
+  transform: translateX(-50%);
   background: #0f240f;
   border: 1px solid rgba(255, 255, 255, 0.1);
   border-radius: 8px;
@@ -236,7 +238,7 @@ body {
   min-width: 220px;
   max-height: 320px;
   overflow-y: auto;
-  z-index: 200;
+  z-index: 1000;
   box-shadow: 0 8px 24px rgba(0, 0, 0, 0.6);
 }
 
@@ -284,7 +286,7 @@ body {
   background: #0c1a0c;
   border-bottom: 1px solid rgba(255, 255, 255, 0.06);
   padding: 0.6rem 1.5rem;
-  text-align: left;
+  text-align: center;
   position: relative;
   z-index: 90;
 }
@@ -854,10 +856,10 @@ select:focus {
 }
 
 /* Reduce paint on scroll */
-.modern-header,
-.status-bar {
+.modern-header {
   contain: layout style paint;
 }
+/* NOTE: status-bar must NOT have contain:paint — it clips the picker dropdown */
 
 /* =================================================================
    MOBILE NAVIGATION - VERTICAL STACK LAYOUT FOR ALL BUTTONS
