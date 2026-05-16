@@ -720,7 +720,7 @@ function App() {
               hasManualDraftOdds={hasManualDraftOdds}
               onDraftStarted={handleDataUpdated}
               onManualOddsUpdated={handleDataUpdated}
-              onSignOut={signOut}
+              onSignOut={() => { setShowSetup(false); signOut(); }}
               userEmail={user?.email}
             />
           ) : showAnnualChampionship ? (
@@ -893,7 +893,7 @@ function App() {
               hasManualDraftOdds={false}
               onDraftStarted={handleDataUpdated}
               onManualOddsUpdated={handleDataUpdated}
-              onSignOut={signOut}
+              onSignOut={() => { setShowSetup(false); signOut(); }}
               userEmail={user?.email}
             />
           ) : showAnnualChampionship ? (
