@@ -772,7 +772,7 @@ function App() {
                       <table className="leaderboard-table">
                         <thead>
                           <tr>
-                            <th className="team-golfer-header">TEAM / GOLFER</th>
+                            <th>TEAM / GOLFER</th>
                             <th>TOTAL</th>
                             <th>R1</th>
                             <th>R2</th>
@@ -826,7 +826,7 @@ function App() {
                     <table className="leaderboard-table">
                     <thead>
                       <tr>
-                        <th className="team-golfer-header">TEAM / GOLFER</th>
+                        <th>TEAM / GOLFER</th>
                         <th onClick={() => handleHeaderClick('total')} className="sortable-header">
                           TOTAL{renderSortArrow('total')}
                         </th>
@@ -852,7 +852,7 @@ function App() {
                         return (
                         <React.Fragment key={`team-${teamName}-${index}`}>
                           <tr
-                            className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable${expandedTeams[index] ? ' team-row-expanded' : ''}`}
+                            className={`team-row${expandedTeams[index] ? ' team-row-expanded' : ''}`}
                             onClick={() => setExpandedTeams(prev => ({ ...prev, [index]: !prev[index] }))}
                           >
                             <td className="team-name-cell">

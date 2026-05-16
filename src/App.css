@@ -388,199 +388,216 @@ body {
    TABLE AND COMPONENT SPECIFIC STYLES - RESTORED
    ================================================================= */
 
-/* Enhanced table styles - general */
-table:not(.annual-table) {
+/* =================================================================
+   LEADERBOARD TABLE
+   ================================================================= */
+
+/* ── Other tables (not leaderboard, not annual) ── */
+table:not(.annual-table):not(.leaderboard-table) {
   margin: 20px auto;
   border-collapse: collapse;
   width: 90%;
   background-color: #333333;
   color: white;
-  contain: layout style;
   border-radius: 12px;
   overflow: hidden;
-  backdrop-filter: blur(10px);
 }
 
-/* Leaderboard table specific styles */
-.leaderboard-table {
-  width: 100%;
-  min-width: 600px; /* Ensure minimum width to prevent column collapse */
-  margin: 0;
-  border-radius: 8px;
-  overflow: hidden;
+table:not(.annual-table):not(.leaderboard-table) th,
+table:not(.annual-table):not(.leaderboard-table) td {
+  border: 1px solid #444;
+  padding: 8px;
+  text-align: center;
 }
 
-/* Mobile-first responsive table container */
+table:not(.annual-table):not(.leaderboard-table) th {
+  background-color: #006400;
+  color: white;
+  font-weight: 600;
+}
+
+table:not(.annual-table):not(.leaderboard-table) tbody tr:nth-child(even) {
+  background-color: #2b2b2b;
+}
+
+table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
+  background-color: #444;
+}
+
+/* ── Container ── */
 .leaderboard-container {
   width: 100%;
   overflow-x: auto;
-  overflow-y: hidden;
   -webkit-overflow-scrolling: touch;
-  position: relative;
   border-radius: 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
   box-shadow: 0 4px 24px rgba(0, 0, 0, 0.45);
 }
 
-th, td {
-  border: none;
-  padding: 8px;
-  text-align: center;
+/* ── Table base ── */
+.leaderboard-table {
+  width: 100%;
+  min-width: 560px;
+  margin: 0;
+  border-collapse: collapse;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
   font-variant-numeric: tabular-nums;
 }
 
-th {
+/* ── Header ── */
+.leaderboard-table thead th {
   background-color: #006400;
-  color: white;
+  color: #ffffff;
+  padding: 14px 12px;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  border: none;
   position: sticky;
   top: 0;
   z-index: 10;
-  font-weight: 600;
-  text-align: center;
-  padding: 1rem 0.75rem;
-  font-size: 0.9rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
-/* Team/Golfer header should be left-aligned */
-.leaderboard-table th:nth-child(1),
-.leaderboard-table td:nth-child(1) {
+.leaderboard-table thead th:first-child {
   text-align: left;
+  padding-left: 16px;
 }
 
-/* Optimized row styling - scoped away from leaderboard (banded manually) */
-table:not(.annual-table):not(.leaderboard-table) tbody tr:nth-child(even) {
-  background-color: #2b2b2b;
+.leaderboard-table thead th.sortable-header {
+  cursor: pointer;
 }
 
-tbody tr:hover {
-  background-color: #444;
-  transform: translateZ(0); /* Force GPU acceleration */
+.leaderboard-table thead th.sortable-header:hover {
+  background-color: #007700;
 }
 
-.total {
-  color: red;
-  font-weight: bold;
-  font-variant-numeric: tabular-nums;
+/* ── Body cells ── */
+.leaderboard-table td {
+  padding: 12px;
+  text-align: center;
+  border: none;
+  font-size: 0.9rem;
 }
 
-/* Team and golfer row styles */
-tbody .team-row {
-  font-weight: bold;
-  background-color: #1e1e1e;
+/* ── Team rows ── */
+.leaderboard-table tbody .team-row {
+  background-color: #1a1a1a;
   cursor: pointer;
   user-select: none;
 }
 
-tbody .team-row td {
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+.leaderboard-table tbody .team-row td {
+  border-top: 1px solid rgba(255, 255, 255, 0.07);
+  font-weight: 700;
+  font-size: 0.95rem;
+  padding-top: 14px;
+  padding-bottom: 14px;
 }
 
-tbody .team-row:hover {
-  background-color: #2a2a2a;
+.leaderboard-table tbody .team-row td:first-child {
+  text-align: left;
+  padding-left: 16px;
 }
 
-tbody .team-row.team-row-expanded {
-  background-color: rgba(0, 100, 0, 0.12);
+.leaderboard-table tbody .team-row:hover {
+  background-color: #222222;
 }
 
-tbody .team-row.team-row-expanded:hover {
-  background-color: rgba(0, 100, 0, 0.18);
+.leaderboard-table tbody .team-row.team-row-expanded {
+  background-color: rgba(0, 100, 0, 0.10);
 }
 
-.team-row-expandable td {
-  transition: background-color 0.15s ease;
+.leaderboard-table tbody .team-row.team-row-expanded:hover {
+  background-color: rgba(0, 100, 0, 0.16);
 }
 
+/* ── Expand chevron ── */
 .team-expand-icon {
   display: inline-block;
-  width: 16px;
-  margin-right: 4px;
-  font-size: 0.8em;
-  opacity: 0.7;
-}
-
-.team-cut-badge {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 5px;
-  background: rgba(220, 38, 38, 0.2);
-  color: #f87171;
-  border: 1px solid rgba(220, 38, 38, 0.4);
-  border-radius: 4px;
-  font-size: 0.65em;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  vertical-align: middle;
-}
-
-.golfer-row {
-  font-size: 0.9em;
-  color: #ccc;
-}
-
-.golfer-band-a {
-  background-color: #252525;
-}
-
-.golfer-band-b {
-  background-color: #1e1e1e;
-}
-
-.golfer-row-cut {
-  opacity: 0.65;
-}
-
-.golfer-row td {
-  padding-left: 30px;
-  text-align: left;
-}
-
-.golfer-row:hover {
-  background-color: #3a3a3a;
-}
-
-.golfer-name-text {
-  font-size: 0.95em;
-  letter-spacing: 0.01em;
-}
-
-.golfer-cut-label {
-  display: inline-block;
-  margin-left: 8px;
-  padding: 1px 5px;
-  background: rgba(220, 38, 38, 0.15);
-  color: #f87171;
-  border: 1px solid rgba(220, 38, 38, 0.35);
-  border-radius: 4px;
-  font-size: 0.7em;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  vertical-align: middle;
-}
-
-.golfer-status-label {
-  display: inline-block;
-  margin-left: 8px;
-  color: #22c55e;
+  width: 14px;
+  margin-right: 6px;
   font-size: 0.75em;
-  font-style: italic;
-  vertical-align: middle;
+  opacity: 0.6;
 }
 
-/* Team name and golfer name cell styles */
+/* ── Golfer rows ── */
+.leaderboard-table tbody .golfer-row {
+  color: #b0b0b0;
+}
+
+.leaderboard-table tbody .golfer-row td {
+  padding: 9px 12px;
+  text-align: center;
+  border: none;
+  font-size: 0.88rem;
+}
+
+.leaderboard-table tbody .golfer-row td:first-child {
+  text-align: left;
+  padding-left: 38px;
+}
+
+.leaderboard-table tbody .golfer-band-a {
+  background-color: #202020;
+}
+
+.leaderboard-table tbody .golfer-band-b {
+  background-color: #262626;
+}
+
+.leaderboard-table tbody .golfer-row:hover {
+  background-color: #2e2e2e;
+}
+
+.leaderboard-table tbody .golfer-row-cut {
+  opacity: 0.55;
+}
+
+/* ── Name cells ── */
 .team-name-cell,
 .golfer-name-cell {
   text-align: left;
-  min-width: 120px;
-  max-width: 200px;
+  max-width: 280px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
 
-.team-golfer-header {
-  min-width: 120px;
+/* ── Golfer name + status inline ── */
+.golfer-name-text {
+  font-weight: 600;
+}
+
+.golfer-cut-label {
+  display: inline-block;
+  margin-left: 7px;
+  padding: 1px 5px;
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 4px;
+  font-size: 0.68em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
+}
+
+.golfer-status-label {
+  display: inline-block;
+  margin-left: 7px;
+  color: #4ade80;
+  font-size: 0.72em;
+  font-style: italic;
+  vertical-align: middle;
+  opacity: 0.85;
+}
+
+/* ── Total cell ── */
+.leaderboard-table .total-cell {
+  font-weight: 700;
 }
 
 /* Team management styles */
@@ -637,65 +654,53 @@ select:focus {
     flex: 1 1 100%;
   }
 
-  /* Mobile leaderboard table - completely responsive */
+  /* ── Leaderboard table — mobile ── */
   .leaderboard-table {
-    min-width: 100%; /* Remove fixed minimum width */
-    width: 100%;
-    font-size: 0.75rem;
-    table-layout: fixed; /* Enable fixed layout for better column control */
+    min-width: 100%;
+    font-size: 0.78rem;
+    table-layout: fixed;
   }
-  
-  /* Column width distribution for mobile */
-  .leaderboard-table th:nth-child(1), /* TEAM/GOLFER */
+
+  .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    width: 45%;
-    min-width: 120px;
+    width: 44%;
   }
-  
-  .leaderboard-table th:nth-child(2), /* TOTAL */
+
+  .leaderboard-table th:nth-child(2),
   .leaderboard-table td:nth-child(2) {
     width: 14%;
-    min-width: 45px;
   }
-  
-  .leaderboard-table th:nth-child(3), /* R1 */
+
+  .leaderboard-table th:nth-child(3),
   .leaderboard-table td:nth-child(3),
-  .leaderboard-table th:nth-child(4), /* R2 */
+  .leaderboard-table th:nth-child(4),
   .leaderboard-table td:nth-child(4),
-  .leaderboard-table th:nth-child(5), /* R3 */
+  .leaderboard-table th:nth-child(5),
   .leaderboard-table td:nth-child(5),
-  .leaderboard-table th:nth-child(6), /* R4 */
+  .leaderboard-table th:nth-child(6),
   .leaderboard-table td:nth-child(6) {
-    width: 10.25%;
-    min-width: 35px;
+    width: 10.5%;
   }
-  
-  .leaderboard-table th,
+
+  .leaderboard-table thead th,
   .leaderboard-table td {
-    padding: 6px 3px;
-    font-size: 0.75rem;
+    padding: 8px 4px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }
-  
-  /* Team/Golfer name cells - allow text wrapping on very long names */
+
+  .leaderboard-table tbody .team-row td:first-child {
+    padding-left: 10px;
+  }
+
+  .leaderboard-table tbody .golfer-row td:first-child {
+    padding-left: 22px;
+  }
+
   .team-name-cell,
   .golfer-name-cell {
-    text-align: left;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    max-width: 0; /* Force ellipsis when content exceeds column width */
-  }
-  
-  .golfer-row td {
-    padding-left: 10px; /* Reduce indent on mobile */
-  }
-  
-  /* Remove scroll indicator since table now fits */
-  .leaderboard-container::after {
-    display: none;
+    max-width: 0;
   }
 }
 
