@@ -633,7 +633,7 @@ function App() {
               }}
               disabled={!selectedTournamentId}
             >
-              Scores
+              Tournament Scores
             </button>
             <button
               className="nav-link"
@@ -953,6 +953,65 @@ function App() {
           )
         )}
       </div>
+
+      {/* Mobile bottom nav — hidden on desktop via CSS */}
+      <nav className="bottom-nav">
+        <button
+          className={`bottom-nav-link ${!showAnnualChampionship && !showSetup && !showTournamentScores ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
+          onClick={handleShowLeaderboardClick}
+          disabled={!selectedTournamentId}
+        >
+          Leaderboard
+        </button>
+        <button
+          className={`bottom-nav-link ${showTournamentScores ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
+          onClick={() => {
+            if (!selectedTournamentId) return;
+            setShowSetup(false);
+            setShowAnnualChampionship(false);
+            setShowTournamentScores(true);
+          }}
+          disabled={!selectedTournamentId}
+        >
+          Scores
+        </button>
+        <button
+          className={`bottom-nav-link ${showAnnualChampionship ? 'active' : ''}`}
+          onClick={() => {
+            setShowSetup(false);
+            setShowAnnualChampionship(true);
+            setShowTournamentScores(false);
+          }}
+        >
+          Annual
+        </button>
+        {!user ? (
+          <button
+            className="bottom-nav-link"
+            onClick={() => { setPendingSetup(true); signInWithGoogle(); }}
+          >
+            Sign In
+          </button>
+        ) : isAdmin ? (
+          <button
+            className={`bottom-nav-link ${showSetup ? 'active' : ''}`}
+            onClick={() => {
+              setShowAnnualChampionship(false);
+              setShowTournamentScores(false);
+              setShowSetup(true);
+            }}
+          >
+            Setup
+          </button>
+        ) : (
+          <button
+            className="bottom-nav-link"
+            onClick={signOut}
+          >
+            Sign Out
+          </button>
+        )}
+      </nav>
     </div>
   );
 }

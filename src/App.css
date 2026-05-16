@@ -190,6 +190,68 @@ body {
 }
 
 /* =================================================================
+   BOTTOM NAV (mobile only — hidden on desktop)
+   ================================================================= */
+
+.bottom-nav {
+  display: none; /* shown only on mobile via media query */
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop nav, show bottom nav */
+  .modern-nav {
+    display: none !important;
+  }
+
+  .bottom-nav {
+    display: flex;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    background: #143d14;
+    border-top: 1px solid rgba(255, 255, 255, 0.1);
+    z-index: 200;
+    padding: 0;
+    justify-content: space-around;
+    align-items: stretch;
+  }
+
+  .bottom-nav-link {
+    flex: 1;
+    background: none;
+    border: none;
+    color: rgba(255, 255, 255, 0.6);
+    font-size: 0.72rem;
+    font-weight: 500;
+    font-family: inherit;
+    padding: 0.65rem 0.25rem 0.55rem;
+    cursor: pointer;
+    text-align: center;
+    white-space: nowrap;
+    transition: color 0.15s ease, background 0.15s ease;
+    /* safe-area for notched phones */
+    padding-bottom: calc(0.55rem + env(safe-area-inset-bottom, 0px));
+  }
+
+  .bottom-nav-link:hover:not(.disabled),
+  .bottom-nav-link.active {
+    color: #ffffff;
+    background: rgba(255, 255, 255, 0.08);
+  }
+
+  .bottom-nav-link.disabled {
+    color: rgba(255, 255, 255, 0.2);
+    cursor: not-allowed;
+  }
+
+  /* Push page content up so bottom nav doesn't overlap */
+  .App {
+    padding-bottom: 60px;
+  }
+}
+
+/* =================================================================
    TOURNAMENT PICKER (details bar dropdown)
    ================================================================= */
 
@@ -732,9 +794,7 @@ select:focus {
   }
 
   .modern-nav {
-    flex-wrap: wrap;
-    gap: 0.15rem;
-    justify-content: flex-end;
+    display: none; /* replaced by bottom-nav on mobile */
   }
 
   .main-content {
