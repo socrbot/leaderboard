@@ -579,77 +579,64 @@ function App() {
 
           {/* Tournament Selector Section */}
           <div className="tournament-section">
-            <div className="tournament-selectors">
-              <div className="year-selector">
-                <label htmlFor="year-select" className="tournament-label">
-                  Year
-                </label>
-                <div className="select-wrapper">
-                  <select
-                    id="year-select"
-                    className="modern-select year-select"
-                    value={selectedYear}
-                    onChange={(e) => {
-                      setSelectedYear(e.target.value);
-                    }}
-                  >
-                    {availableYears.length === 0 ? (
-                      <option value="">{new Date().getFullYear()}</option>
-                    ) : (
-                      availableYears.map((year) => (
-                        <option key={year} value={year}>
-                          {year}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <span className="select-arrow">▼</span>
-                </div>
-              </div>
-              <div className="tournament-selector">
-                <label htmlFor="tournament-select" className="tournament-label">
-                  Select Tournament
-                </label>
-                <div className="select-wrapper">
-                  <select
-                    id="tournament-select"
-                    className="modern-select"
-                    value={selectedTournamentId}
-                    onChange={(e) => {
-                      const newTournamentId = e.target.value;
-                      console.log('Tournament selection changed to:', newTournamentId);
-                      setSelectedTournamentId(newTournamentId);
-                      setLeaderboardRefreshKey(prev => prev + 1);
-                    }}
-                  >
-                    {tournaments.length === 0 ? (
-                      <option value="">No Tournaments Available</option>
-                    ) : (
-                      tournaments.map((tournament) => (
-                        <option key={tournament.id} value={tournament.id}>
-                          {tournament.name}
-                        </option>
-                      ))
-                    )}
-                  </select>
-                  <span className="select-arrow">▼</span>
-                </div>
-              </div>
+            <div className="select-wrapper">
+              <select
+                id="year-select"
+                className="modern-select year-select"
+                value={selectedYear}
+                onChange={(e) => {
+                  setSelectedYear(e.target.value);
+                }}
+              >
+                {availableYears.length === 0 ? (
+                  <option value="">{new Date().getFullYear()}</option>
+                ) : (
+                  availableYears.map((year) => (
+                    <option key={year} value={year}>
+                      {year}
+                    </option>
+                  ))
+                )}
+              </select>
+              <span className="select-arrow">▼</span>
+            </div>
+            <div className="select-wrapper">
+              <select
+                id="tournament-select"
+                className="modern-select"
+                value={selectedTournamentId}
+                onChange={(e) => {
+                  const newTournamentId = e.target.value;
+                  console.log('Tournament selection changed to:', newTournamentId);
+                  setSelectedTournamentId(newTournamentId);
+                  setLeaderboardRefreshKey(prev => prev + 1);
+                }}
+              >
+                {tournaments.length === 0 ? (
+                  <option value="">No Tournaments Available</option>
+                ) : (
+                  tournaments.map((tournament) => (
+                    <option key={tournament.id} value={tournament.id}>
+                      {tournament.name}
+                    </option>
+                  ))
+                )}
+              </select>
+              <span className="select-arrow">▼</span>
             </div>
           </div>
 
           {/* Navigation Section */}
           <nav className="modern-nav">
-            <button 
-              className={`nav-button ${!selectedTournamentId ? 'disabled' : ''}`}
-              onClick={handleShowLeaderboardClick} 
+            <button
+              className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={handleShowLeaderboardClick}
               disabled={!selectedTournamentId}
             >
-              <span className="button-icon">📊</span>
-              <span className="button-text">Leaderboard</span>
+              Leaderboard
             </button>
             <button
-              className={`nav-button ${!selectedTournamentId ? 'disabled' : ''}`}
+              className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
               onClick={() => {
                 if (!selectedTournamentId) return;
                 setShowSetup(false);
@@ -658,49 +645,43 @@ function App() {
               }}
               disabled={!selectedTournamentId}
             >
-              <span className="button-icon">📋</span>
-              <span className="button-text">Tournament Scores</span>
+              Scores
             </button>
-            <button 
-              className="nav-button"
+            <button
+              className="nav-link"
               onClick={() => {
                 setShowSetup(false);
                 setShowAnnualChampionship(true);
                 setShowTournamentScores(false);
               }}
             >
-              <span className="button-icon">🏆</span>
-              <span className="button-text">Annual Championship</span>
+              Annual
             </button>
-            {/* Login when signed out | Setup when admin | Sign Out when non-admin */}
             {!user ? (
               <button
-                className="nav-button"
+                className="nav-link"
                 onClick={() => { setPendingSetup(true); signInWithGoogle(); }}
               >
-                <span className="button-icon">🔑</span>
-                <span className="button-text">Sign In</span>
+                Sign In
               </button>
             ) : isAdmin ? (
               <button
-                className="nav-button"
+                className="nav-link"
                 onClick={() => {
                   setShowAnnualChampionship(false);
                   setShowTournamentScores(false);
                   setShowSetup(true);
                 }}
               >
-                <span className="button-icon">⚙️</span>
-                <span className="button-text">Setup</span>
+                Setup
               </button>
             ) : (
               <button
-                className="nav-button"
+                className="nav-link"
                 onClick={signOut}
                 title={`Signed in as ${user.email}`}
               >
-                <span className="button-icon">🔓</span>
-                <span className="button-text">Sign Out</span>
+                Sign Out
               </button>
             )}
           </nav>

@@ -5,7 +5,6 @@ function TournamentScores({ tournamentId, tournamentName }) {
   const [leaderboardRows, setLeaderboardRows] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [isLive, setIsLive] = useState(false);
   const [isComplete, setIsComplete] = useState(false);
 
   useEffect(() => {
@@ -23,7 +22,6 @@ function TournamentScores({ tournamentId, tournamentName }) {
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setLeaderboardRows(data.leaderboardRows || []);
-        setIsLive(data.isInProgress || false);
         setIsComplete(data.isOfficiallyComplete || false);
       } catch (e) {
         setError(e.message);
