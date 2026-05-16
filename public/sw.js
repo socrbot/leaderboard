@@ -27,12 +27,16 @@ self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // API requests: network-first, fall back to cache
+  // API requests: only cache GET requests; let all other methods pass through unmodified
   if (url.pathname.includes('/api/')) {
+    if (request.method !== 'GET') {
+      // POST/PUT/DELETE with auth headers must go straight to the network
+      return;
+    }
     event.respondWith(
       fetch(request)
         .then(response => {
-          if (response.ok && request.method === 'GET') {
+          if (response.ok) {
             const clone = response.clone();
             caches.open(API_CACHE_NAME).then(cache => cache.put(request, clone));
           }
