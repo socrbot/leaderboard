@@ -14,7 +14,9 @@ const Setup = ({
   isDraftStarted, 
   hasManualDraftOdds, 
   onDraftStarted, 
-  onManualOddsUpdated 
+  onManualOddsUpdated,
+  onSignOut,
+  userEmail
 }) => {
   const [activeTab, setActiveTab] = useState('global-teams');
 
@@ -89,6 +91,16 @@ const Setup = ({
             )}
           </button>
         ))}
+        {onSignOut && (
+          <button
+            className="setup-tab setup-tab-signout"
+            onClick={onSignOut}
+            title={userEmail ? `Signed in as ${userEmail}` : 'Sign out'}
+          >
+            <span className="tab-icon">🔓</span>
+            <span className="tab-label">Sign Out</span>
+          </button>
+        )}
       </div>
 
       {/* Tab Content */}

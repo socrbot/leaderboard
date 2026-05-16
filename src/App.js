@@ -679,12 +679,6 @@ function App() {
               <span className="button-icon">⚙️</span>
               <span className="button-text">Setup</span>
             </button>
-            {isAdmin && (
-              <button className="nav-button" onClick={signOut} title={`Signed in as ${user.email}`}>
-                <span className="button-icon">🔓</span>
-                <span className="button-text">Sign Out</span>
-              </button>
-            )}
           </nav>
         </div>
 
@@ -726,6 +720,8 @@ function App() {
               hasManualDraftOdds={hasManualDraftOdds}
               onDraftStarted={handleDataUpdated}
               onManualOddsUpdated={handleDataUpdated}
+              onSignOut={signOut}
+              userEmail={user?.email}
             />
           ) : showAnnualChampionship ? (
             <AnnualChampionship selectedYear={selectedYear} />
@@ -897,6 +893,8 @@ function App() {
               hasManualDraftOdds={false}
               onDraftStarted={handleDataUpdated}
               onManualOddsUpdated={handleDataUpdated}
+              onSignOut={signOut}
+              userEmail={user?.email}
             />
           ) : showAnnualChampionship ? (
             <AnnualChampionship selectedYear={selectedYear} />
