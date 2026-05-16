@@ -6,7 +6,11 @@
   "targets": {
     "alumni-golf-tournament": {
       "hosting": {
-        "production": ["alumni-golf-tournament"],
+        "production": ["alumni-golf-tournament"]
+      }
+    },
+    "alumni-golf-tournament-staging": {
+      "hosting": {
         "v2": ["leaderboard-v2"]
       }
     }
