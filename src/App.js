@@ -772,7 +772,6 @@ function App() {
                       <table className="leaderboard-table">
                         <thead>
                           <tr>
-                            <th>POS</th>
                             <th className="team-golfer-header">TEAM / GOLFER</th>
                             <th>TOTAL</th>
                             <th>R1</th>
@@ -785,7 +784,6 @@ function App() {
                           {teamGolferTableData.map((team) => (
                             <React.Fragment key={`team-${team.team}`}>
                               <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-                                <td>{team.position}</td>
                                 <td className="team-name-cell">{team.team}</td>
                                 <td className="total-cell">-</td>
                                 <td>-</td>
@@ -799,7 +797,6 @@ function App() {
                                   className="golfer-row"
                                   style={{ opacity: golfer.isDrafted ? 1 : 0.4 }}
                                 >
-                                  <td></td>
                                   <td className="golfer-name-cell">{golfer.name}</td>
                                   <td></td>
                                   <td>-</td>
@@ -829,7 +826,6 @@ function App() {
                     <table className="leaderboard-table">
                     <thead>
                       <tr>
-                        <th>POS</th>
                         <th className="team-golfer-header">TEAM / GOLFER</th>
                         <th onClick={() => handleHeaderClick('total')} className="sortable-header">
                           TOTAL{renderSortArrow('total')}
@@ -859,7 +855,6 @@ function App() {
                             className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable${expandedTeams[index] ? ' team-row-expanded' : ''}`}
                             onClick={() => setExpandedTeams(prev => ({ ...prev, [index]: !prev[index] }))}
                           >
-                            <td>{team.position || (index + 1)}</td>
                             <td className="team-name-cell">
                               <span className="team-expand-icon">{expandedTeams[index] ? '▾' : '▸'}</span>
                               {teamName}
@@ -874,7 +869,6 @@ function App() {
                             const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
                             return (
                               <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>
-                                <td></td>
                                 <td className="golfer-name-cell">
                                   <span className="golfer-name-text">{golfer.name}</span>
                                   {isCut
