@@ -14,13 +14,6 @@ jobs:
 
       - name: Build
         run: npm ci && npm run build:staging
-        env:
-          REACT_APP_FIREBASE_API_KEY: ${{ secrets.FIREBASE_API_KEY_STAGING }}
-          REACT_APP_FIREBASE_AUTH_DOMAIN: alumni-golf-tournament-staging.firebaseapp.com
-          REACT_APP_FIREBASE_PROJECT_ID: alumni-golf-tournament-staging
-          REACT_APP_FIREBASE_STORAGE_BUCKET: alumni-golf-tournament-staging.appspot.com
-          REACT_APP_FIREBASE_MESSAGING_SENDER_ID: ${{ secrets.FIREBASE_MESSAGING_SENDER_ID_STAGING }}
-          REACT_APP_FIREBASE_APP_ID: ${{ secrets.FIREBASE_APP_ID_STAGING }}
 
       - name: Deploy to Firebase Hosting (v2 target)
         uses: FirebaseExtended/action-hosting-deploy@v0
