@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useMemo, useCallback, useRef } from 'react';
 import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
 import Setup from './components/Setup';
@@ -87,8 +87,11 @@ function App() {
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
+  const [allTournaments, setAllTournaments] = useState([]);
   const [loadingTournaments, setLoadingTournaments] = useState(true);
   const [tournamentError, setTournamentError] = useState(null);
+  const [showTournamentPicker, setShowTournamentPicker] = useState(false);
+  const pickerRef = useRef(null);
 
   // Sorting state
   const [sortColumn, setSortColumn] = useState('total');
@@ -172,6 +175,40 @@ function App() {
     
     setPreloadedTournamentData(preloadedData);
   }, []);
+
+  // Fetch all tournaments (all years) for the picker dropdown
+  useEffect(() => {
+    const fetchAll = async () => {
+      try {
+        const res = await fetch(TOURNAMENTS_API_ENDPOINT);
+        if (res.ok) setAllTournaments(await res.json());
+      } catch {}
+    };
+    fetchAll();
+  }, [refreshTrigger]);
+
+  // Close picker when clicking outside
+  useEffect(() => {
+    if (!showTournamentPicker) return;
+    const handleClickOutside = (e) => {
+      if (pickerRef.current && !pickerRef.current.contains(e.target)) {
+        setShowTournamentPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showTournamentPicker]);
+
+  // Tournaments grouped by year (newest first) for the picker
+  const tournamentsByYear = useMemo(() => {
+    const grouped = {};
+    allTournaments.forEach(t => {
+      const y = t.year || 'Unknown';
+      if (!grouped[y]) grouped[y] = [];
+      grouped[y].push(t);
+    });
+    return Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a));
+  }, [allTournaments]);
 
   // Fetch available years
   useEffect(() => {
@@ -577,54 +614,7 @@ function App() {
             </div>
           </div>
 
-          {/* Tournament Selector Section */}
-          <div className="tournament-section">
-            <div className="select-wrapper">
-              <select
-                id="year-select"
-                className="modern-select year-select"
-                value={selectedYear}
-                onChange={(e) => {
-                  setSelectedYear(e.target.value);
-                }}
-              >
-                {availableYears.length === 0 ? (
-                  <option value="">{new Date().getFullYear()}</option>
-                ) : (
-                  availableYears.map((year) => (
-                    <option key={year} value={year}>
-                      {year}
-                    </option>
-                  ))
-                )}
-              </select>
-              <span className="select-arrow">▼</span>
-            </div>
-            <div className="select-wrapper">
-              <select
-                id="tournament-select"
-                className="modern-select"
-                value={selectedTournamentId}
-                onChange={(e) => {
-                  const newTournamentId = e.target.value;
-                  console.log('Tournament selection changed to:', newTournamentId);
-                  setSelectedTournamentId(newTournamentId);
-                  setLeaderboardRefreshKey(prev => prev + 1);
-                }}
-              >
-                {tournaments.length === 0 ? (
-                  <option value="">No Tournaments Available</option>
-                ) : (
-                  tournaments.map((tournament) => (
-                    <option key={tournament.id} value={tournament.id}>
-                      {tournament.name}
-                    </option>
-                  ))
-                )}
-              </select>
-              <span className="select-arrow">▼</span>
-            </div>
-          </div>
+          {/* Tournament Selector removed — now in the details bar picker */}
 
           {/* Navigation Section */}
           <nav className="modern-nav">
@@ -691,11 +681,40 @@ function App() {
         {selectedTournamentId && (
           <div className="status-bar">
             <p className="status-section-title">Tournament Details</p>
-            {(tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name) && (
-              <p className="status-line status-line-name">
-                {tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name}
-              </p>
-            )}
+            <div className="tournament-picker" ref={pickerRef}>
+              <button
+                className="picker-trigger"
+                onClick={() => setShowTournamentPicker(p => !p)}
+                aria-expanded={showTournamentPicker}
+              >
+                <span className="status-line-name">
+                  {tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name}
+                </span>
+                <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
+              </button>
+              {showTournamentPicker && (
+                <div className="picker-dropdown">
+                  {tournamentsByYear.map(([year, ts]) => (
+                    <div key={year} className="picker-year-group">
+                      <p className="picker-year-label">{year}</p>
+                      {ts.map(t => (
+                        <button
+                          key={t.id}
+                          className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
+                          onClick={() => {
+                            setSelectedTournamentId(t.id);
+                            setLeaderboardRefreshKey(prev => prev + 1);
+                            setShowTournamentPicker(false);
+                          }}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
             {tournamentInfo?.StartDate && (
               <p className="status-line">
                 <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
