@@ -139,7 +139,7 @@ function TournamentScores({ tournamentId, tournamentName }) {
   return (
     <div>
       <div className="leaderboard-container">
-        <table className="leaderboard-table">
+        <table className="leaderboard-table scores-table">
           <thead>
             <tr>
               <th>POS</th>
