@@ -73,6 +73,16 @@ function App() {
   const [showLogin, setShowLogin] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
+
+  // After a signInWithRedirect, the page reloads and all state is lost.
+  // If the user was trying to open Setup before being redirected to sign in,
+  // re-open Setup automatically once isAdmin becomes true.
+  useEffect(() => {
+    if (isAdmin && sessionStorage.getItem('pendingSetup') === '1') {
+      sessionStorage.removeItem('pendingSetup');
+      setShowSetup(true);
+    }
+  }, [isAdmin]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
@@ -659,6 +669,7 @@ function App() {
               className="nav-button"
               onClick={() => {
                 if (!isAdmin) {
+                  sessionStorage.setItem('pendingSetup', '1');
                   setShowLogin(true);
                   return;
                 }
