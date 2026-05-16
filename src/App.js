@@ -4,6 +4,7 @@ import { useGolfLeaderboard } from './useGolfLeaderboard';
 import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
+import TournamentScores from './components/TournamentScores';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
 function App() {
@@ -67,6 +68,7 @@ function App() {
 
   const [showSetup, setShowSetup] = useState(false);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
+  const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [availableYears, setAvailableYears] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
@@ -289,6 +291,7 @@ function App() {
   const handleShowLeaderboardClick = () => {
     setShowSetup(false);
     setShowAnnualChampionship(false);
+    setShowTournamentScores(false);
     setLeaderboardRefreshKey(prev => prev + 1);
   };
 
@@ -622,11 +625,25 @@ function App() {
               <span className="button-icon">📊</span>
               <span className="button-text">Leaderboard</span>
             </button>
+            <button
+              className={`nav-button ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={() => {
+                if (!selectedTournamentId) return;
+                setShowSetup(false);
+                setShowAnnualChampionship(false);
+                setShowTournamentScores(true);
+              }}
+              disabled={!selectedTournamentId}
+            >
+              <span className="button-icon">📋</span>
+              <span className="button-text">Tournament Scores</span>
+            </button>
             <button 
               className="nav-button"
               onClick={() => {
                 setShowSetup(false);
                 setShowAnnualChampionship(true);
+                setShowTournamentScores(false);
               }}
             >
               <span className="button-icon">🏆</span>
@@ -636,6 +653,7 @@ function App() {
               className="nav-button"
               onClick={() => {
                 setShowAnnualChampionship(false);
+                setShowTournamentScores(false);
                 setShowSetup(true);
               }}
             >
@@ -687,6 +705,11 @@ function App() {
             />
           ) : showAnnualChampionship ? (
             <AnnualChampionship selectedYear={selectedYear} />
+          ) : showTournamentScores ? (
+            <TournamentScores
+              tournamentId={selectedTournamentId}
+              tournamentName={tournaments.find(t => t.id === selectedTournamentId)?.name}
+            />
           ) : (
             <main>
             {draftStatusLoading ? (
