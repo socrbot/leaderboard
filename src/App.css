@@ -388,7 +388,6 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 /* ── Table base ── */
 .leaderboard-table {
   width: 100%;
-  min-width: 560px;
   margin: 0;
   border-collapse: collapse;
   background-color: #1a1a1a;
@@ -614,14 +613,20 @@ select:focus {
     table-layout: fixed;
   }
 
+  /* Name col: fixed width, scores share the rest */
+  .leaderboard-table {
+    min-width: 0;
+  }
+
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    width: 44%;
+    width: 40%;
+    min-width: 110px;
   }
 
   .leaderboard-table th:nth-child(2),
   .leaderboard-table td:nth-child(2) {
-    width: 14%;
+    width: 15%;
   }
 
   .leaderboard-table th:nth-child(3),
@@ -632,7 +637,7 @@ select:focus {
   .leaderboard-table td:nth-child(5),
   .leaderboard-table th:nth-child(6),
   .leaderboard-table td:nth-child(6) {
-    width: 10.5%;
+    width: 11.25%;
   }
 
   .leaderboard-table thead th,
@@ -651,9 +656,13 @@ select:focus {
     padding-left: 22px;
   }
 
+  /* Ensure name always shows — never collapse to zero */
   .team-name-cell,
   .golfer-name-cell {
-    max-width: 0;
+    max-width: none;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 }
 

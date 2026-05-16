@@ -84,7 +84,6 @@ function App() {
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
-  const [availableYears, setAvailableYears] = useState([]);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
   const [allTournaments, setAllTournaments] = useState([]);
@@ -210,14 +209,13 @@ function App() {
     return Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a));
   }, [allTournaments]);
 
-  // Fetch available years
+  // Fetch available years (to default selectedYear to the most recent)
   useEffect(() => {
     const fetchYears = async () => {
       try {
         const response = await fetch(`${TOURNAMENTS_API_ENDPOINT}/years`);
         if (response.ok) {
           const years = await response.json();
-          setAvailableYears(years);
           // If current selectedYear isn't in the list, default to the most recent year
           if (years.length > 0 && !years.includes(selectedYear)) {
             setSelectedYear(years[0]);
