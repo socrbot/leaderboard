@@ -1055,6 +1055,206 @@ select:focus {
    SETUP CONTAINER (simplified — header/tabs/help moved to App-level)
    ================================================================= */
 
+/* =================================================================
+   LEAGUE MANAGEMENT
+   ================================================================= */
+
+.league-management,
+.league-setup-prompt {
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 1.25rem 1rem 2rem;
+  color: #e8e8e8;
+}
+
+.league-loading {
+  padding: 2rem;
+  text-align: center;
+  color: rgba(255,255,255,0.5);
+}
+
+.league-section {
+  background: #1a1a1a;
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 10px;
+  padding: 1.1rem 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.league-section-title {
+  font-size: 0.7rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.45);
+  margin: 0 0 0.65rem;
+}
+
+.league-section-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.league-name-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.league-name-value {
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: #ffffff;
+}
+
+.league-meta {
+  margin: 0.4rem 0 0;
+  font-size: 0.8rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.league-hint {
+  font-size: 0.82rem;
+  color: rgba(255,255,255,0.45);
+  margin: 0 0 0.75rem;
+  line-height: 1.5;
+}
+
+.league-code-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+.league-invite-code {
+  font-family: 'Courier New', Courier, monospace;
+  font-size: 1.5rem;
+  font-weight: 700;
+  letter-spacing: 0.2em;
+  color: #7ec87e;
+  flex: 1;
+  min-width: 140px;
+}
+
+/* Shared button styles */
+.league-btn-primary {
+  background: #2a6b2a;
+  color: #ffffff;
+  border: none;
+  border-radius: 6px;
+  padding: 0.45rem 0.9rem;
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background 0.15s ease;
+  white-space: nowrap;
+}
+.league-btn-primary:hover:not(:disabled) { background: #336b33; }
+.league-btn-primary:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.league-btn-ghost {
+  background: none;
+  color: rgba(255,255,255,0.55);
+  border: 1px solid rgba(255,255,255,0.18);
+  border-radius: 6px;
+  padding: 0.4rem 0.8rem;
+  font-size: 0.82rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+}
+.league-btn-ghost:hover { color: #ffffff; border-color: rgba(255,255,255,0.4); }
+
+.league-name-input {
+  background: #111;
+  border: 1px solid rgba(255,255,255,0.2);
+  border-radius: 6px;
+  color: #ffffff;
+  font-family: inherit;
+  font-size: 0.95rem;
+  padding: 0.45rem 0.75rem;
+  flex: 1;
+  min-width: 180px;
+  outline: none;
+}
+.league-name-input:focus { border-color: #4caf50; }
+
+/* Member list */
+.league-member-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.league-member-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(255,255,255,0.04);
+  border-radius: 6px;
+}
+
+.league-member-name {
+  font-size: 0.9rem;
+  color: #e8e8e8;
+  flex: 1;
+}
+
+.league-member-email {
+  font-size: 0.75rem;
+  color: rgba(255,255,255,0.4);
+}
+
+.league-btn-danger-sm {
+  background: none;
+  color: rgba(248,113,113,0.6);
+  border: 1px solid rgba(248,113,113,0.25);
+  border-radius: 5px;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.75rem;
+  font-family: inherit;
+  cursor: pointer;
+  transition: color 0.15s ease, border-color 0.15s ease;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+.league-btn-danger-sm:hover:not(:disabled) { color: #f87171; border-color: #f87171; }
+.league-btn-danger-sm:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.league-error {
+  color: #f87171;
+  font-size: 0.82rem;
+  margin: 0.5rem 0;
+  padding: 0.5rem 0.75rem;
+  background: rgba(248,113,113,0.08);
+  border-radius: 6px;
+  border: 1px solid rgba(248,113,113,0.2);
+}
+
+/* Init prompt */
+.league-setup-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.league-init-row {
+  display: flex;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+
+
+
 /* Improve scroll performance */
 * {
   -webkit-backface-visibility: hidden;

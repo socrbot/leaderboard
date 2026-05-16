@@ -52,8 +52,13 @@ export function AuthProvider({ children }) {
     await firebaseSignOut(auth);
   };
 
+  const getIdToken = async () => {
+    if (!auth.currentUser) return null;
+    return auth.currentUser.getIdToken();
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut }}>
+    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken }}>
       {children}
     </AuthContext.Provider>
   );

@@ -83,7 +83,7 @@ function App() {
   }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
-  const [setupActiveTab, setSetupActiveTab] = useState('global-teams');
+  const [setupActiveTab, setSetupActiveTab] = useState('league');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [availableYears, setAvailableYears] = useState([]);
   const [showAnnualYearPicker, setShowAnnualYearPicker] = useState(false);
@@ -778,6 +778,12 @@ function App() {
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
           <div className="setup-nav-bar">
             <button
+              className={`setup-nav-link ${setupActiveTab === 'league' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('league')}
+            >
+              League
+            </button>
+            <button
               className={`setup-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
               onClick={() => setSetupActiveTab('global-teams')}
             >
@@ -1153,10 +1159,16 @@ function App() {
       {showSetup && (
         <nav className="bottom-nav setup-bottom-nav">
           <button
+            className={`bottom-nav-link ${setupActiveTab === 'league' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('league')}
+          >
+            League
+          </button>
+          <button
             className={`bottom-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
             onClick={() => setSetupActiveTab('global-teams')}
           >
-            Manage Teams
+            Teams
           </button>
           <button
             className={`bottom-nav-link ${setupActiveTab === 'tournament-creation' ? 'active' : ''}`}

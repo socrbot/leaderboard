@@ -3,6 +3,7 @@ import React from 'react';
 import TournamentCreation from './TournamentCreation';
 import GlobalTeamsManagement from './GlobalTeamsManagement';
 import TeamManagement from './TeamManagement';
+import LeagueManagement from './LeagueManagement';
 import '../App.css';
 
 const Setup = ({ 
@@ -24,6 +25,7 @@ const Setup = ({
   const tab = activeTab || 'global-teams';
 
   const tabs = {
+    'league': <LeagueManagement />,
     'global-teams': <GlobalTeamsManagement selectedYear={selectedYear} />,
     'tournament-creation': <TournamentCreation onTournamentCreated={onTournamentCreated} />,
     'draft-management': (
