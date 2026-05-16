@@ -77,7 +77,7 @@ function TournamentScores({ tournamentId, tournamentName }) {
     return num < 0 ? '#4ade80' : '#f87171';
   };
 
-  // Determine which rounds have any scores at all
+  // Determine which rounds have any scores at all (including in-progress rounds)
   const roundsWithData = useMemo(() => {
     const rounds = [false, false, false, false];
     leaderboardRows.forEach(p => {
@@ -89,9 +89,30 @@ function TournamentScores({ tournamentId, tournamentName }) {
           }
         });
       }
+      // Also pick up the active in-progress round score
+      const currentRoundNum = parseInt(p.currentRound?.$numberInt ?? p.currentRound);
+      if (currentRoundNum >= 1 && currentRoundNum <= 4 && p.currentRoundScore != null) {
+        rounds[currentRoundNum - 1] = true;
+      }
     });
     return rounds;
   }, [leaderboardRows]);
+
+  // Show THRU column only when the tournament is in-progress (not complete)
+  // and at least one player hasn't finished
+  const showThru = useMemo(() => {
+    if (isComplete) return false;
+    return leaderboardRows.some(p => p.thru && p.thru !== 'F');
+  }, [isComplete, leaderboardRows]);
+
+  const renderRoundCell = (player, roundNum) => {
+    const score = getRoundScore(player, roundNum);
+    return (
+      <td style={{ color: scoreColor(score) }}>
+        {formatScore(score)}
+      </td>
+    );
+  };
 
   if (loading) {
     return (
@@ -152,7 +173,7 @@ function TournamentScores({ tournamentId, tournamentName }) {
               {roundsWithData[1] && <th>R2</th>}
               {roundsWithData[2] && <th>R3</th>}
               {roundsWithData[3] && <th>R4</th>}
-              <th>THRU</th>
+              {showThru && <th>THRU</th>}
               <th>TOTAL</th>
             </tr>
           </thead>
@@ -172,27 +193,11 @@ function TournamentScores({ tournamentId, tournamentName }) {
                       <span style={{ color: '#f87171', marginLeft: 6, fontSize: '0.8em' }}>(CUT)</span>
                     )}
                   </td>
-                  {roundsWithData[0] && (
-                    <td style={{ color: scoreColor(getRoundScore(player, 1)) }}>
-                      {formatScore(getRoundScore(player, 1))}
-                    </td>
-                  )}
-                  {roundsWithData[1] && (
-                    <td style={{ color: scoreColor(getRoundScore(player, 2)) }}>
-                      {formatScore(getRoundScore(player, 2))}
-                    </td>
-                  )}
-                  {roundsWithData[2] && (
-                    <td style={{ color: scoreColor(getRoundScore(player, 3)) }}>
-                      {formatScore(getRoundScore(player, 3))}
-                    </td>
-                  )}
-                  {roundsWithData[3] && (
-                    <td style={{ color: scoreColor(getRoundScore(player, 4)) }}>
-                      {formatScore(getRoundScore(player, 4))}
-                    </td>
-                  )}
-                  <td>{player.thru || '-'}</td>
+                  {roundsWithData[0] && renderRoundCell(player, 1)}
+                  {roundsWithData[1] && renderRoundCell(player, 2)}
+                  {roundsWithData[2] && renderRoundCell(player, 3)}
+                  {roundsWithData[3] && renderRoundCell(player, 4)}
+                  {showThru && <td>{player.thru || '-'}</td>}
                   <td style={{ fontWeight: 'bold', color: totalColor(player.total) }}>
                     {player.total === 'E' || player.total === '0' || player.total === 0
                       ? 'E'
