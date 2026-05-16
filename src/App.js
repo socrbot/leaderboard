@@ -853,7 +853,6 @@ function App() {
                         const teamName = team.teamName || team.team || 'Unknown Team';
                         const teamTotal = team.totalScore !== undefined ? team.totalScore : team.total;
                         const golfers = team.players || team.golfers || [];
-                        const hasCut = golfers.some(g => g.status && g.status.toUpperCase() === 'CUT');
                         return (
                         <React.Fragment key={`team-${teamName}-${index}`}>
                           <tr
@@ -864,7 +863,6 @@ function App() {
                             <td className="team-name-cell">
                               <span className="team-expand-icon">{expandedTeams[index] ? '▾' : '▸'}</span>
                               {teamName}
-                              {hasCut && <span className="team-cut-badge">CUT</span>}
                             </td>
                             <td className="total-cell">{formatScoreForDisplay(teamTotal)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r1?.score || team.r1)}</td>
