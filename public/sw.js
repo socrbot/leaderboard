@@ -1,9 +1,6 @@
 // public/sw.js
-const CACHE_NAME = 'leaderboard-cache-v' + Date.now(); // Dynamic version to force updates
+const CACHE_NAME = 'leaderboard-cache-v' + Date.now();
 const API_CACHE_NAME = 'leaderboard-api-cache-v' + Date.now();
-
-// Don't pre-cache assets - they don't exist until after build and can cause install failures
-// Assets will be cached on first request instead
 
 // Install event - skip waiting to activate immediately
 self.addEventListener('install', event => {
@@ -19,7 +16,6 @@ self.addEventListener('activate', event => {
       .then(cacheNames => {
         return Promise.all(
           cacheNames.map(cacheName => {
-            // Delete all old caches to prevent corruption
             if (cacheName !== CACHE_NAME && cacheName !== API_CACHE_NAME) {
               console.log('Deleting old cache:', cacheName);
               return caches.delete(cacheName);
@@ -27,13 +23,108 @@ self.addEventListener('activate', event => {
           })
         );
       })
-      .then(() - network-first with error handling
+      .then(() => clients.claim())
+  );
+});
+
+// Fetch event - network-first with error handling
 self.addEventListener('fetch', event => {
   const { request } = event;
   const url = new URL(request.url);
 
   // Handle API requests with network-first strategy
   if (url.pathname.includes('/api/')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(API_CACHE_NAME)
+              .then(cache => cache.put(request, responseClone))
+              .catch(err => console.warn('Failed to cache API response:', err));
+          }
+          return response;
+        })
+        .catch(error => {
+          console.warn('API fetch failed, trying cache:', error);
+          return caches.match(request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              return new Response(
+                JSON.stringify({ error: 'Network unavailable and no cached data' }),
+                {
+                  status: 503,
+                  statusText: 'Service Unavailable',
+                  headers: { 'Content-Type': 'application/json' }
+                }
+              );
+            });
+        })
+    );
+    return;
+  }
+
+  // Network-first for HTML navigation
+  if (request.mode === 'navigate' || url.pathname === '/' || url.pathname.endsWith('.html')) {
+    event.respondWith(
+      fetch(request)
+        .then(response => {
+          if (response.ok) {
+            const responseClone = response.clone();
+            caches.open(CACHE_NAME)
+              .then(cache => cache.put(request, responseClone))
+              .catch(err => console.warn('Failed to cache HTML:', err));
+          }
+          return response;
+        })
+        .catch(error => {
+          console.warn('HTML fetch failed, trying cache:', error);
+          return caches.match(request)
+            .then(cachedResponse => {
+              if (cachedResponse) {
+                return cachedResponse;
+              }
+              return new Response(
+                '<html><body><h1>Offline</h1><p>Unable to load page. Please check your connection and try again.</p></body></html>',
+                {
+                  status: 503,
+                  statusText: 'Service Unavailable',
+                  headers: { 'Content-Type': 'text/html' }
+                }
+              );
+            });
+        })
+    );
+    return;
+  }
+
+  // Cache-first for static assets (JS, CSS, images)
+  event.respondWith(
+    caches.match(request)
+      .then(cachedResponse => {
+        if (cachedResponse) {
+          return cachedResponse;
+        }
+        return fetch(request)
+          .then(response => {
+            if (response.ok) {
+              const responseClone = response.clone();
+              caches.open(CACHE_NAME)
+                .then(cache => cache.put(request, responseClone))
+                .catch(err => console.warn('Failed to cache asset:', err));
+            }
+            return response;
+          })
+          .catch(error => {
+            console.error('Asset fetch failed:', error);
+            return new Response('', { status: 404, statusText: 'Not Found' });
+          });
+      })
+  );
+});
+
     event.respondWith(
       fetch(request)
         .then(response => {
