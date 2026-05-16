@@ -93,6 +93,7 @@ function App() {
   // Sorting state
   const [sortColumn, setSortColumn] = useState('total');
   const [sortDirection, setSortDirection] = useState('asc');
+  const [expandedTeams, setExpandedTeams] = useState({});
 
   // State to trigger re-fetch of tournaments/leaderboard data
   const [refreshTrigger, setRefreshTrigger] = useState(0);
@@ -851,33 +852,46 @@ function App() {
                       {sortedLeaderboardData.map((team, index) => {
                         const teamName = team.teamName || team.team || 'Unknown Team';
                         const teamTotal = team.totalScore !== undefined ? team.totalScore : team.total;
+                        const golfers = team.players || team.golfers || [];
+                        const hasCut = golfers.some(g => g.status && g.status.toUpperCase() === 'CUT');
                         return (
                         <React.Fragment key={`team-${teamName}-${index}`}>
-                          <tr className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')}`}>
+                          <tr
+                            className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable`}
+                            onClick={() => setExpandedTeams(prev => ({ ...prev, [index]: !prev[index] }))}
+                          >
                             <td>{team.position || (index + 1)}</td>
-                            <td className="team-name-cell">{teamName}</td>
+                            <td className="team-name-cell">
+                              <span className="team-expand-icon">{expandedTeams[index] ? '▾' : '▸'}</span>
+                              {teamName}
+                              {hasCut && <span className="team-cut-badge">CUT</span>}
+                            </td>
                             <td className="total-cell">{formatScoreForDisplay(teamTotal)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r1?.score || team.r1)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r2?.score || team.r2)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r3?.score || team.r3)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r4?.score || team.r4)}</td>
                           </tr>
-                          {(team.players || team.golfers) && (team.players || team.golfers).map((golfer, golferIndex) => (
-                            <tr key={`golfer-${teamName}-${golferIndex}`} className="golfer-row">
-                              <td></td>
-                              <td className="golfer-name-cell">
-                                {golfer.name}
-                                {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
-                                  <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
-                                )}
-                              </td>
-                              <td></td>
-                              <td>{formatScoreForDisplay(golfer.r1?.score)}</td>
-                              <td>{formatScoreForDisplay(golfer.r2?.score)}</td>
-                              <td>{formatScoreForDisplay(golfer.r3?.score)}</td>
-                              <td>{formatScoreForDisplay(golfer.r4?.score)}</td>
-                            </tr>
-                          ))}
+                          {expandedTeams[index] && golfers.map((golfer, golferIndex) => {
+                            const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
+                            return (
+                              <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''}`}>
+                                <td></td>
+                                <td className="golfer-name-cell">
+                                  <span className="golfer-name-text">{golfer.name}</span>
+                                  {isCut
+                                    ? <span className="golfer-cut-label">CUT</span>
+                                    : golfer.status && <span className="golfer-status-label">{golfer.status}</span>
+                                  }
+                                </td>
+                                <td></td>
+                                <td>{formatScoreForDisplay(golfer.r1?.score)}</td>
+                                <td>{formatScoreForDisplay(golfer.r2?.score)}</td>
+                                <td>{formatScoreForDisplay(golfer.r3?.score)}</td>
+                                <td>{formatScoreForDisplay(golfer.r4?.score)}</td>
+                              </tr>
+                            );
+                          })}
                         </React.Fragment>
                         );
                       })}
