@@ -682,7 +682,7 @@ function App() {
           </nav>
         </div>
 
-        {/* Tournament Status Bar */}}
+        {/* Tournament Status Bar */}
         {selectedTournamentId && (
           <div className="status-bar">
             <div className="status-container">
