@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import ReactDOM from 'react-dom';
 import { useAuth } from '../contexts/AuthContext';
 
 export default function LoginPage({ onClose }) {
@@ -19,7 +20,7 @@ export default function LoginPage({ onClose }) {
     }
   };
 
-  return (
+  return ReactDOM.createPortal(
     <div style={styles.overlay}>
       <div style={styles.card}>
         <div style={styles.header}>
@@ -46,7 +47,8 @@ export default function LoginPage({ onClose }) {
           <button style={styles.closeBtn} onClick={onClose} aria-label="Close">✕</button>
         )}
       </div>
-    </div>
+    </div>,
+    document.body
   );
 }
 
