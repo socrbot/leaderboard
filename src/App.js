@@ -71,18 +71,19 @@ function App() {
   const { user, userData, signOut } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const [showLogin, setShowLogin] = useState(false);
+  const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
 
-  // After a signInWithRedirect, the page reloads and all state is lost.
-  // If the user was trying to open Setup before being redirected to sign in,
-  // re-open Setup automatically once isAdmin becomes true.
+  // When sign-in completes and the user is admin, open Setup if they
+  // were trying to access it before signing in.
   useEffect(() => {
-    if (isAdmin && sessionStorage.getItem('pendingSetup') === '1') {
-      sessionStorage.removeItem('pendingSetup');
+    if (isAdmin && pendingSetup) {
+      setPendingSetup(false);
+      setShowLogin(false);
       setShowSetup(true);
     }
-  }, [isAdmin]);
+  }, [isAdmin, pendingSetup]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
@@ -669,7 +670,7 @@ function App() {
               className="nav-button"
               onClick={() => {
                 if (!isAdmin) {
-                  sessionStorage.setItem('pendingSetup', '1');
+                  setPendingSetup(true);
                   setShowLogin(true);
                   return;
                 }
