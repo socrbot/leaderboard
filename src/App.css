@@ -981,7 +981,78 @@ select:focus {
 }
 
 /* =================================================================
-   PERFORMANCE OPTIMIZATIONS
+   SETUP NAV BAR (desktop tab bar below status bar)
+   ================================================================= */
+
+.setup-nav-bar {
+  background: #1a2e1a;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  display: flex;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.4rem 1rem;
+}
+
+.setup-nav-link {
+  background: none;
+  border: none;
+  color: rgba(255, 255, 255, 0.65);
+  font-size: 0.875rem;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 0.4rem 0.85rem;
+  cursor: pointer;
+  border-radius: 6px;
+  transition: color 0.15s ease, background 0.15s ease;
+  white-space: nowrap;
+}
+
+.setup-nav-link:hover:not(.disabled) {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.setup-nav-link.active {
+  color: #ffffff;
+  background: rgba(255, 255, 255, 0.12);
+}
+
+.setup-nav-link.disabled {
+  color: rgba(255, 255, 255, 0.25);
+  cursor: not-allowed;
+}
+
+.setup-nav-signout {
+  color: rgba(248, 113, 113, 0.7);
+  margin-left: auto;
+}
+
+.setup-nav-signout:hover {
+  color: #f87171;
+  background: rgba(248, 113, 113, 0.08) !important;
+}
+
+@media (max-width: 768px) {
+  /* Hide desktop setup nav bar — use second bottom bar instead */
+  .setup-nav-bar {
+    display: none;
+  }
+
+  /* Second bottom bar for setup — sits above the primary bottom nav */
+  .setup-bottom-nav {
+    bottom: 52px; /* height of primary bottom nav */
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.15);
+  }
+
+  /* Extra padding when setup bottom nav is showing */
+  .App.setup-active {
+    padding-bottom: 108px;
+  }
+}
+
+/* =================================================================
+   SETUP CONTAINER (simplified — header/tabs/help moved to App-level)
    ================================================================= */
 
 /* Improve scroll performance */

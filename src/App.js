@@ -83,6 +83,7 @@ function App() {
   }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
+  const [setupActiveTab, setSetupActiveTab] = useState('global-teams');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [availableYears, setAvailableYears] = useState([]);
   const [showAnnualYearPicker, setShowAnnualYearPicker] = useState(false);
@@ -612,7 +613,7 @@ function App() {
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
 
   return (
-    <div className="App">
+    <div className={`App${showSetup ? ' setup-active' : ''}`}>
       <header className="modern-header">
         <div className="header-container">
           {/* Logo/Brand Section */}
@@ -692,7 +693,7 @@ function App() {
           </nav>
         </div>
       </header>
-      {/* Status bar: shows annual year picker when Annual view is active, otherwise tournament details */}
+      {/* Status bar: context-aware — Annual, Setup, or Tournament Details */}
       {showAnnualChampionship ? (
         <div className="status-bar">
           <p className="status-section-title">Annual Championship</p>
@@ -723,6 +724,89 @@ function App() {
             )}
           </div>
         </div>
+      ) : showSetup ? (
+        <>
+          <div className="status-bar">
+            <p className="status-section-title">Setup</p>
+            <div className="tournament-picker" ref={pickerRef}>
+              <button
+                className="picker-trigger"
+                onClick={() => setShowTournamentPicker(p => !p)}
+                aria-expanded={showTournamentPicker}
+              >
+                <span className="status-line-name">
+                  {(selectedTournamentId
+                    ? (tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name)
+                    : 'No tournament selected') || 'No tournament selected'}
+                </span>
+                <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
+              </button>
+              {showTournamentPicker && (
+                <div className="picker-dropdown">
+                  {tournamentsByYear.map(([year, ts]) => (
+                    <div key={year} className="picker-year-group">
+                      <p className="picker-year-label">{year}</p>
+                      {ts.map(t => (
+                        <button
+                          key={t.id}
+                          className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
+                          onClick={() => {
+                            setSelectedTournamentId(t.id);
+                            setLeaderboardRefreshKey(prev => prev + 1);
+                            setShowTournamentPicker(false);
+                          }}
+                        >
+                          {t.name}
+                        </button>
+                      ))}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {tournamentInfo?.StartDate && (
+              <p className="status-line">
+                <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
+              </p>
+            )}
+            {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+              <p className="status-line">
+                <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+              </p>
+            )}
+          </div>
+          {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
+          <div className="setup-nav-bar">
+            <button
+              className={`setup-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('global-teams')}
+            >
+              Manage Teams
+            </button>
+            <button
+              className={`setup-nav-link ${setupActiveTab === 'tournament-creation' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('tournament-creation')}
+            >
+              Create Tournament
+            </button>
+            <button
+              className={`setup-nav-link ${setupActiveTab === 'draft-management' ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={() => {
+                if (!selectedTournamentId) return;
+                setSetupActiveTab('draft-management');
+              }}
+              disabled={!selectedTournamentId}
+            >
+              Draft Management
+            </button>
+            <button
+              className="setup-nav-link setup-nav-signout"
+              onClick={() => { setShowSetup(false); signOut(); }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
           <p className="status-section-title">Tournament Details</p>
@@ -804,6 +888,8 @@ function App() {
               onManualOddsUpdated={handleDataUpdated}
               onSignOut={() => { setShowSetup(false); signOut(); }}
               userEmail={user?.email}
+              activeTab={setupActiveTab}
+              setActiveTab={setSetupActiveTab}
             />
           ) : showAnnualChampionship ? (
             <AnnualChampionship selectedYear={selectedYear} />
@@ -986,6 +1072,8 @@ function App() {
               onManualOddsUpdated={handleDataUpdated}
               onSignOut={() => { setShowSetup(false); signOut(); }}
               userEmail={user?.email}
+              activeTab={setupActiveTab}
+              setActiveTab={setSetupActiveTab}
             />
           ) : showAnnualChampionship ? (
             <AnnualChampionship selectedYear={selectedYear} />
@@ -1060,6 +1148,40 @@ function App() {
           </button>
         )}
       </nav>
+
+      {/* Second mobile bottom bar — setup tabs, only shown in Setup view */}
+      {showSetup && (
+        <nav className="bottom-nav setup-bottom-nav">
+          <button
+            className={`bottom-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('global-teams')}
+          >
+            Manage Teams
+          </button>
+          <button
+            className={`bottom-nav-link ${setupActiveTab === 'tournament-creation' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('tournament-creation')}
+          >
+            Create
+          </button>
+          <button
+            className={`bottom-nav-link ${setupActiveTab === 'draft-management' ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
+            onClick={() => {
+              if (!selectedTournamentId) return;
+              setSetupActiveTab('draft-management');
+            }}
+            disabled={!selectedTournamentId}
+          >
+            Draft
+          </button>
+          <button
+            className="bottom-nav-link"
+            onClick={() => { setShowSetup(false); signOut(); }}
+          >
+            Sign Out
+          </button>
+        </nav>
+      )}
     </div>
   );
 }

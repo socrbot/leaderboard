@@ -63,7 +63,7 @@ const AnnualChampionship = ({ selectedYear }) => {
   return (
     <div className="annual-championship">
       <div className="annual-header">
-        <h2 className="annual-title">🏆 {selectedYear} Annual Golf Championship</h2>
+        <h2 className="annual-title">{selectedYear} Annual Golf Championship</h2>
       </div>
 
       {tournaments.length === 0 ? (
