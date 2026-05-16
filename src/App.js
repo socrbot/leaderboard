@@ -690,53 +690,38 @@ function App() {
         {/* Tournament Details Bar */}
         {selectedTournamentId && (
           <div className="status-bar">
-            <div className="status-container">
-              <span className="status-label" style={{ fontWeight: 700, color: '#fff', marginRight: '0.5rem' }}>Tournament Details</span>
-              {(tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name) && (
-                <div className="status-item">
-                  <span className="status-value" style={{ color: '#ffffff' }}>
-                    {tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name}
-                  </span>
-                </div>
-              )}
-              {tournamentInfo?.StartDate && (
-                <div className="status-item">
-                  <span className="status-label">Dates:</span>
-                  <span className="status-value" style={{ color: '#e0e0e0' }}>
-                    {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
-                  </span>
-                </div>
-              )}
-              {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
-                <div className="status-item">
-                  <span className="status-label">Course:</span>
-                  <span className="status-value" style={{ color: '#e0e0e0' }}>
-                    {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
-                  </span>
-                </div>
-              )}
-              {tournamentInfo?.CurrentRound && isTournamentInProgress && (
-                <div className="status-item">
-                  <span className="status-label">Round:</span>
-                  <span className="status-value active">{tournamentInfo.CurrentRound}</span>
-                </div>
-              )}
-              <div className="status-item">
-                <span className={`status-value ${
-                  isTournamentOver ? 'complete' :
-                  isTournamentInProgress ? 'live' :
-                  draftStatus.IsDraftComplete ? 'complete' :
-                  draftStatus.IsDraftStarted ? 'active' :
-                  draftStatus.IsDraftLocked ? 'active' : 'pending'
-                }`}>
-                  {isTournamentOver ? 'Tournament Complete' :
-                   isTournamentInProgress ? 'Tournament Live' :
-                   draftStatus.IsDraftComplete ? 'Draft Complete' :
-                   draftStatus.IsDraftStarted ? 'Draft In Progress' :
-                   draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
-                </span>
-              </div>
-            </div>
+            <p className="status-section-title">Tournament Details</p>
+            {(tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name) && (
+              <p className="status-line status-line-name">
+                {tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name}
+              </p>
+            )}
+            {tournamentInfo?.StartDate && (
+              <p className="status-line">
+                <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
+              </p>
+            )}
+            {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+              <p className="status-line">
+                <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+              </p>
+            )}
+            <p className={`status-line status-line-badge ${
+              isTournamentOver ? 'complete' :
+              isTournamentInProgress ? 'live' :
+              draftStatus.IsDraftComplete ? 'complete' :
+              draftStatus.IsDraftStarted ? 'active' :
+              draftStatus.IsDraftLocked ? 'active' : 'pending'
+            }`}>
+              {isTournamentInProgress && tournamentInfo?.CurrentRound
+                ? `Round ${tournamentInfo.CurrentRound} · `
+                : ''}
+              {isTournamentOver ? 'Tournament Complete' :
+               isTournamentInProgress ? 'Live' :
+               draftStatus.IsDraftComplete ? 'Draft Complete' :
+               draftStatus.IsDraftStarted ? 'Draft In Progress' :
+               draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
+            </p>
           </div>
         )}
       </header>
