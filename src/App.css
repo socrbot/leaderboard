@@ -449,12 +449,8 @@ th {
 }
 
 /* Optimized row styling - scoped away from leaderboard (banded manually) */
-table:not(.annual-table) tbody tr:nth-child(even) {
+table:not(.annual-table):not(.leaderboard-table) tbody tr:nth-child(even) {
   background-color: #2b2b2b;
-}
-
-.leaderboard-table tbody tr:nth-child(even) {
-  background-color: unset;
 }
 
 tbody tr:hover {
