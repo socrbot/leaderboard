@@ -5,6 +5,7 @@ import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
+import JoinLeague from './components/JoinLeague';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
@@ -611,6 +612,11 @@ function App() {
   // --- Main Render Logic ---
   if (loadingTournaments) return <div>Loading tournaments...</div>;
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
+
+  // Gate: signed-in non-admin user who hasn't joined the league yet
+  if (user && userData && !isAdmin && !userData.inLeague) {
+    return <JoinLeague />;
+  }
 
   return (
     <div className={`App${showSetup ? ' setup-active' : ''}`}>

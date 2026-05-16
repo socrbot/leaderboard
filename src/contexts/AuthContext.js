@@ -57,8 +57,17 @@ export function AuthProvider({ children }) {
     return auth.currentUser.getIdToken();
   };
 
+  const refreshUserData = async () => {
+    if (!auth.currentUser) return;
+    const userRef = doc(db, 'users', auth.currentUser.uid);
+    const snap = await getDoc(userRef);
+    if (snap.exists()) {
+      setUserData(snap.data());
+    }
+  };
+
   return (
-    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken }}>
+    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken, refreshUserData }}>
       {children}
     </AuthContext.Provider>
   );
