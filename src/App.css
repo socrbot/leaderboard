@@ -662,12 +662,32 @@ select:focus {
   }
 
   /* Ensure name always shows — never collapse to zero */
-  .team-name-cell,
-  .golfer-name-cell {
+  .team-name-cell {
     max-width: none;
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  /* Golfer name cell: stack status label below name */
+  .golfer-name-cell {
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .golfer-name-cell .golfer-name-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .golfer-name-cell .golfer-status-label,
+  .golfer-name-cell .golfer-cut-label {
+    display: block;
+    margin-left: 0;
+    margin-top: 2px;
   }
 
   /* Scores table overrides for 960px breakpoint */
@@ -839,6 +859,27 @@ select:focus {
   
   .golfer-row td {
     padding-left: 8px; /* Even tighter indent for very small screens */
+  }
+
+  /* Golfer name cell: stack status below name on very small screens too */
+  .golfer-name-cell {
+    max-width: none;
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .golfer-name-cell .golfer-name-text {
+    display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .golfer-name-cell .golfer-status-label,
+  .golfer-name-cell .golfer-cut-label {
+    display: block;
+    margin-left: 0;
+    margin-top: 2px;
   }
 
   /* Scores table has POS as col 1, PLAYER as col 2 — override leaderboard widths */
