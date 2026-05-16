@@ -1,33 +1,50 @@
 // src/components/LeaderboardTable.js
-import React, { memo, useMemo } from 'react';
+import React, { memo, useMemo, useState, useCallback } from 'react';
 
-const LeaderboardRow = memo(({ team, formatScoreForDisplay }) => (
-  <React.Fragment key={`team-${team.team}`}>
-    <tr className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')}`}>
-      <td>{team.position}</td>
-      <td className="team-name-cell">{team.team}</td>
-      <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
-      <td>{formatScoreForDisplay(team.r1)}</td>
-      <td>{formatScoreForDisplay(team.r2)}</td>
-      <td>{formatScoreForDisplay(team.r3)}</td>
-      <td>{formatScoreForDisplay(team.r4)}</td>
-    </tr>
-    {team.golfers && team.golfers.map((golfer, golferIndex) => (
-      <tr key={`golfer-${team.team}-${golferIndex}`} className="golfer-row">
-        <td></td>
-        <td className="golfer-name-cell">
-          {golfer.name}
-          {golfer.status && golfer.status.toUpperCase() === 'CUT' && (
-            <span style={{ color: 'red', marginLeft: 6 }}>(CUT)</span>
-          )}
+const LeaderboardRow = memo(({ team, formatScoreForDisplay }) => {
+  const [expanded, setExpanded] = useState(false);
+  const toggle = useCallback(() => setExpanded(prev => !prev), []);
+  const hasCut = team.golfers && team.golfers.some(g => g.status && g.status.toUpperCase() === 'CUT');
+
+  return (
+    <React.Fragment key={`team-${team.team}`}>
+      <tr
+        className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable`}
+        onClick={toggle}
+        title={expanded ? 'Collapse golfers' : 'Expand golfers'}
+      >
+        <td>{team.position}</td>
+        <td className="team-name-cell">
+          <span className="team-expand-icon">{expanded ? '▾' : '▸'}</span>
+          {team.team}
+          {hasCut && <span className="team-cut-badge">CUT</span>}
         </td>
-        <td></td>
-        <td>{formatScoreForDisplay(golfer.r1)}</td>
-        <td>{formatScoreForDisplay(golfer.r2)}</td>
-        <td>{formatScoreForDisplay(golfer.r3)}</td>
-        <td>{formatScoreForDisplay(golfer.r4)}</td>
+        <td className="total-cell">{formatScoreForDisplay(team.total)}</td>
+        <td>{formatScoreForDisplay(team.r1)}</td>
+        <td>{formatScoreForDisplay(team.r2)}</td>
+        <td>{formatScoreForDisplay(team.r3)}</td>
+        <td>{formatScoreForDisplay(team.r4)}</td>
       </tr>
-    ))}
+      {expanded && team.golfers && team.golfers.map((golfer, golferIndex) => {
+        const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
+        return (
+          <tr key={`golfer-${team.team}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''}`}>
+            <td></td>
+            <td className="golfer-name-cell">
+              <span className="golfer-name-text">{golfer.name}</span>
+              {isCut && <span className="golfer-cut-label">CUT</span>}
+              {!isCut && golfer.status && golfer.status !== 'active' && (
+                <span className="golfer-status-label">{golfer.status}</span>
+              )}
+            </td>
+            <td></td>
+            <td>{formatScoreForDisplay(golfer.r1)}</td>
+            <td>{formatScoreForDisplay(golfer.r2)}</td>
+            <td>{formatScoreForDisplay(golfer.r3)}</td>
+            <td>{formatScoreForDisplay(golfer.r4)}</td>
+          </tr>
+        );
+      })}
   </React.Fragment>
 ));
 

@@ -463,26 +463,86 @@ tbody tr:hover {
 /* Team and golfer row styles */
 tbody .team-row {
   font-weight: bold;
-  background-color: #004d00 !important; /* A darker green for team rows to stand out */
+  background-color: #004d00 !important;
+  cursor: pointer;
+  user-select: none;
 }
 
 tbody .team-row:hover {
-  background-color: #004d00; /* Keep the same background on hover */
+  background-color: #005a00 !important;
+}
+
+.team-row-expandable td {
+  transition: background-color 0.15s ease;
+}
+
+.team-expand-icon {
+  display: inline-block;
+  width: 16px;
+  margin-right: 4px;
+  font-size: 0.8em;
+  opacity: 0.7;
+}
+
+.team-cut-badge {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 5px;
+  background: rgba(220, 38, 38, 0.2);
+  color: #f87171;
+  border: 1px solid rgba(220, 38, 38, 0.4);
+  border-radius: 4px;
+  font-size: 0.65em;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  vertical-align: middle;
 }
 
 .golfer-row {
-  font-size: 0.9em; /* Slightly smaller text for golfers */
-  color: #ccc; /* Slightly muted color for golfer names */
-  background-color: #262626; /* A bit darker than even rows, lighter than body */
+  font-size: 0.9em;
+  color: #ccc;
+  background-color: #262626;
+}
+
+.golfer-row-cut {
+  opacity: 0.65;
 }
 
 .golfer-row td {
-  padding-left: 30px; /* Indent golfer rows to visually group them under the team */
-  text-align: left; /* Align golfer names to the left for better readability */
+  padding-left: 30px;
+  text-align: left;
 }
 
 .golfer-row:hover {
-  background-color: #3a3a3a; /* Hover effect for golfer rows */
+  background-color: #3a3a3a;
+}
+
+.golfer-name-text {
+  font-size: 0.95em;
+  letter-spacing: 0.01em;
+}
+
+.golfer-cut-label {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 1px 5px;
+  background: rgba(220, 38, 38, 0.15);
+  color: #f87171;
+  border: 1px solid rgba(220, 38, 38, 0.35);
+  border-radius: 4px;
+  font-size: 0.7em;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  vertical-align: middle;
+}
+
+.golfer-status-label {
+  display: inline-block;
+  margin-left: 8px;
+  color: #22c55e;
+  font-size: 0.75em;
+  font-style: italic;
+  vertical-align: middle;
 }
 
 /* Team name and golfer name cell styles */
