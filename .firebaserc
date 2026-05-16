@@ -11,7 +11,7 @@
     },
     "alumni-golf-tournament-staging": {
       "hosting": {
-        "v2": ["leaderboard-v2"]
+        "v2": ["alumni-leaderboard-v2"]
       }
     }
   }
