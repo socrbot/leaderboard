@@ -70,23 +70,15 @@ function App() {
   const { user, userData, signOut, signInWithGoogle } = useAuth();
   const isAdmin = userData?.role === 'admin';
   const [pendingSetup, setPendingSetup] = useState(false);
-  const [accessDenied, setAccessDenied] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
 
-  // When sign-in completes, either open Setup (admin) or show access denied (non-admin).
+  // After sign-in: open Setup if admin, otherwise just stay on leaderboard.
   useEffect(() => {
-    if (pendingSetup && user !== undefined && user !== null) {
-      // Auth has resolved and user is signed in
-      if (isAdmin) {
-        setPendingSetup(false);
-        setShowSetup(true);
-      } else if (userData !== null) {
-        // Firestore role has loaded and it's not admin
-        setPendingSetup(false);
-        setAccessDenied(true);
-        setTimeout(() => setAccessDenied(false), 4000);
-      }
+    if (pendingSetup && user && userData !== null) {
+      setPendingSetup(false);
+      if (isAdmin) setShowSetup(true);
+      // Non-admins: do nothing — button is now hidden so they just see the leaderboard
     }
   }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
@@ -671,42 +663,30 @@ function App() {
               <span className="button-icon">🏆</span>
               <span className="button-text">Annual Championship</span>
             </button>
-            <button 
-              className="nav-button"
-              onClick={() => {
-                if (!isAdmin) {
-                  if (user) {
-                    // Already signed in but not admin
-                    setAccessDenied(true);
-                    setTimeout(() => setAccessDenied(false), 4000);
-                  } else {
-                    setPendingSetup(true);
-                    signInWithGoogle();
-                  }
-                  return;
-                }
-                setShowAnnualChampionship(false);
-                setShowTournamentScores(false);
-                setShowSetup(true);
-              }}
-            >
-              <span className="button-icon">⚙️</span>
-              <span className="button-text">Setup</span>
-            </button>
+            {/* Login (signed out) | Setup (admin) | hidden (signed-in non-admin) */}
+            {!user ? (
+              <button
+                className="nav-button"
+                onClick={() => { setPendingSetup(true); signInWithGoogle(); }}
+              >
+                <span className="button-icon">🔑</span>
+                <span className="button-text">Login</span>
+              </button>
+            ) : isAdmin ? (
+              <button
+                className="nav-button"
+                onClick={() => {
+                  setShowAnnualChampionship(false);
+                  setShowTournamentScores(false);
+                  setShowSetup(true);
+                }}
+              >
+                <span className="button-icon">⚙️</span>
+                <span className="button-text">Setup</span>
+              </button>
+            ) : null}
           </nav>
         </div>
-
-        {accessDenied && (
-          <div style={{
-            background: '#7f1d1d',
-            color: '#fca5a5',
-            padding: '8px 16px',
-            textAlign: 'center',
-            fontSize: '0.875rem',
-          }}>
-            ⛔ Admin access required. Contact the tournament organiser to be granted access.
-          </div>
-        )}
 
         {/* Tournament Status Bar */}
         {selectedTournamentId && (
