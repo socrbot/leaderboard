@@ -9,6 +9,8 @@ import '../App.css';
 const Setup = ({ 
   tournamentId, 
   selectedYear,
+  activeLeagueId,
+  onLeagueChange,
   onTournamentCreated, 
   onTeamsSaved, 
   tournamentOddsId, 
@@ -25,9 +27,9 @@ const Setup = ({
   const tab = activeTab || 'global-teams';
 
   const tabs = {
-    'league': <LeagueManagement />,
+    'league': <LeagueManagement activeLeagueId={activeLeagueId} onLeagueChange={onLeagueChange} />,
     'global-teams': <GlobalTeamsManagement selectedYear={selectedYear} />,
-    'tournament-creation': <TournamentCreation onTournamentCreated={onTournamentCreated} />,
+    'tournament-creation': <TournamentCreation onTournamentCreated={onTournamentCreated} activeLeagueId={activeLeagueId} />,
     'draft-management': (
       <TeamManagement
         tournamentId={tournamentId}

@@ -70,6 +70,13 @@ function App() {
 
   const { user, userData, signOut, signInWithGoogle } = useAuth();
   const isAdmin = userData?.role === 'admin';
+  // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
+  const [activeLeagueId, setActiveLeagueId] = useState(null);
+  useEffect(() => {
+    if (activeLeagueId === null && userData?.leagueIds?.[0]) {
+      setActiveLeagueId(userData.leagueIds[0]);
+    }
+  }, [userData, activeLeagueId]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -252,9 +259,10 @@ function App() {
       setLoadingTournaments(true);
       setTournamentError(null);
       try {
-        const url = selectedYear
-          ? `${TOURNAMENTS_API_ENDPOINT}?year=${selectedYear}`
-          : TOURNAMENTS_API_ENDPOINT;
+        const params = new URLSearchParams();
+        if (selectedYear) params.set('year', selectedYear);
+        if (activeLeagueId) params.set('leagueId', activeLeagueId);
+        const url = `${TOURNAMENTS_API_ENDPOINT}${params.toString() ? `?${params}` : ''}`;
         const response = await fetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -287,7 +295,7 @@ function App() {
       }
     };
     fetchTournaments();
-  }, [refreshTrigger, selectedYear, preloadTournamentData]);
+  }, [refreshTrigger, selectedYear, activeLeagueId, preloadTournamentData]);
 
   
 
@@ -891,6 +899,8 @@ function App() {
             <Setup
               tournamentId={selectedTournamentId}
               selectedYear={selectedYear}
+              activeLeagueId={activeLeagueId}
+              onLeagueChange={setActiveLeagueId}
               onTournamentCreated={handleDataUpdated}
               onTeamsSaved={handleDataUpdated}
               tournamentOddsId={tournamentOddsId}
@@ -1075,6 +1085,8 @@ function App() {
             <Setup
               tournamentId={null}
               selectedYear={selectedYear}
+              activeLeagueId={activeLeagueId}
+              onLeagueChange={setActiveLeagueId}
               onTournamentCreated={handleDataUpdated}
               onTeamsSaved={handleDataUpdated}
               tournamentOddsId={null}

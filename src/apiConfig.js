@@ -7,6 +7,7 @@ export const TOURNAMENTS_API_ENDPOINT = `${BACKEND_BASE_URL}/tournaments`;
 export const PLAYER_ODDS_API_ENDPOINT = `${BACKEND_BASE_URL}/player_odds`;
 export const LEADERBOARD_API_ENDPOINT = `${BACKEND_BASE_URL}/leaderboard`;
 export const LEAGUE_API_ENDPOINT = `${BACKEND_BASE_URL}/league`;
+export const LEAGUES_API_ENDPOINT = `${BACKEND_BASE_URL}/leagues`;
 // Add other endpoints here as needed
 
 // LOCAL DEVELOPMENT CONFIGURATION

@@ -1,7 +1,7 @@
 // src/components/JoinLeague.js
 import React, { useState } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { LEAGUE_API_ENDPOINT } from '../apiConfig';
+import { LEAGUES_API_ENDPOINT } from '../apiConfig';
 
 export default function JoinLeague() {
   const { user, getIdToken, refreshUserData, signOut } = useAuth();
@@ -21,7 +21,7 @@ export default function JoinLeague() {
     setError('');
     try {
       const token = await getIdToken();
-      const res = await fetch(`${LEAGUE_API_ENDPOINT}/join`, {
+      const res = await fetch(`${LEAGUES_API_ENDPOINT}/join`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

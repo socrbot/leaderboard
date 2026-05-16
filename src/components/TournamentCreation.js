@@ -3,7 +3,7 @@ import React, { useState } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 import '../App.css';
 
-const TournamentCreation = ({ onTournamentCreated }) => {
+const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   // States for creating a new tournament
   const [newTournamentName, setNewTournamentName] = useState('');
   const [newTournId, setNewTournId] = useState('');
@@ -27,7 +27,8 @@ const TournamentCreation = ({ onTournamentCreated }) => {
           orgId: '1',
           tournId: newTournId.trim(),
           year: newYear.trim(),
-          oddsId: newOddsId.trim()
+          oddsId: newOddsId.trim(),
+          leagueId: activeLeagueId || ''
         })
       });
 
