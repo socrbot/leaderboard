@@ -856,7 +856,7 @@ function App() {
                         return (
                         <React.Fragment key={`team-${teamName}-${index}`}>
                           <tr
-                            className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable`}
+                            className={`team-row team-${teamName.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable${expandedTeams[index] ? ' team-row-expanded' : ''}`}
                             onClick={() => setExpandedTeams(prev => ({ ...prev, [index]: !prev[index] }))}
                           >
                             <td>{team.position || (index + 1)}</td>
@@ -879,7 +879,11 @@ function App() {
                                   <span className="golfer-name-text">{golfer.name}</span>
                                   {isCut
                                     ? <span className="golfer-cut-label">CUT</span>
-                                    : golfer.status && <span className="golfer-status-label">{golfer.status}</span>
+                                    : golfer.thru && golfer.thru !== 'F' && golfer.thru !== ''
+                                      ? <span className="golfer-status-label">Thru {golfer.thru}</span>
+                                      : golfer.thru === 'F'
+                                        ? <span className="golfer-status-label">Finished</span>
+                                        : golfer.status && <span className="golfer-status-label">{golfer.status}</span>
                                   }
                                 </td>
                                 <td></td>
