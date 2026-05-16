@@ -669,15 +669,10 @@ function App() {
               <span className="button-icon">⚙️</span>
               <span className="button-text">Setup</span>
             </button>
-            {user ? (
+            {user && (
               <button className="nav-button" onClick={signOut} title={`Signed in as ${user.email}`}>
                 <span className="button-icon">🔓</span>
                 <span className="button-text">Sign Out</span>
-              </button>
-            ) : (
-              <button className="nav-button" onClick={() => setShowLogin(true)}>
-                <span className="button-icon">🔒</span>
-                <span className="button-text">Admin</span>
               </button>
             )}
           </nav>
