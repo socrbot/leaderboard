@@ -68,7 +68,8 @@ function App() {
     };
   }, []);
 
-  const { user, signOut } = useAuth();
+  const { user, userData, signOut } = useAuth();
+  const isAdmin = userData?.role === 'admin';
   const [showLogin, setShowLogin] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -657,7 +658,7 @@ function App() {
             <button 
               className="nav-button"
               onClick={() => {
-                if (!user) {
+                if (!isAdmin) {
                   setShowLogin(true);
                   return;
                 }
@@ -669,7 +670,7 @@ function App() {
               <span className="button-icon">⚙️</span>
               <span className="button-text">Setup</span>
             </button>
-            {user && (
+            {isAdmin && (
               <button className="nav-button" onClick={signOut} title={`Signed in as ${user.email}`}>
                 <span className="button-icon">🔓</span>
                 <span className="button-text">Sign Out</span>
