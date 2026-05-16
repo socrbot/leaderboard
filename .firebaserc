@@ -2,5 +2,13 @@
   "projects": {
     "default": "alumni-golf-tournament",
     "staging": "alumni-golf-tournament-staging"
+  },
+  "targets": {
+    "alumni-golf-tournament": {
+      "hosting": {
+        "production": ["alumni-golf-tournament"],
+        "v2": ["leaderboard-v2"]
+      }
+    }
   }
 }

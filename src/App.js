@@ -5,6 +5,8 @@ import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
+import LoginPage from './components/LoginPage';
+import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
 function App() {
@@ -65,6 +67,9 @@ function App() {
       return result;
     };
   }, []);
+
+  const { user, signOut } = useAuth();
+  const [showLogin, setShowLogin] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
@@ -652,17 +657,33 @@ function App() {
             <button 
               className="nav-button"
               onClick={() => {
+                if (!user) {
+                  setShowLogin(true);
+                  return;
+                }
                 setShowAnnualChampionship(false);
                 setShowTournamentScores(false);
                 setShowSetup(true);
               }}
             >
-              
               <span className="button-icon">⚙️</span>
               <span className="button-text">Setup</span>
             </button>
+            {user ? (
+              <button className="nav-button" onClick={signOut} title={`Signed in as ${user.email}`}>
+                <span className="button-icon">🔓</span>
+                <span className="button-text">Sign Out</span>
+              </button>
+            ) : (
+              <button className="nav-button" onClick={() => setShowLogin(true)}>
+                <span className="button-icon">🔒</span>
+                <span className="button-text">Admin</span>
+              </button>
+            )}
           </nav>
         </div>
+
+        {showLogin && <LoginPage onClose={() => setShowLogin(false)} />}
 
         {/* Tournament Status Bar */}
         {selectedTournamentId && (
