@@ -663,7 +663,7 @@ function App() {
               <span className="button-icon">🏆</span>
               <span className="button-text">Annual Championship</span>
             </button>
-            {/* Login (signed out) | Setup (admin) | hidden (signed-in non-admin) */}
+            {/* Login when signed out | Setup when admin | Sign Out when non-admin */}
             {!user ? (
               <button
                 className="nav-button"
@@ -684,7 +684,16 @@ function App() {
                 <span className="button-icon">⚙️</span>
                 <span className="button-text">Setup</span>
               </button>
-            ) : null}
+            ) : (
+              <button
+                className="nav-button"
+                onClick={signOut}
+                title={`Signed in as ${user.email}`}
+              >
+                <span className="button-icon">🔓</span>
+                <span className="button-text">Sign Out</span>
+              </button>
+            )}
           </nav>
         </div>
 
