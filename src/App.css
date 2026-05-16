@@ -792,20 +792,20 @@ select:focus {
   /* Tighter column distribution for very small screens */
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    width: 6%;
-    min-width: 30px;
+    width: 36%;
+    min-width: 100px;
   }
   
   .leaderboard-table th:nth-child(2),
   .leaderboard-table td:nth-child(2) {
-    width: 44%;
-    min-width: 100px;
+    width: 18%;
+    min-width: 44px;
   }
   
   .leaderboard-table th:nth-child(3),
   .leaderboard-table td:nth-child(3) {
-    width: 12%;
-    min-width: 40px;
+    width: 11.5%;
+    min-width: 30px;
   }
   
   .leaderboard-table th:nth-child(4),
@@ -816,7 +816,7 @@ select:focus {
   .leaderboard-table td:nth-child(6),
   .leaderboard-table th:nth-child(7),
   .leaderboard-table td:nth-child(7) {
-    width: 9.5%;
+    width: 11.5%;
     min-width: 30px;
   }
   
