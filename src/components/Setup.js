@@ -22,7 +22,6 @@ const Setup = ({
 }) => {
   // fallback if activeTab not provided
   const tab = activeTab || 'global-teams';
-  const setTab = setActiveTab || (() => {});
 
   const tabs = {
     'global-teams': <GlobalTeamsManagement selectedYear={selectedYear} />,
