@@ -140,29 +140,6 @@ function TournamentScores({ tournamentId, tournamentName }) {
 
   return (
     <div>
-      {/* Title + status badge */}
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '12px', padding: '20px 0 10px' }}>
-        <h2 style={{ color: '#fff', margin: 0, fontSize: '1.4rem', fontWeight: 700 }}>
-          {tournamentName || 'Tournament'} — Leaderboard
-        </h2>
-        {isLive && (
-          <span
-            className="status-value live"
-            style={{ fontSize: '0.8rem', padding: '3px 10px', background: 'rgba(248,113,113,0.15)', borderRadius: '6px', border: '1px solid rgba(248,113,113,0.3)' }}
-          >
-            ● Live
-          </span>
-        )}
-        {isComplete && (
-          <span
-            className="status-value complete"
-            style={{ fontSize: '0.8rem', padding: '3px 10px', background: 'rgba(74,222,128,0.15)', borderRadius: '6px', border: '1px solid rgba(74,222,128,0.3)' }}
-          >
-            ✓ Final
-          </span>
-        )}
-      </div>
-
       <div className="leaderboard-container">
         <table className="leaderboard-table">
           <thead>

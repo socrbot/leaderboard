@@ -425,7 +425,15 @@ function App() {
       setSortDirection('asc');
     }
   };
-
+  const formatDateRange = (startDate, endDate) => {
+    if (!startDate) return '';
+    const fmt = (d) => new Date(d).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const start = fmt(startDate);
+    if (!endDate) return start;
+    const end = fmt(endDate);
+    const year = new Date(endDate).getFullYear();
+    return `${start} – ${end}, ${year}`;
+  };
   const renderSortArrow = (column) => {
     if (sortColumn === column) {
       return sortDirection === 'asc' ? ' ↑' : ' ↓';
@@ -698,12 +706,41 @@ function App() {
           </nav>
         </div>
 
-        {/* Tournament Status Bar */}
+        {/* Tournament Details Bar */}
         {selectedTournamentId && (
           <div className="status-bar">
             <div className="status-container">
+              <span className="status-label" style={{ fontWeight: 700, color: '#fff', marginRight: '0.5rem' }}>Tournament Details</span>
+              {(tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name) && (
+                <div className="status-item">
+                  <span className="status-value" style={{ color: '#ffffff' }}>
+                    {tournamentInfo?.Name || tournaments.find(t => t.id === selectedTournamentId)?.name}
+                  </span>
+                </div>
+              )}
+              {tournamentInfo?.StartDate && (
+                <div className="status-item">
+                  <span className="status-label">Dates:</span>
+                  <span className="status-value" style={{ color: '#e0e0e0' }}>
+                    {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
+                  </span>
+                </div>
+              )}
+              {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+                <div className="status-item">
+                  <span className="status-label">Course:</span>
+                  <span className="status-value" style={{ color: '#e0e0e0' }}>
+                    {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+                  </span>
+                </div>
+              )}
+              {tournamentInfo?.CurrentRound && isTournamentInProgress && (
+                <div className="status-item">
+                  <span className="status-label">Round:</span>
+                  <span className="status-value active">{tournamentInfo.CurrentRound}</span>
+                </div>
+              )}
               <div className="status-item">
-                <span className="status-label">Status:</span>
                 <span className={`status-value ${
                   isTournamentOver ? 'complete' :
                   isTournamentInProgress ? 'live' :
