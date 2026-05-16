@@ -314,7 +314,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
   );
 }
 
-  const { getIdToken } = useAuth();
 
   const [league, setLeague] = useState(null);       // null = not fetched yet
   const [members, setMembers] = useState([]);
