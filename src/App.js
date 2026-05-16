@@ -84,6 +84,9 @@ function App() {
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
+  const [availableYears, setAvailableYears] = useState([]);
+  const [showAnnualYearPicker, setShowAnnualYearPicker] = useState(false);
+  const annualYearPickerRef = useRef(null);
   const [selectedTournamentId, setSelectedTournamentId] = useState('');
   const [tournaments, setTournaments] = useState([]);
   const [allTournaments, setAllTournaments] = useState([]);
@@ -186,7 +189,7 @@ function App() {
     fetchAll();
   }, [refreshTrigger]);
 
-  // Close picker when clicking outside
+  // Close tournament picker when clicking outside
   useEffect(() => {
     if (!showTournamentPicker) return;
     const handleClickOutside = (e) => {
@@ -197,6 +200,18 @@ function App() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showTournamentPicker]);
+
+  // Close annual year picker when clicking outside
+  useEffect(() => {
+    if (!showAnnualYearPicker) return;
+    const handleClickOutside = (e) => {
+      if (annualYearPickerRef.current && !annualYearPickerRef.current.contains(e.target)) {
+        setShowAnnualYearPicker(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showAnnualYearPicker]);
 
   // Tournaments grouped by year (newest first) for the picker
   const tournamentsByYear = useMemo(() => {
@@ -216,6 +231,7 @@ function App() {
         const response = await fetch(`${TOURNAMENTS_API_ENDPOINT}/years`);
         if (response.ok) {
           const years = await response.json();
+          setAvailableYears(years);
           // If current selectedYear isn't in the list, default to the most recent year
           if (years.length > 0 && !years.includes(selectedYear)) {
             setSelectedYear(years[0]);
@@ -618,7 +634,7 @@ function App() {
           <nav className="modern-nav">
             <button
               className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
-              onClick={handleShowLeaderboardClick}
+              onClick={() => { setShowAnnualYearPicker(false); handleShowLeaderboardClick(); }}
               disabled={!selectedTournamentId}
             >
               Leaderboard
@@ -629,6 +645,7 @@ function App() {
                 if (!selectedTournamentId) return;
                 setShowSetup(false);
                 setShowAnnualChampionship(false);
+                setShowAnnualYearPicker(false);
                 setShowTournamentScores(true);
               }}
               disabled={!selectedTournamentId}
@@ -675,8 +692,38 @@ function App() {
           </nav>
         </div>
       </header>
-      {/* Status bar is outside <header> so its dropdown isn't clipped by the sticky stacking context */}
-      {selectedTournamentId && (
+      {/* Status bar: shows annual year picker when Annual view is active, otherwise tournament details */}
+      {showAnnualChampionship ? (
+        <div className="status-bar">
+          <p className="status-section-title">Annual Championship</p>
+          <div className="tournament-picker" ref={annualYearPickerRef}>
+            <button
+              className="picker-trigger"
+              onClick={() => setShowAnnualYearPicker(p => !p)}
+              aria-expanded={showAnnualYearPicker}
+            >
+              <span className="status-line-name">{selectedYear}</span>
+              <span className="picker-chevron">{showAnnualYearPicker ? '▴' : '▾'}</span>
+            </button>
+            {showAnnualYearPicker && (
+              <div className="picker-dropdown">
+                {(availableYears.length > 0 ? availableYears : [selectedYear]).map(yr => (
+                  <button
+                    key={yr}
+                    className={`picker-item${yr === selectedYear ? ' active' : ''}`}
+                    onClick={() => {
+                      setSelectedYear(yr);
+                      setShowAnnualYearPicker(false);
+                    }}
+                  >
+                    {yr}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+      ) : selectedTournamentId ? (
         <div className="status-bar">
           <p className="status-section-title">Tournament Details</p>
           <div className="tournament-picker" ref={pickerRef}>
@@ -740,7 +787,7 @@ function App() {
              draftStatus.IsDraftLocked ? 'Odds Locked' : 'Created'}
           </p>
         </div>
-      )}
+      ) : null}
 
       <div className="main-content">
         {selectedTournamentId ? (
@@ -958,7 +1005,7 @@ function App() {
       <nav className="bottom-nav">
         <button
           className={`bottom-nav-link ${!showAnnualChampionship && !showSetup && !showTournamentScores ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
-          onClick={handleShowLeaderboardClick}
+          onClick={() => { setShowAnnualYearPicker(false); handleShowLeaderboardClick(); }}
           disabled={!selectedTournamentId}
         >
           Leaderboard
@@ -969,6 +1016,7 @@ function App() {
             if (!selectedTournamentId) return;
             setShowSetup(false);
             setShowAnnualChampionship(false);
+            setShowAnnualYearPicker(false);
             setShowTournamentScores(true);
           }}
           disabled={!selectedTournamentId}
