@@ -193,45 +193,48 @@ body {
 
 /* Status Bar */
 .status-bar {
-  background: rgba(0, 0, 0, 0.3);
-  border-top: 1px solid rgba(255, 255, 255, 0.07);
-  padding: 0.3rem 1.5rem;
+  background: #0c1a0c;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding: 0.5rem 1.5rem;
 }
 
 .status-container {
   display: flex;
-  justify-content: center;
   align-items: center;
-  gap: 1rem;
-  max-width: 1200px;
+  gap: 0.5rem;
+  max-width: 1400px;
   margin: 0 auto;
   flex-wrap: wrap;
+  row-gap: 0.35rem;
 }
 
 .status-item {
   display: flex;
   align-items: center;
   gap: 0.35rem;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 6px;
-  padding: 0.25rem 0.6rem;
-  font-size: 0.8rem;
-  min-height: 28px;
-  backdrop-filter: blur(10px);
-  transition: all 0.3s ease;
+  background: rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 5px;
+  padding: 0.2rem 0.55rem;
+  font-size: 0.78rem;
+  white-space: nowrap;
 }
 
 .status-label {
-  color: #ccc;
+  color: rgba(255, 255, 255, 0.45);
   font-weight: 500;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 
 .status-value {
   font-weight: 600;
+  color: rgba(255, 255, 255, 0.85);
 }
 
 .status-value.pending {
-  color: #9ca3af;
+  color: rgba(255,255,255,0.35);
 }
 
 .status-value.active {
@@ -265,31 +268,34 @@ table:not(.annual-table):not(.leaderboard-table) {
   margin: 20px auto;
   border-collapse: collapse;
   width: 90%;
-  background-color: #333333;
-  color: white;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
   border-radius: 12px;
   overflow: hidden;
 }
 
 table:not(.annual-table):not(.leaderboard-table) th,
 table:not(.annual-table):not(.leaderboard-table) td {
-  border: 1px solid #444;
+  border: 1px solid rgba(255,255,255,0.08);
   padding: 8px;
   text-align: center;
 }
 
 table:not(.annual-table):not(.leaderboard-table) th {
-  background-color: #006400;
-  color: white;
+  background-color: #0c1a0c;
+  color: rgba(255,255,255,0.8);
   font-weight: 600;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  font-size: 0.8rem;
 }
 
 table:not(.annual-table):not(.leaderboard-table) tbody tr:nth-child(even) {
-  background-color: #2b2b2b;
+  background-color: #222222;
 }
 
 table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
-  background-color: #444;
+  background-color: #2a2a2a;
 }
 
 /* ── Container ── */
@@ -315,15 +321,16 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 
 /* ── Header ── */
 .leaderboard-table thead th {
-  background-color: #006400;
-  color: #ffffff;
-  padding: 14px 12px;
-  font-size: 0.8rem;
+  background-color: #0c1a0c;
+  color: rgba(255, 255, 255, 0.7);
+  padding: 12px 12px;
+  font-size: 0.75rem;
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
   text-align: center;
   border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
   position: sticky;
   top: 0;
   z-index: 10;
@@ -339,7 +346,8 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 }
 
 .leaderboard-table thead th.sortable-header:hover {
-  background-color: #007700;
+  background-color: #142814;
+  color: #fff;
 }
 
 /* ── Body cells ── */
@@ -842,31 +850,33 @@ select:focus {
   border-radius: 8px;
   overflow: hidden;
   border-collapse: collapse;
-  background-color: #333333;
-  color: white;
+  background-color: #1a1a1a;
+  color: #e0e0e0;
   contain: layout style;
-  backdrop-filter: blur(10px);
 }
 
 .annual-table th,
 .annual-table td {
-  border: 1px solid #444;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
   padding: 8px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
 
 .annual-table th {
-  background-color: #006400;
-  color: white;
+  background-color: #0c1a0c;
+  color: rgba(255, 255, 255, 0.7);
   position: sticky;
   top: 0;
   z-index: 10;
-  font-weight: 600;
+  font-weight: 700;
   text-align: center;
   padding: 1rem 0.75rem;
-  font-size: 0.9rem;
-  border-bottom: 2px solid rgba(255, 255, 255, 0.1);
+  font-size: 0.8rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  border-bottom: 1px solid rgba(255,255,255,0.08);
 }
 
 /* Team name header should be left-aligned */
@@ -875,12 +885,11 @@ select:focus {
 }
 
 .annual-table tbody tr:nth-child(even) {
-  background-color: #2b2b2b;
+  background-color: #222222;
 }
 
 .annual-table tbody tr:hover {
-  background-color: #444;
-  transform: translateZ(0);
+  background-color: #2a2a2a;
 }
 
 .annual-table .annual-team-row {
