@@ -670,7 +670,7 @@ function App() {
                 onClick={() => { setPendingSetup(true); signInWithGoogle(); }}
               >
                 <span className="button-icon">🔑</span>
-                <span className="button-text">Login</span>
+                <span className="button-text">Sign In</span>
               </button>
             ) : isAdmin ? (
               <button
