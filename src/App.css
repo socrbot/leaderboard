@@ -443,7 +443,8 @@ th {
 }
 
 /* Team/Golfer header should be left-aligned */
-th:nth-child(2) {
+.leaderboard-table th:nth-child(1),
+.leaderboard-table td:nth-child(1) {
   text-align: left;
 }
 
@@ -649,33 +650,27 @@ select:focus {
   }
   
   /* Column width distribution for mobile */
-  .leaderboard-table th:nth-child(1), /* POS */
+  .leaderboard-table th:nth-child(1), /* TEAM/GOLFER */
   .leaderboard-table td:nth-child(1) {
-    width: 8%;
-    min-width: 35px;
-  }
-  
-  .leaderboard-table th:nth-child(2), /* TEAM/GOLFER */
-  .leaderboard-table td:nth-child(2) {
-    width: 40%;
+    width: 45%;
     min-width: 120px;
   }
   
-  .leaderboard-table th:nth-child(3), /* TOTAL */
-  .leaderboard-table td:nth-child(3) {
-    width: 13%;
+  .leaderboard-table th:nth-child(2), /* TOTAL */
+  .leaderboard-table td:nth-child(2) {
+    width: 14%;
     min-width: 45px;
   }
   
-  .leaderboard-table th:nth-child(4), /* R1 */
+  .leaderboard-table th:nth-child(3), /* R1 */
+  .leaderboard-table td:nth-child(3),
+  .leaderboard-table th:nth-child(4), /* R2 */
   .leaderboard-table td:nth-child(4),
-  .leaderboard-table th:nth-child(5), /* R2 */
+  .leaderboard-table th:nth-child(5), /* R3 */
   .leaderboard-table td:nth-child(5),
-  .leaderboard-table th:nth-child(6), /* R3 */
-  .leaderboard-table td:nth-child(6),
-  .leaderboard-table th:nth-child(7), /* R4 */
-  .leaderboard-table td:nth-child(7) {
-    width: 9.75%;
+  .leaderboard-table th:nth-child(6), /* R4 */
+  .leaderboard-table td:nth-child(6) {
+    width: 10.25%;
     min-width: 35px;
   }
   
