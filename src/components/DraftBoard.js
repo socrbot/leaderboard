@@ -305,7 +305,8 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                   </tr>
                 </thead>
                 <tbody>
-                  {[...Array(11)].map((_, rowIndex) => {
+                  {[...Array(Math.max(teams?.length || 0, 1))].map((_, rowIndex) => {
+                    const numRows = teams?.length || 1;
                     const columnsToShow = isMobile ? 2 : 4;
                     
                     return (
@@ -314,14 +315,12 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                           let playerIndexInArray;
                           
                           if (isMobile) {
-                            // Mobile: 2 columns, 11 rows each
-                            // currentTierView 0 = Tiers 1&2 (players 0-21)
-                            // currentTierView 1 = Tiers 3&4 (players 22-43)
-                            const tierOffset = currentTierView * 22; // 0 for tiers 1&2, 22 for tiers 3&4
-                            playerIndexInArray = tierOffset + (colIndex * 11) + rowIndex;
+                            // Mobile: 2 tiers per view, numRows rows each
+                            const tierOffset = currentTierView * numRows * 2;
+                            playerIndexInArray = tierOffset + (colIndex * numRows) + rowIndex;
                           } else {
-                            // Desktop: 4 columns, 11 rows each
-                            playerIndexInArray = colIndex * 11 + rowIndex;
+                            // Desktop: 4 columns, numRows rows each
+                            playerIndexInArray = colIndex * numRows + rowIndex;
                           }
                           
                           const player = topPlayers[playerIndexInArray];

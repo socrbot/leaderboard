@@ -3,6 +3,7 @@ import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
 import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
+import DraftPicker from './components/DraftPicker';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
 import JoinLeague from './components/JoinLeague';
@@ -133,7 +134,14 @@ function App() {
   const [draftStatus, setDraftStatus] = useState({
     IsDraftStarted: false,
     IsDraftLocked: false,
-    IsDraftComplete: false
+    IsDraftComplete: false,
+    numTeams: 0,
+    draftPicks: [],
+    teams: [],
+    currentPickTeam: null,
+    currentRound: null,
+    currentTier: null,
+    DraftLockedOdds: [],
   });
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
 
@@ -453,22 +461,31 @@ function App() {
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
     if (!selectedTournamentId) {
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
+        numTeams: 0, draftPicks: [], teams: [], currentPickTeam: null, currentRound: null,
+        currentTier: null, DraftLockedOdds: [] });
       setDraftStatusLoading(false);
       return;
     }
     console.log('Fetching draft status for tournament:', selectedTournamentId);
     setDraftStatusLoading(true);
     try {
-      // Fetch draft status
-      const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
+      // Fetch draft status and tournament doc in parallel for locked odds
+      const [draftRes, tournRes] = await Promise.all([
+        fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`),
+        fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`),
+      ]);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
+      const tournData = tournRes.ok ? await tournRes.json() : {};
       console.log('Draft status received:', status);
-      setDraftStatus(status);
+      // Merge DraftLockedOdds from the tournament doc into status
+      setDraftStatus({ ...status, DraftLockedOdds: tournData.DraftLockedOdds || [] });
     } catch (error) {
       console.error('Error fetching draft status:', error);
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
+        numTeams: 0, draftPicks: [], teams: [], currentPickTeam: null, currentRound: null,
+        currentTier: null, DraftLockedOdds: [] });
     } finally {
       setDraftStatusLoading(false);
     }
@@ -477,6 +494,23 @@ function App() {
   useEffect(() => {
     fetchDraftStatus();
   }, [fetchDraftStatus]);
+
+  // Poll draft status every 10 s while draft is active (started & not complete)
+  useEffect(() => {
+    if (!draftStatus.IsDraftStarted || draftStatus.IsDraftComplete) return;
+    const interval = setInterval(fetchDraftStatus, 10000);
+    return () => clearInterval(interval);
+  }, [draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, fetchDraftStatus]);
+
+  // Sync teams + draftPicks state from enriched draftStatus (authoritative source)
+  useEffect(() => {
+    if (draftStatus.teams && draftStatus.teams.length > 0) {
+      setTeams(draftStatus.teams);
+    }
+    if (Array.isArray(draftStatus.draftPicks)) {
+      setDraftPicks(draftStatus.draftPicks);
+    }
+  }, [draftStatus]);
 
   useEffect(() => {
     loadTeams();
@@ -611,11 +645,14 @@ function App() {
 
   // --- Determine what to show based on draft and tournament status ---
   const shouldShowDraftBoard = useMemo(() => {
-    // Show draft board if:
-    // 1. Odds are locked (tiers visible)
-    // 2. Draft is not complete
+    // Show draft board (admin view) if odds are locked and draft is not complete
     return draftStatus.IsDraftLocked && !draftStatus.IsDraftComplete;
   }, [draftStatus]);
+
+  // Non-admin members see DraftPicker while draft is active
+  const shouldShowDraftPicker = useMemo(() => {
+    return !isAdmin && draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
+  }, [isAdmin, draftStatus]);
 
   const shouldShowLeaderboard = useMemo(() => {
     // Show leaderboard if draft is complete
@@ -944,6 +981,13 @@ function App() {
             <main>
             {draftStatusLoading ? (
               <div>Loading draft status...</div>
+            ) : shouldShowDraftPicker ? (
+              <DraftPicker
+                tournamentId={selectedTournamentId}
+                draftStatus={draftStatus}
+                onDraftComplete={fetchDraftStatus}
+                onStatusRefresh={fetchDraftStatus}
+              />
             ) : shouldShowDraftBoard ? (
               <>
                 <DraftBoard

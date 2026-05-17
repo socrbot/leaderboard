@@ -93,13 +93,8 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   }, [tournamentId]);
 
   useEffect(() => {
-    // Sync teams before loading if draft hasn't started
-    const initializeTeams = async () => {
-      await syncTeamsFromGlobal();
-      await loadTeams();
-    };
-    initializeTeams();
-  }, [syncTeamsFromGlobal, loadTeams]);
+    loadTeams();
+  }, [loadTeams]);
 
 
   // Fetch all players for the search functionality (depends on prop `tournamentOddsId`)
@@ -372,7 +367,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
           )}
           {draftStatus.IsDraftStarted && (
             <p style={{ color: '#90EE90', marginTop: '10px' }}>
-              Draft is in progress. Assign golfers to teams.
+              Draft is in progress. Members are making their picks.
             </p>
           )}
         </div>
@@ -401,130 +396,46 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       </div>
 
 
-      {/* Current Teams Section - Applying Flexbox Card Layout */}
-      <h2 style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Current Teams</h2>
-      {teams.length === 0 && (
-        <p style={{ 
-          textAlign: 'center', 
+      {/* Enrolled Teams — read-only during/after draft lock */}
+      <h2 style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
+      {teams.length === 0 ? (
+        <p style={{
+          textAlign: 'center',
           fontSize: isMobile ? '1em' : '1.1em',
-          padding: isMobile ? '10px' : '0'
+          padding: isMobile ? '10px' : '0',
+          color: '#aaa'
         }}>
-          No teams assigned to this tournament yet. Add one below!
+          No teams yet. Teams are created from enrolled league members when you lock draft odds.
         </p>
-      )}
-
-      {/* --- FLEXBOX CONTAINER FOR TEAM CARDS --- */}
-      <div className="teams-flex-container">
-        {[...teams]
-          .sort((a, b) => {
-            // Teams with draft order come first, sorted by draft order
-            const orderA = a.draftOrder ?? 999;
-            const orderB = b.draftOrder ?? 999;
-            return orderA - orderB;
-          })
-          .map((team, sortedIndex) => {
-          // Find the original index for searchTerms
-          const teamIndex = teams.findIndex(t => t.name === team.name);
-          const currentSearchTerm = searchTerms[teamIndex] || '';
-          const filteredPlayersForThisTeam = allPlayersWithOdds.filter(player =>
-            player.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) &&
-            !team.golferNames.includes(player.name)
-          ).map(p => p.name);
-
-          return (
-            <div
-              key={team.name || `team-${teamIndex}`}
-              className="team-card"
-            >
-              <div className="team-card-header">
-                <h3 style={{ margin: '0', color: 'white' }}>
-                  {team.name}
-                </h3>
-                <button
-                  onClick={() => handleRemoveTeam(teamIndex)}
-                  className="team-remove-btn"
-                >
-                  Remove Team
-                </button>
-              </div>
-
-              <div className="team-card-options">
-                <div className="team-card-option">
-                  <label>Draft Order:</label>
-                  <input
-                    type="number"
-                    min="1"
-                    max={teams.length}
-                    value={team.draftOrder || ''}
-                    onChange={(e) => handleDraftOrderChange(teamIndex, e.target.value)}
-                    placeholder="Order"
-                    className="draft-order-input"
-                  />
+      ) : (
+        <div className="teams-flex-container">
+          {[...teams]
+            .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
+            .map((team) => (
+              <div key={team.ownerUid || team.name} className="team-card">
+                <div className="team-card-header">
+                  <h3 style={{ margin: '0', color: 'white' }}>
+                    {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}
+                  </h3>
+                  <span style={{ fontSize: '0.8em', color: '#aaa' }}>
+                    {(team.golferNames || []).length} / 4 picks
+                  </span>
                 </div>
+
+                <ul className="team-golfer-list">
+                  {(team.golferNames || []).length === 0 && (
+                    <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>
+                      No golfers picked yet.
+                    </li>
+                  )}
+                  {(team.golferNames || []).map((golfer) => (
+                    <li key={golfer}>{golfer}</li>
+                  ))}
+                </ul>
               </div>
-
-              <div className="team-card-golfers">
-                Golfers:
-              </div>
-
-              <ul className="team-golfer-list">
-                {team.golferNames.length === 0 && <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>No golfers assigned yet.</li>}
-                {team.golferNames.map((golfer, playerIndex) => (
-                  <li
-                    key={golfer}
-                  >
-                    {golfer}
-                    <button onClick={() => handleRemovePlayerFromTeam(teamIndex, golfer)} className="team-golfer-remove-btn">
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-
-              <div className="team-card-search">
-                {draftStatus.IsDraftStarted ? (
-                  <>
-                    <input
-                      type="text"
-                      placeholder="Search players to add"
-                      value={currentSearchTerm}
-                      onChange={(e) => handleSearchTermChange(teamIndex, e.target.value)}
-                      className="team-search-input"
-                    />
-                    {playerLoading ? (
-                      <p style={{ margin: '10px 0 0 0', color: '#ccc' }}>Loading potential players...</p>
-                    ) : playerError ? (
-                      <p style={{ color: '#ff9800', margin: '10px 0 0 0', fontSize: '0.85em' }}>Player search unavailable — odds data not loaded.</p>
-                    ) : (
-                      currentSearchTerm && filteredPlayersForThisTeam.length > 0 && (
-                        <ul className="team-search-list">
-                          {filteredPlayersForThisTeam.map((player) => (
-                            <li
-                              key={player}
-                              onClick={() => handleAddPlayerToTeam(teamIndex, player)}
-                            >
-                              {player}
-                            </li>
-                          ))}
-                        </ul>
-                      )
-                    )}
-                    {currentSearchTerm && filteredPlayersForThisTeam.length === 0 && !playerLoading && !playerError && (
-                      <p style={{ marginTop: '10px', color: '#ccc' }}>No players found matching "{currentSearchTerm}"</p>
-                    )}
-                  </>
-                ) : (
-                  <p style={{ margin: '5px 0 0 0', color: '#888', fontSize: '0.85em' }}>Player search available after draft starts</p>
-                )}
-              </div>
-            </div>
-          );
-        })}
-      </div>
-
-      <button onClick={handleSaveTeams} disabled={isSaving} className="save-teams-btn">
-        {isSaving ? 'Saving...' : 'Save All Teams'}
-      </button>
+            ))}
+        </div>
+      )}
 
     </div>
   );
