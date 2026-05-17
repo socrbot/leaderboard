@@ -1,9 +1,11 @@
 // src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 import '../App.css'; // Importing the CSS file
 
-const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => {
+const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => {
+  const { getIdToken } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [teams, setTeams] = useState([]);
   const [isClearingManualOdds, setIsClearingManualOdds] = useState(false);
@@ -28,22 +30,44 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // Load existing teams for the selected tournament
+  // Load enrolled teams: use league members when draft is not yet locked,
+  // fall back to tournament's stored teams (with draft order + picks) once locked.
   const loadTeams = useCallback(async () => {
     if (!tournamentId) {
       setTeams([]);
       return;
     }
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
-      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-      const tournamentData = await response.json();
-      setTeams(tournamentData.teams || []);
+      // Fetch tournament doc to check lock status and grab post-lock teams
+      const tRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
+      if (!tRes.ok) throw new Error(`HTTP error! status: ${tRes.status}`);
+      const tournamentData = await tRes.json();
+      const isLocked = !!(tournamentData.DraftLockedOdds && tournamentData.DraftLockedOdds.length > 0);
+
+      if (!isLocked && leagueId) {
+        // Pre-lock: show current league members
+        const token = await getIdToken();
+        const mRes = await fetch(`${BACKEND_BASE_URL}/leagues/${leagueId}/members`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!mRes.ok) throw new Error(`Failed to fetch league members: ${mRes.status}`);
+        const members = await mRes.json();
+        setTeams(members.map(m => ({
+          name: m.displayName || m.email,
+          ownerUid: m.uid,
+          ownerEmail: m.email,
+          golferNames: [],
+          draftOrder: null,
+        })));
+      } else {
+        // Post-lock: use tournament teams which have draft order + picks
+        setTeams(tournamentData.teams || []);
+      }
     } catch (error) {
       console.error('Error loading teams:', error);
       setTeams([]);
     }
-  }, [tournamentId]);
+  }, [tournamentId, leagueId, getIdToken]);
 
   useEffect(() => {
     loadTeams();

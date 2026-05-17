@@ -36,6 +36,7 @@ const Setup = ({
     'draft-management': (
       <TeamManagement
         tournamentId={tournamentId}
+        leagueId={activeLeagueId}
         onTournamentCreated={onTournamentCreated}
         onTeamsSaved={onTeamsSaved}
         tournamentOddsId={tournamentOddsId}
