@@ -1,30 +1,13 @@
 // src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { BACKEND_BASE_URL, PLAYER_ODDS_API_ENDPOINT } from '../apiConfig';
+import { BACKEND_BASE_URL } from '../apiConfig';
 import '../App.css'; // Importing the CSS file
 
-// TeamManagement now receives tournamentOddsId, isDraftStarted, and hasManualDraftOdds as props,
-// and onDraftStarted and onManualOddsUpdated callbacks
-const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => { // ADDED hasManualDraftOdds, onManualOddsUpdated
-  // Mobile responsive state
+const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => {
   const [isMobile, setIsMobile] = useState(false);
-  
   const [teams, setTeams] = useState([]);
-  const [allPlayersWithOdds, setAllPlayersWithOdds] = useState([]);
-  
-  //const [availablePlayers, setAvailablePlayers] = useState([]);
-
-  // States for player search within teams
-  const [searchTerms, setSearchTerms] = useState({});
-
-  // Loading/error states for available players (for player search functionality)
-  const [playerLoading, setPlayerLoading] = useState(true);
-  const [playerError, setPlayerError] = useState(null);
-
-  // State for saving teams process
   const [isSaving, setIsSaving] = useState(false);
-  // State for clearing manual odds
-  const [isClearingManualOdds, setIsClearingManualOdds] = useState(false); // NEW: State for clearing manual odds
+  const [isClearingManualOdds, setIsClearingManualOdds] = useState(false);
 
   // --- Draft Status State ---
   const [draftStatus, setDraftStatus] = useState({
@@ -46,32 +29,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     return () => window.removeEventListener('resize', checkMobile);
   }, []);
 
-  // 1. Sync teams from global_teams (only if draft hasn't started)
-  const syncTeamsFromGlobal = useCallback(async () => {
-    if (!tournamentId || isDraftStarted) {
-      return; // Don't sync if no tournament or draft has started
-    }
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/sync_teams`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      
-      if (response.ok) {
-        console.log('Teams synced from global_teams');
-      } else if (response.status === 403) {
-        // Draft already started, that's ok
-        console.log('Draft already started, teams locked');
-      } else {
-        console.warn('Failed to sync teams:', response.status);
-      }
-    } catch (error) {
-      console.error("Error syncing teams:", error);
-      // Don't show alert - this is a background operation
-    }
-  }, [tournamentId, isDraftStarted]);
-
-  // 2. Load existing teams for the selected tournament
+  // Load existing teams for the selected tournament
   const loadTeams = useCallback(async () => {
     if (!tournamentId) {
       setTeams([]);
@@ -79,15 +37,11 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     }
     try {
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
-      if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
       const tournamentData = await response.json();
       setTeams(tournamentData.teams || []);
-      setSearchTerms({});
     } catch (error) {
-      console.error("Error loading teams or tournament details:", error);
-      alert('Failed to load teams or tournament details for the selected tournament.');
+      console.error('Error loading teams:', error);
       setTeams([]);
     }
   }, [tournamentId]);
@@ -95,160 +49,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   useEffect(() => {
     loadTeams();
   }, [loadTeams]);
-
-
-  // Fetch all players for the search functionality (depends on prop `tournamentOddsId`)
-  // This list will correctly fetch from ManualDraftOdds if available and draft not started
-  useEffect(() => {
-    const fetchAllPlayersForSearch = async () => {
-      if (!tournamentOddsId) {
-        setPlayerLoading(false);
-        setAllPlayersWithOdds([]);
-        return;
-      }
-
-      setPlayerLoading(true);
-      setPlayerError(null);
-      try {
-        // This endpoint will now correctly prioritize manual odds if they exist
-        const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const rawOddsData = await response.json();
-
-        setAllPlayersWithOdds(rawOddsData);
-
-      } catch (error) {
-        console.error("Error fetching ALL player odds for search functionality:", error);
-        setPlayerError(`Failed to load players for search. Please check tournament Odds ID (${tournamentOddsId}).`);
-        setAllPlayersWithOdds([]);
-      } finally {
-        setPlayerLoading(false);
-      }
-    };
-    fetchAllPlayersForSearch();
-  }, [tournamentOddsId, hasManualDraftOdds]); // ADDED hasManualDraftOdds so player list refreshes if manual odds status changes
-
-
-  // --- Event Handlers for Team/Player Management (mostly unchanged) ---
-
-  const handleRemoveTeam = (teamIndex) => {
-    const updatedTeams = teams.filter((_, index) => index !== teamIndex);
-    setTeams(updatedTeams);
-  };
-
-  const handleSearchTermChange = (teamIndex, value) => {
-    setSearchTerms(prev => ({
-      ...prev,
-      [teamIndex]: value
-    }));
-  };
-
-  const handleAddPlayerToTeam = (teamIndex, playerToAdd) => {
-    const updatedTeams = [...teams];
-    const team = updatedTeams[teamIndex];
-
-    // Check if player is already in this team
-    if (team.golferNames.includes(playerToAdd)) {
-        alert(`${playerToAdd} is already in ${team.name}!`);
-        return;
-    }
-
-    // Check if player is already in any other team
-    const existingTeam = updatedTeams.find((otherTeam, otherIndex) => 
-      otherIndex !== teamIndex && otherTeam.golferNames.includes(playerToAdd)
-    );
-    if (existingTeam) {
-        alert(`${playerToAdd} is already assigned to ${existingTeam.name}! Please remove them from that team first.`);
-        return;
-    }
-
-    // Optional: Limit players per team
-    // if (team.golferNames.length >= 4) {
-    //     alert(`${team.name} already has 4 golfers.`);
-    //     return;
-    // }
-
-    team.golferNames.push(playerToAdd);
-    setTeams(updatedTeams);
-    handleSearchTermChange(teamIndex, '');
-  };
-
-  const handleRemovePlayerFromTeam = (teamIndex, playerToRemove) => {
-    const updatedTeams = [...teams];
-    updatedTeams[teamIndex].golferNames = updatedTeams[teamIndex].golferNames.filter(
-      (player) => player !== playerToRemove
-    );
-    setTeams(updatedTeams);
-  };
-
-  const handleDraftOrderChange = (teamIndex, newDraftOrder) => {
-    const updatedTeams = [...teams];
-    
-    // Allow empty string or store the raw value while typing
-    if (newDraftOrder === '') {
-      updatedTeams[teamIndex].draftOrder = null;
-      setTeams(updatedTeams);
-      return;
-    }
-    
-    const orderNum = parseInt(newDraftOrder);
-    
-    // Only validate if it's a complete valid number
-    if (isNaN(orderNum) || orderNum < 1) {
-      // For invalid input, just store null but don't alert during typing
-      updatedTeams[teamIndex].draftOrder = null;
-      setTeams(updatedTeams);
-      return;
-    }
-    
-    // Check if this draft order is already taken by another team
-    const existingTeam = updatedTeams.find((team, index) => 
-      index !== teamIndex && team.draftOrder === orderNum
-    );
-    if (existingTeam) {
-      alert(`Draft order ${orderNum} is already assigned to ${existingTeam.name}!`);
-      return;
-    }
-    
-    updatedTeams[teamIndex].draftOrder = orderNum;
-    setTeams(updatedTeams);
-  };
-
-  const handleSaveTeams = async () => {
-    if (!tournamentId) {
-      alert("No tournament selected. Please select or create one to save teams.");
-      return;
-    }
-    if (isSaving) return;
-    setIsSaving(true);
-
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/teams`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ teams: teams }),
-      });
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({ message: 'Unknown error' }));
-        throw new Error(`HTTP error! status: ${response.status}. ${errorData.error || errorData.message}`);
-      }
-
-      alert('Teams saved successfully!');
-      if (onTeamsSaved) {
-        onTeamsSaved();
-      }
-    } catch (error) {
-      console.error('Error saving teams:', error);
-      alert(`Failed to save teams: ${error.message}`);
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
