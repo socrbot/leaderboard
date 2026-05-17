@@ -139,7 +139,9 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
           tournId: selectedScheduleItem.tournId,
           year,
           oddsId: selectedOddsId,
-          leagueId: activeLeagueId || ''
+          leagueId: activeLeagueId || '',
+          startDate: parseDateField(selectedScheduleItem.date?.start) || '',
+          endDate: parseDateField(selectedScheduleItem.date?.end) || '',
         })
       });
 
@@ -181,7 +183,9 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
           tournId: selectedConfigEntry.tournId,
           year: selectedConfigEntry.year,
           oddsId: selectedConfigEntry.oddsId,
-          leagueId: activeLeagueId || ''
+          leagueId: activeLeagueId || '',
+          startDate: selectedConfigEntry.startDate || '',
+          endDate: selectedConfigEntry.endDate || '',
         })
       });
       if (!response.ok) {
