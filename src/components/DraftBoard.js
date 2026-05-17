@@ -104,11 +104,6 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                       justifyContent: 'center'
                     }}>
                       <div style={{ fontWeight: 'bold' }}>{isDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}</div>
-                      {team.ownerEmail && (
-                        <div style={{ fontSize: '0.75em', color: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#555' : '#888', marginTop: '1px' }}>
-                          {team.ownerEmail}
-                        </div>
-                      )}
                       <div style={{ 
                         fontSize: isMobile ? '0.9em' : '0.8em', 
                         color: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#333' : '#ccc',
