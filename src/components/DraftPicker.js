@@ -23,22 +23,26 @@ const DraftPicker = ({
     IsDraftStarted,
     IsDraftComplete,
     numTeams = 0,
+    draftPoolSize,
     draftPicks = [],
     teams = [],
     currentPickTeam,
     currentRound,
   } = draftStatus || {};
 
+  // draftPoolSize = 4 × numTeams (the tiered board size); full lockedOdds may be larger for search
+  const tierGroupSize = draftPoolSize ? Math.floor(draftPoolSize / (numTeams || 1)) : 4;
+
   const lockedOdds = draftStatus?.DraftLockedOdds || [];
   const isMyTurn = currentPickTeam && user && currentPickTeam.ownerUid === user.uid;
   const sortedTeams = [...teams].sort((a, b) => (a.draftOrder || 999) - (b.draftOrder || 999));
 
-  // All available players across every tier (free-tier picking — any tier, any order)
+  // All available players — full locked list for search; tier labels based on draftPoolSize position
   const allPickedNames = new Set(draftPicks.map(p => p.playerName));
   const allAvailablePlayers = lockedOdds
     .map((p, idx) => ({
       ...p,
-      tierLabel: TIER_LABELS[Math.floor(idx / (numTeams || 1))] || `Tier ${Math.floor(idx / (numTeams || 1)) + 1}`,
+      tierLabel: TIER_LABELS[Math.floor(idx / tierGroupSize)] || `Tier ${Math.floor(idx / tierGroupSize) + 1}`,
     }))
     .filter(p => !allPickedNames.has(p.name));
 
