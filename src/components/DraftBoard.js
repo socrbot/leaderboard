@@ -340,7 +340,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                             <React.Fragment key={colIndex}>
                               {player ? (
                                 <>
-                                <>                                  <td
+                                  <td
                                     onClick={onPlayerClick && !player.teamAssigned ? () => onPlayerClick(player.name) : undefined}
                                     style={{
                                     padding: isMobile ? '10px 8px' : '8px 5px',
