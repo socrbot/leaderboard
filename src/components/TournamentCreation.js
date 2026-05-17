@@ -7,6 +7,17 @@ import '../App.css';
 const normalizeName = (name) =>
   name.toLowerCase().replace(/[^a-z0-9]/g, '');
 
+// Handle MongoDB extended JSON date fields: { $date: { $numberLong: "..." } } or plain strings
+const parseDateField = (dateField) => {
+  if (!dateField) return null;
+  if (typeof dateField === 'string') return dateField.slice(0, 10) || null;
+  if (dateField.$date) {
+    const ms = parseInt(dateField.$date.$numberLong ?? dateField.$date, 10);
+    if (!isNaN(ms)) return new Date(ms).toISOString().slice(0, 10);
+  }
+  return null;
+};
+
 const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   const currentYear = new Date().getFullYear().toString();
 
@@ -196,14 +207,14 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
               <option value="">— choose a tournament —</option>
               {scheduleItems.map(t => (
                 <option key={t.tournId} value={t.tournId}>
-                  {t.name}{t.date?.start ? ` (${t.date.start.slice(0, 10)})` : ''}
+                  {t.name}{parseDateField(t.date?.start) ? ` (${parseDateField(t.date?.start)})` : ''}
                 </option>
               ))}
             </select>
             {selectedScheduleItem && (
               <small className="form-help">
                 tournId: <strong>{selectedScheduleItem.tournId}</strong>
-                {selectedScheduleItem.date?.start && ` · ${selectedScheduleItem.date.start.slice(0, 10)}`}
+                {parseDateField(selectedScheduleItem.date?.start) && ` · ${parseDateField(selectedScheduleItem.date?.start)}`}
               </small>
             )}
           </div>
