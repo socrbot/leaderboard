@@ -1,16 +1,33 @@
 // src/components/TournamentCreation.js
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
 
+// Normalize a tournament name for fuzzy matching (lowercase, strip punctuation/spacing)
+const normalizeName = (name) =>
+  name.toLowerCase().replace(/[^a-z0-9]/g, '');
+
 const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
-  // States for creating a new tournament
-  const [newTournamentName, setNewTournamentName] = useState('');
-  const [newTournId, setNewTournId] = useState('');
-  const [newYear, setNewYear] = useState(new Date().getFullYear().toString());
-  const [newOddsId, setNewOddsId] = useState('');
-  const [isCreating, setIsCreating] = useState(false);
+  const currentYear = new Date().getFullYear().toString();
+
+  const [year, setYear] = useState(currentYear);
   const [leagueName, setLeagueName] = useState('');
+
+  // Step 1: RapidAPI schedule
+  const [scheduleItems, setScheduleItems] = useState([]);
+  const [scheduleLoading, setScheduleLoading] = useState(false);
+  const [scheduleError, setScheduleError] = useState('');
+  const [selectedScheduleItem, setSelectedScheduleItem] = useState(null);
+
+  // Step 2: SportsData.io odds tournaments
+  const [oddsItems, setOddsItems] = useState([]);
+  const [oddsLoading, setOddsLoading] = useState(false);
+  const [oddsError, setOddsError] = useState('');
+  const [selectedOddsId, setSelectedOddsId] = useState('');
+
+  // Derived / editable fields
+  const [tournamentName, setTournamentName] = useState('');
+  const [isCreating, setIsCreating] = useState(false);
 
   useEffect(() => {
     if (!activeLeagueId) { setLeagueName(''); return; }
@@ -20,23 +37,85 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
       .catch(() => {});
   }, [activeLeagueId]);
 
-  const handleCreateTournament = async () => {
-    if (!newTournamentName.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()) {
-      alert('Please fill in all fields');
+  const loadSchedule = useCallback(async () => {
+    setScheduleLoading(true);
+    setScheduleError('');
+    setScheduleItems([]);
+    setSelectedScheduleItem(null);
+    setOddsItems([]);
+    setSelectedOddsId('');
+    setTournamentName('');
+    try {
+      const r = await fetch(`${BACKEND_BASE_URL}/schedule?year=${year}&orgId=1`);
+      if (!r.ok) throw new Error('Failed to load schedule');
+      const data = await r.json();
+      const items = Array.isArray(data.schedule) ? data.schedule : [];
+      setScheduleItems(items);
+      if (items.length === 0) setScheduleError('No tournaments found for this year.');
+    } catch (e) {
+      setScheduleError(e.message || 'Error loading schedule');
+    } finally {
+      setScheduleLoading(false);
+    }
+  }, [year]);
+
+  const loadOddsTournaments = useCallback(async (scheduleName) => {
+    setOddsLoading(true);
+    setOddsError('');
+    setOddsItems([]);
+    setSelectedOddsId('');
+    try {
+      const r = await fetch(`${BACKEND_BASE_URL}/odds_tournaments?year=${year}`);
+      if (!r.ok) throw new Error('Failed to load odds tournaments');
+      const items = await r.json();
+      if (Array.isArray(items)) {
+        setOddsItems(items);
+        // Auto-match by name
+        const norm = normalizeName(scheduleName);
+        const match = items.find(t => normalizeName(t.name) === norm) ||
+          items.find(t => normalizeName(t.name).includes(norm.slice(0, 8))) ||
+          items.find(t => norm.includes(normalizeName(t.name).slice(0, 8)));
+        if (match) setSelectedOddsId(match.oddsId);
+      }
+    } catch (e) {
+      setOddsError(e.message || 'Error loading odds tournaments');
+    } finally {
+      setOddsLoading(false);
+    }
+  }, [year]);
+
+  const handleScheduleSelect = (e) => {
+    const tournId = e.target.value;
+    if (!tournId) {
+      setSelectedScheduleItem(null);
+      setTournamentName('');
+      setOddsItems([]);
+      setSelectedOddsId('');
       return;
     }
+    const item = scheduleItems.find(t => t.tournId === tournId);
+    setSelectedScheduleItem(item || null);
+    const name = item?.name || '';
+    setTournamentName(name);
+    if (name) loadOddsTournaments(name);
+  };
 
+  const handleCreateTournament = async () => {
+    if (!selectedScheduleItem || !selectedOddsId || !tournamentName.trim()) {
+      alert('Please select a tournament and confirm the odds match.');
+      return;
+    }
     setIsCreating(true);
     try {
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          name: newTournamentName.trim(),
+          name: tournamentName.trim(),
           orgId: '1',
-          tournId: newTournId.trim(),
-          year: newYear.trim(),
-          oddsId: newOddsId.trim(),
+          tournId: selectedScheduleItem.tournId,
+          year,
+          oddsId: selectedOddsId,
           leagueId: activeLeagueId || ''
         })
       });
@@ -47,18 +126,15 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
       }
 
       const result = await response.json();
-      
-      // Clear form
-      setNewTournamentName('');
-      setNewTournId('');
-      setNewYear(new Date().getFullYear().toString());
-      setNewOddsId('');
+
+      // Reset form
+      setSelectedScheduleItem(null);
+      setTournamentName('');
+      setOddsItems([]);
+      setSelectedOddsId('');
 
       alert(`Tournament "${result.name}" created successfully!`);
-      
-      if (onTournamentCreated) {
-        onTournamentCreated();
-      }
+      if (onTournamentCreated) onTournamentCreated();
     } catch (error) {
       console.error('Error creating tournament:', error);
       alert(`Error creating tournament: ${error.message}`);
@@ -66,6 +142,8 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
       setIsCreating(false);
     }
   };
+
+  const canCreate = selectedScheduleItem && selectedOddsId && tournamentName.trim() && !isCreating;
 
   return (
     <div className="tournament-creation">
@@ -75,90 +153,121 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
           Creating tournament for league: <strong>{leagueName || activeLeagueId}</strong>
         </p>
       ) : (
-        <p className="subtitle">Set up a new tournament with API connection details</p>
+        <p className="subtitle">Set up a new tournament</p>
       )}
 
       <div className="tournament-form">
-        <div className="form-grid">
+        {/* Year + Load */}
+        <div className="form-group form-row-inline">
+          <div>
+            <label htmlFor="year">Season Year</label>
+            <input
+              id="year"
+              type="number"
+              value={year}
+              min="2020"
+              max="2030"
+              onChange={(e) => setYear(e.target.value)}
+              className="form-input form-input-narrow"
+            />
+          </div>
+          <button
+            onClick={loadSchedule}
+            disabled={scheduleLoading}
+            className="btn-secondary"
+            style={{ alignSelf: 'flex-end' }}
+          >
+            {scheduleLoading ? 'Loading...' : 'Load Schedule'}
+          </button>
+        </div>
+
+        {scheduleError && <p className="form-error">{scheduleError}</p>}
+
+        {/* Step 1: Pick from schedule */}
+        {scheduleItems.length > 0 && (
           <div className="form-group">
-            <label htmlFor="tournament-name">Tournament Name</label>
+            <label htmlFor="schedule-select">Step 1 — Select Tournament</label>
+            <select
+              id="schedule-select"
+              className="form-input"
+              value={selectedScheduleItem?.tournId || ''}
+              onChange={handleScheduleSelect}
+            >
+              <option value="">— choose a tournament —</option>
+              {scheduleItems.map(t => (
+                <option key={t.tournId} value={t.tournId}>
+                  {t.name}{t.date?.start ? ` (${t.date.start.slice(0, 10)})` : ''}
+                </option>
+              ))}
+            </select>
+            {selectedScheduleItem && (
+              <small className="form-help">
+                tournId: <strong>{selectedScheduleItem.tournId}</strong>
+                {selectedScheduleItem.date?.start && ` · ${selectedScheduleItem.date.start.slice(0, 10)}`}
+              </small>
+            )}
+          </div>
+        )}
+
+        {/* Display name (editable) */}
+        {selectedScheduleItem && (
+          <div className="form-group">
+            <label htmlFor="tournament-name">Display Name</label>
             <input
               id="tournament-name"
               type="text"
-              placeholder="e.g., Masters Tournament 2025"
-              value={newTournamentName}
-              onChange={(e) => setNewTournamentName(e.target.value)}
+              value={tournamentName}
+              onChange={(e) => setTournamentName(e.target.value)}
               className="form-input"
             />
-            <small className="form-help">Display name for the tournament</small>
           </div>
+        )}
 
+        {/* Step 2: Odds match */}
+        {selectedScheduleItem && (
           <div className="form-group">
-            <label htmlFor="tourn-id">Tournament ID</label>
-            <input
-              id="tourn-id"
-              type="text"
-              placeholder="e.g., 033"
-              value={newTournId}
-              onChange={(e) => setNewTournId(e.target.value)}
-              className="form-input"
-            />
-            <small className="form-help">API Tournament identifier</small>
+            <label htmlFor="odds-select">Step 2 — Confirm Odds Source Match</label>
+            {oddsLoading && <p className="form-help">Matching odds source...</p>}
+            {oddsError && <p className="form-error">{oddsError}</p>}
+            {!oddsLoading && oddsItems.length > 0 && (
+              <>
+                <select
+                  id="odds-select"
+                  className="form-input"
+                  value={selectedOddsId}
+                  onChange={(e) => setSelectedOddsId(e.target.value)}
+                >
+                  <option value="">— select odds tournament —</option>
+                  {oddsItems.map(t => (
+                    <option key={t.oddsId} value={t.oddsId}>
+                      {t.name}{t.startDate ? ` (${t.startDate.slice(0, 10)})` : ''} · ID: {t.oddsId}
+                    </option>
+                  ))}
+                </select>
+                {selectedOddsId && (
+                  <small className="form-help">
+                    oddsId: <strong>{selectedOddsId}</strong>
+                    {selectedOddsId && oddsItems.find(t => t.oddsId === selectedOddsId)?.name === tournamentName
+                      ? ' ✓ exact name match'
+                      : ' — verify this is correct'}
+                  </small>
+                )}
+              </>
+            )}
+            {!oddsLoading && oddsItems.length === 0 && !oddsError && selectedScheduleItem && (
+              <p className="form-help">No odds data available for this year.</p>
+            )}
           </div>
-
-          <div className="form-group">
-            <label htmlFor="year">Year</label>
-            <input
-              id="year"
-              type="text"
-              placeholder="e.g., 2025"
-              value={newYear}
-              onChange={(e) => setNewYear(e.target.value)}
-              className="form-input"
-            />
-            <small className="form-help">Tournament year</small>
-          </div>
-
-          <div className="form-group">
-            <label htmlFor="odds-id">Odds ID</label>
-            <input
-              id="odds-id"
-              type="text"
-              placeholder="e.g., 497"
-              value={newOddsId}
-              onChange={(e) => setNewOddsId(e.target.value)}
-              className="form-input"
-            />
-            <small className="form-help">SportsData.io Tournament Odds ID</small>
-          </div>
-        </div>
+        )}
 
         <div className="form-actions">
           <button
             onClick={handleCreateTournament}
-            disabled={isCreating || !newTournamentName.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()}
+            disabled={!canCreate}
             className="create-tournament-btn"
           >
             {isCreating ? 'Creating Tournament...' : 'Create Tournament'}
           </button>
-        </div>
-      </div>
-
-      <div className="api-help">
-        <h4>API Information</h4>
-        <div className="help-grid">
-          <div className="help-item">
-            <strong>Tournament ID:</strong>
-            <p>Found in the RapidAPI Live Golf Data leaderboard endpoint parameters</p>
-          </div>
-          <div className="help-item">
-            <strong>Odds ID:</strong>
-            <p>Found in SportsData.io Golf API tournament odds endpoints</p>
-          </div>
-          <div className="help-item">
-            <strong>Year:</strong>
-            <p>The year the tournament takes place</p>
-          </div>
         </div>
       </div>
     </div>

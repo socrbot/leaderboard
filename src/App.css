@@ -1696,6 +1696,48 @@ select:focus {
   margin: 0 auto;
 }
 
+.form-input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid #555555;
+  border-radius: 6px;
+  font-size: 1rem;
+  background: #2a2a2a;
+  color: white;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #228b22;
+  box-shadow: 0 0 0 3px rgba(34, 139, 34, 0.2);
+}
+
+.form-input-narrow {
+  width: 120px;
+}
+
+.form-help {
+  display: block;
+  margin-top: 0.35rem;
+  font-size: 0.8rem;
+  color: #9ca3af;
+}
+
+.form-error {
+  color: #f87171;
+  font-size: 0.875rem;
+  margin-bottom: 0.75rem;
+}
+
+.form-row-inline {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
 .form-group {
   margin-bottom: 1.5rem;
 }
