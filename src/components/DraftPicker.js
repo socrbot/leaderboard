@@ -2,7 +2,7 @@
 // Non-admin user view during an active draft.
 // Top: DraftBoard tier grid. Bottom: team cards where the user's own card
 // has clickable available players and all other cards are read-only.
-import React, { useState, useCallback } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT } from '../apiConfig';
 import DraftBoard from './DraftBoard';
@@ -16,6 +16,7 @@ const DraftPicker = ({
   const { user, getIdToken } = useAuth();
   const [picking, setPicking] = useState(false);
   const [pickError, setPickError] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
 
   const {
     IsDraftStarted,
@@ -25,20 +26,27 @@ const DraftPicker = ({
     teams = [],
     currentPickTeam,
     currentRound,
-    currentTier,
   } = draftStatus || {};
 
   const lockedOdds = draftStatus?.DraftLockedOdds || [];
   const isMyTurn = currentPickTeam && user && currentPickTeam.ownerUid === user.uid;
   const sortedTeams = [...teams].sort((a, b) => (a.draftOrder || 999) - (b.draftOrder || 999));
 
-  // Available players for the current tier
-  const tierIdx = (currentTier || 1) - 1;
-  const tierStart = tierIdx * numTeams;
-  const tierEnd = (tierIdx + 1) * numTeams;
-  const tierPlayers = lockedOdds.slice(tierStart, tierEnd);
+  // All available players across every tier (free-tier picking — any tier, any order)
   const allPickedNames = new Set(draftPicks.map(p => p.playerName));
-  const availablePlayers = tierPlayers.filter(p => !allPickedNames.has(p.name));
+  const allAvailablePlayers = lockedOdds
+    .map((p, idx) => ({
+      ...p,
+      tierLabel: TIER_LABELS[Math.floor(idx / (numTeams || 1))] || `Tier ${Math.floor(idx / (numTeams || 1)) + 1}`,
+    }))
+    .filter(p => !allPickedNames.has(p.name));
+
+  const trimmedSearch = searchTerm.trim().toLowerCase();
+  const filteredPlayers = trimmedSearch
+    ? allAvailablePlayers.filter(p => p.name.toLowerCase().includes(trimmedSearch))
+    : [];
+  const exactMatch = trimmedSearch.length >= 2 && allAvailablePlayers.some(p => p.name.toLowerCase() === trimmedSearch);
+  const showCustomOption = trimmedSearch.length >= 2 && !exactMatch;
 
   const submitPick = useCallback(async (playerName) => {
     if (!tournamentId || !playerName) return;
@@ -65,6 +73,9 @@ const DraftPicker = ({
     }
   }, [tournamentId, getIdToken, onDraftComplete, onStatusRefresh]);
 
+  // Reset search when it's a new team's turn
+  useEffect(() => { setSearchTerm(''); }, [currentPickTeam]);
+
   if (!IsDraftStarted || IsDraftComplete) return null;
 
   return (
@@ -81,6 +92,7 @@ const DraftPicker = ({
         draftPicks={draftPicks}
         isDraftStarted={true}
         tournamentInfo={tournamentInfo}
+        onPlayerClick={isMyTurn && !picking ? submitPick : null}
       />
 
       {/* ── SECTION 2: Turn banner ── */}
@@ -95,13 +107,13 @@ const DraftPicker = ({
       }}>
         {isMyTurn ? (
           <strong style={{ color: '#a5d6a7' }}>
-            It&apos;s your turn! Select a {TIER_LABELS[tierIdx]} player from your card below.
+            It&apos;s your turn! Click any available player in the board above, or search below.
           </strong>
         ) : (
           <span style={{ color: '#ccc' }}>
             Waiting for{' '}
             <strong style={{ color: '#FFD700' }}>{currentPickTeam?.name || '...'}</strong>
-            {' '}to pick — Round {currentRound}, {TIER_LABELS[tierIdx]}
+            {' '}to pick — Round {currentRound}
           </span>
         )}
       </div>
@@ -185,46 +197,93 @@ const DraftPicker = ({
                   })}
                 </ul>
 
-                {/* Player selection — only shown on user's own card when it's their turn */}
-                {isMyTeam && isCurrent && availablePlayers.length > 0 && (
-                  <div style={{ marginTop: '8px' }}>
-                    <div style={{
-                      fontSize: '0.8em', color: '#aaa', marginBottom: '8px', paddingLeft: '2px',
-                    }}>
-                      Pick a {TIER_LABELS[tierIdx]} player:
+                {/* Player search — shown on user's own card when it's their turn */}
+                {isMyTeam && isCurrent && (
+                  <div style={{ marginTop: '10px' }}>
+                    <div style={{ fontSize: '0.8em', color: '#a5d6a7', marginBottom: '8px', paddingLeft: '2px' }}>
+                      Click a player in the board above, or search:
                     </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '6px' }}>
-                      {availablePlayers.map(player => (
-                        <button
-                          key={player.name}
-                          disabled={picking}
-                          onClick={() => submitPick(player.name)}
-                          style={{
-                            width: '100%',
-                            padding: '10px 14px',
-                            backgroundColor: picking ? '#333' : '#1a3a1a',
-                            color: '#fff',
-                            border: '1px solid #4CAF50',
-                            borderRadius: '6px',
-                            cursor: picking ? 'not-allowed' : 'pointer',
-                            fontSize: '0.9em',
-                            textAlign: 'left',
-                            display: 'flex',
-                            justifyContent: 'space-between',
-                            alignItems: 'center',
-                          }}
-                          onMouseEnter={e => { if (!picking) e.currentTarget.style.backgroundColor = '#2a5c2a'; }}
-                          onMouseLeave={e => { if (!picking) e.currentTarget.style.backgroundColor = '#1a3a1a'; }}
-                        >
-                          <span style={{ fontWeight: 'bold' }}>{player.name}</span>
-                          {player.averageOdds != null && (
-                            <span style={{ fontSize: '0.8em', color: '#a5d6a7' }}>
-                              {player.averageOdds > 0 ? `+${player.averageOdds}` : player.averageOdds}
+                    <input
+                      type="text"
+                      value={searchTerm}
+                      onChange={e => setSearchTerm(e.target.value)}
+                      placeholder="Search golfer name..."
+                      disabled={picking}
+                      autoComplete="off"
+                      style={{
+                        width: '100%',
+                        padding: '8px 10px',
+                        backgroundColor: '#2a2a2a',
+                        color: '#fff',
+                        border: '1px solid #4CAF50',
+                        borderRadius: '6px',
+                        fontSize: '0.9em',
+                        boxSizing: 'border-box',
+                        marginBottom: filteredPlayers.length > 0 || showCustomOption ? '8px' : '0',
+                      }}
+                    />
+                    {(filteredPlayers.length > 0 || showCustomOption) && (
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '220px', overflowY: 'auto' }}>
+                        {filteredPlayers.map(player => (
+                          <button
+                            key={player.name}
+                            disabled={picking}
+                            onClick={() => { submitPick(player.name); setSearchTerm(''); }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              backgroundColor: picking ? '#333' : '#1a3a1a',
+                              color: '#fff',
+                              border: '1px solid #4CAF50',
+                              borderRadius: '6px',
+                              cursor: picking ? 'not-allowed' : 'pointer',
+                              fontSize: '0.85em',
+                              textAlign: 'left',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                            onMouseEnter={e => { if (!picking) e.currentTarget.style.backgroundColor = '#2a5c2a'; }}
+                            onMouseLeave={e => { if (!picking) e.currentTarget.style.backgroundColor = '#1a3a1a'; }}
+                          >
+                            <span style={{ fontWeight: 'bold' }}>{player.name}</span>
+                            <span style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                              <span style={{ fontSize: '0.75em', color: '#888' }}>{player.tierLabel}</span>
+                              {player.averageOdds != null && (
+                                <span style={{ fontSize: '0.8em', color: '#a5d6a7' }}>
+                                  {player.averageOdds > 0 ? `+${player.averageOdds}` : player.averageOdds}
+                                </span>
+                              )}
                             </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
+                          </button>
+                        ))}
+                        {showCustomOption && (
+                          <button
+                            disabled={picking}
+                            onClick={() => { submitPick(searchTerm.trim()); setSearchTerm(''); }}
+                            style={{
+                              width: '100%',
+                              padding: '8px 12px',
+                              backgroundColor: picking ? '#333' : '#2a1a00',
+                              color: '#fff',
+                              border: '1px solid #FFD700',
+                              borderRadius: '6px',
+                              cursor: picking ? 'not-allowed' : 'pointer',
+                              fontSize: '0.85em',
+                              textAlign: 'left',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                            onMouseEnter={e => { if (!picking) e.currentTarget.style.backgroundColor = '#3a2800'; }}
+                            onMouseLeave={e => { if (!picking) e.currentTarget.style.backgroundColor = '#2a1a00'; }}
+                          >
+                            <span style={{ fontWeight: 'bold' }}>&ldquo;{searchTerm.trim()}&rdquo;</span>
+                            <span style={{ fontSize: '0.75em', color: '#FFD700' }}>custom pick</span>
+                          </button>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
 

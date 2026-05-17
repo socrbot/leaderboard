@@ -1,7 +1,7 @@
 // src/components/DraftBoard.js
 import React, { useState, useEffect } from 'react';
 
-const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted, tournamentInfo }) => {
+const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted, tournamentInfo, onPlayerClick }) => {
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
   const [currentTierView, setCurrentTierView] = useState(0); // 0 = Tiers 1&2, 1 = Tiers 3&4
@@ -340,13 +340,16 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                             <React.Fragment key={colIndex}>
                               {player ? (
                                 <>
-                                  <td style={{
+                                <>                                  <td
+                                    onClick={onPlayerClick && !player.teamAssigned ? () => onPlayerClick(player.name) : undefined}
+                                    style={{
                                     padding: isMobile ? '10px 8px' : '8px 5px',
                                     textAlign: 'left',
                                     borderRight: '1px dotted #555',
-                                    backgroundColor: cellBackgroundColor, // Apply dynamic color
-                                    color: cellTextColor, // Apply dynamic text color
-                                    fontSize: isMobile ? '0.9em' : '0.8em'
+                                    backgroundColor: cellBackgroundColor,
+                                    color: cellTextColor,
+                                    fontSize: isMobile ? '0.9em' : '0.8em',
+                                    cursor: onPlayerClick && !player.teamAssigned ? 'pointer' : 'default',
                                   }}>
                                     <div style={{ lineHeight: '1.2' }}>
                                       {player.name}
@@ -374,13 +377,16 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                                       )}
                                     </div>
                                   </td>
-                                  <td style={{
+                                  <td
+                                    onClick={onPlayerClick && !player.teamAssigned ? () => onPlayerClick(player.name) : undefined}
+                                    style={{
                                     padding: isMobile ? '10px 8px' : '8px 5px',
                                     textAlign: 'right',
                                     borderRight: isLastColInRow ? 'none' : '1px dotted #555',
-                                    backgroundColor: cellBackgroundColor, // Apply dynamic color
-                                    color: cellTextColor, // Apply dynamic text color
-                                    fontSize: isMobile ? '0.9em' : '0.8em'
+                                    backgroundColor: cellBackgroundColor,
+                                    color: cellTextColor,
+                                    fontSize: isMobile ? '0.9em' : '0.8em',
+                                    cursor: onPlayerClick && !player.teamAssigned ? 'pointer' : 'default',
                                   }}>
                                     {player.averageOdds !== null ? player.averageOdds.toFixed(2) : 'N/A'}
                                   </td>
