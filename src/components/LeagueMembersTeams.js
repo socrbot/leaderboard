@@ -80,7 +80,8 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
           <thead>
             <tr>
               <th>#</th>
-              <th>Name</th>
+              <th>Display Name</th>
+              <th>Team Name</th>
               <th>Email</th>
               <th>Joined</th>
               <th></th>
@@ -90,7 +91,8 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
             {members.map((m, i) => (
               <tr key={m.uid}>
                 <td>{i + 1}</td>
-                <td>{m.displayName || <em style={{ color: '#888' }}>No display name</em>}</td>
+                <td>{m.displayName || <em style={{ color: '#888' }}>—</em>}</td>
+                <td>{m.teamName || <em style={{ color: '#888' }}>—</em>}</td>
                 <td>{m.email}</td>
                 <td>{m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : '—'}</td>
                 <td>
