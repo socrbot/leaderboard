@@ -6,6 +6,7 @@ import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
 import JoinLeague from './components/JoinLeague';
+import UserSettings from './components/UserSettings';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
 
@@ -80,6 +81,7 @@ function App() {
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
+  const [showUserSettings, setShowUserSettings] = useState(false);
 
   // After sign-in: open Setup if admin, otherwise just stay on leaderboard.
   useEffect(() => {
@@ -699,13 +701,26 @@ function App() {
                 Setup
               </button>
             ) : (
-              <button
-                className="nav-link"
-                onClick={signOut}
-                title={`Signed in as ${user.email}`}
-              >
-                Sign Out
-              </button>
+              <>
+                <button
+                  className={`nav-link${showUserSettings ? ' active' : ''}`}
+                  onClick={() => {
+                    setShowAnnualChampionship(false);
+                    setShowTournamentScores(false);
+                    setShowSetup(false);
+                    setShowUserSettings(s => !s);
+                  }}
+                >
+                  My Settings
+                </button>
+                <button
+                  className="nav-link"
+                  onClick={signOut}
+                  title={`Signed in as ${user.email}`}
+                >
+                  Sign Out
+                </button>
+              </>
             )}
           </nav>
         </div>
@@ -897,7 +912,9 @@ function App() {
       ) : null}
 
       <div className="main-content">
-        {selectedTournamentId ? (
+        {showUserSettings ? (
+          <UserSettings activeLeagueId={activeLeagueId} />
+        ) : selectedTournamentId ? (
           showSetup ? (
             <Setup
               tournamentId={selectedTournamentId}
@@ -1115,8 +1132,6 @@ function App() {
           )
         )}
       </div>
-
-      {/* Mobile bottom nav — hidden on desktop via CSS */}
       <nav className="bottom-nav">
         <button
           className={`bottom-nav-link ${!showAnnualChampionship && !showSetup && !showTournamentScores ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
