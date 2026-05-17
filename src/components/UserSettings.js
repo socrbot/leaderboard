@@ -5,7 +5,7 @@ import { BACKEND_BASE_URL, TOURNAMENTS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from
 import '../App.css';
 
 export default function UserSettings({ activeLeagueId }) {
-  const { getIdToken, userData } = useAuth();
+  const { getIdToken } = useAuth();
 
   const [tournaments, setTournaments] = useState([]);
   const [leagueName, setLeagueName] = useState('');
