@@ -5,6 +5,7 @@ import GlobalTeamsManagement from './GlobalTeamsManagement';
 import LeagueMembersTeams from './LeagueMembersTeams';
 import TeamManagement from './TeamManagement';
 import LeagueManagement from './LeagueManagement';
+import UserSettings from './UserSettings';
 import '../App.css';
 
 const Setup = ({ 
@@ -46,6 +47,7 @@ const Setup = ({
         onManualOddsUpdated={onManualOddsUpdated}
       />
     ),
+    'my-profile': <UserSettings activeLeagueId={activeLeagueId} />,
   };
 
   return (

@@ -869,6 +869,12 @@ function App() {
               Draft Management
             </button>
             <button
+              className={`setup-nav-link ${setupActiveTab === 'my-profile' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('my-profile')}
+            >
+              My Profile
+            </button>
+            <button
               className="setup-nav-link setup-nav-signout"
               onClick={() => { setShowSetup(false); signOut(); }}
             >
@@ -1265,6 +1271,12 @@ function App() {
             disabled={!selectedTournamentId}
           >
             Draft
+          </button>
+          <button
+            className={`bottom-nav-link ${setupActiveTab === 'my-profile' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('my-profile')}
+          >
+            Profile
           </button>
           <button
             className="bottom-nav-link"
