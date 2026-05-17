@@ -5,12 +5,13 @@ import { BACKEND_BASE_URL, TOURNAMENTS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from
 import '../App.css';
 
 export default function UserSettings({ activeLeagueId }) {
-  const { getIdToken } = useAuth();
+  const { user, getIdToken } = useAuth();
 
   const [tournaments, setTournaments] = useState([]);
   const [leagueName, setLeagueName] = useState('');
   const [enrolled, setEnrolled] = useState([]); // list of tournamentIds
   const [participatesInAnnual, setParticipatesInAnnual] = useState(true);
+  const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
@@ -22,11 +23,12 @@ export default function UserSettings({ activeLeagueId }) {
       const token = await getIdToken();
       const authHeaders = { Authorization: `Bearer ${token}` };
 
-      const [settingsRes, tournamentsRes] = await Promise.all([
+      const [settingsRes, tournamentsRes, profileRes] = await Promise.all([
         fetch(`${BACKEND_BASE_URL}/user/settings`, { headers: authHeaders }),
         activeLeagueId
           ? fetch(`${TOURNAMENTS_API_ENDPOINT}?leagueId=${activeLeagueId}`)
           : Promise.resolve(null),
+        fetch(`${BACKEND_BASE_URL}/user/profile`, { headers: authHeaders }),
       ]);
 
       if (settingsRes.ok) {
@@ -37,6 +39,10 @@ export default function UserSettings({ activeLeagueId }) {
 
       if (tournamentsRes && tournamentsRes.ok) {
         setTournaments(await tournamentsRes.json());
+      }
+
+      if (profileRes && profileRes.ok) {
+        setUserProfile(await profileRes.json());
       }
 
       if (activeLeagueId) {
@@ -87,10 +93,54 @@ export default function UserSettings({ activeLeagueId }) {
 
   if (loading) return <div className="team-management"><p>Loading your settings…</p></div>;
 
+  const activeLeagueEntry = userProfile?.leagues?.find(l => l.leagueId === activeLeagueId);
+
   return (
     <div className="team-management">
       <h2>My Settings{leagueName ? ` — ${leagueName}` : ''}</h2>
       <p className="subtitle">Choose which tournaments you're playing in and whether to enter the annual championship.</p>
+
+      {/* Profile Card */}
+      <div style={styles.section}>
+        <h3 style={styles.sectionTitle}>My Profile</h3>
+        <table style={styles.profileTable}>
+          <tbody>
+            <tr>
+              <td style={styles.profileLabel}>Email</td>
+              <td style={styles.profileValue}>{userProfile?.email || user?.email || '—'}</td>
+            </tr>
+            <tr>
+              <td style={styles.profileLabel}>Display Name</td>
+              <td style={styles.profileValue}>{userProfile?.displayName || user?.displayName || '—'}</td>
+            </tr>
+            {activeLeagueEntry && (
+              <tr>
+                <td style={styles.profileLabel}>Team Name</td>
+                <td style={styles.profileValue}>{activeLeagueEntry.teamName || '—'}</td>
+              </tr>
+            )}
+          </tbody>
+        </table>
+
+        {userProfile?.leagues?.length > 0 && (
+          <div style={{ marginTop: 14 }}>
+            <div style={{ ...styles.profileLabel, marginBottom: 6 }}>My Leagues</div>
+            <ul style={styles.leagueList}>
+              {userProfile.leagues.map(l => (
+                <li key={l.leagueId} style={styles.leagueItem}>
+                  <span style={{ color: '#e0e0e0' }}>{l.name || l.leagueId}</span>
+                  {l.teamName && (
+                    <span style={{ color: '#888', marginLeft: 8, fontSize: '0.85rem' }}>({l.teamName})</span>
+                  )}
+                  {l.leagueId === activeLeagueId && (
+                    <span style={styles.activeBadge}>active</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </div>
+        )}
+      </div>
 
       {/* Annual Championship */}
       <div style={styles.section}>
@@ -174,5 +224,43 @@ const styles = {
     alignItems: 'center',
     cursor: 'pointer',
     fontSize: '0.95rem',
+  },
+  profileTable: {
+    borderCollapse: 'collapse',
+    width: '100%',
+  },
+  profileLabel: {
+    color: '#888',
+    fontSize: '0.85rem',
+    paddingRight: 16,
+    paddingBottom: 6,
+    whiteSpace: 'nowrap',
+    verticalAlign: 'top',
+  },
+  profileValue: {
+    color: '#e0e0e0',
+    fontSize: '0.95rem',
+    paddingBottom: 6,
+  },
+  leagueList: {
+    listStyle: 'none',
+    margin: 0,
+    padding: 0,
+  },
+  leagueItem: {
+    padding: '5px 0',
+    borderBottom: '1px solid #2a2a2a',
+    display: 'flex',
+    alignItems: 'center',
+    fontSize: '0.9rem',
+  },
+  activeBadge: {
+    marginLeft: 8,
+    background: '#1a4a1a',
+    color: '#4caf50',
+    border: '1px solid #2e7d32',
+    borderRadius: 4,
+    padding: '1px 6px',
+    fontSize: '0.75rem',
   },
 };
