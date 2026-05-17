@@ -6,7 +6,6 @@ import '../App.css'; // Importing the CSS file
 const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [teams, setTeams] = useState([]);
-  const [isSaving, setIsSaving] = useState(false);
   const [isClearingManualOdds, setIsClearingManualOdds] = useState(false);
 
   // --- Draft Status State ---
