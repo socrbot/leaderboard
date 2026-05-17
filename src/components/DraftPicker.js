@@ -12,6 +12,7 @@ const TIER_LABELS = ['Tier 1', 'Tier 2', 'Tier 3', 'Tier 4'];
 const DraftPicker = ({
   tournamentId, onDraftComplete, draftStatus, onStatusRefresh,
   topPlayers, draftBoardLoading, draftBoardError, oddsId, hasManualDraftOdds, tournamentInfo,
+  isAdmin,
 }) => {
   const { user, getIdToken } = useAuth();
   const [picking, setPicking] = useState(false);
@@ -29,7 +30,7 @@ const DraftPicker = ({
   } = draftStatus || {};
 
   const lockedOdds = draftStatus?.DraftLockedOdds || [];
-  const isMyTurn = currentPickTeam && user && currentPickTeam.ownerUid === user.uid;
+  const isMyTurn = isAdmin || (currentPickTeam && user && currentPickTeam.ownerUid === user.uid);
   const sortedTeams = [...teams].sort((a, b) => (a.draftOrder || 999) - (b.draftOrder || 999));
 
   // All available players across every tier (free-tier picking — any tier, any order)

@@ -467,14 +467,11 @@ function App() {
       setDraftStatusLoading(false);
       return;
     }
-    console.log('Fetching draft status for tournament:', selectedTournamentId);
-    setDraftStatusLoading(true);
     try {
       const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
-      console.log('Draft status received:', status);
-      setDraftStatus(status);
+      setDraftStatus(prev => JSON.stringify(prev) === JSON.stringify(status) ? prev : status);
     } catch (error) {
       console.error('Error fetching draft status:', error);
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
@@ -486,6 +483,7 @@ function App() {
   }, [selectedTournamentId]);
 
   useEffect(() => {
+    setDraftStatusLoading(true);
     fetchDraftStatus();
   }, [fetchDraftStatus]);
 
@@ -643,10 +641,10 @@ function App() {
     return draftStatus.IsDraftLocked && !draftStatus.IsDraftComplete;
   }, [draftStatus]);
 
-  // Non-admin members see DraftPicker while draft is active
+  // Show DraftPicker while draft is active (both members and admin)
   const shouldShowDraftPicker = useMemo(() => {
-    return !isAdmin && draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
-  }, [isAdmin, draftStatus]);
+    return draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
+  }, [draftStatus]);
 
   const shouldShowLeaderboard = useMemo(() => {
     // Show leaderboard if draft is complete
@@ -993,6 +991,7 @@ function App() {
                 oddsId={tournamentOddsId}
                 hasManualDraftOdds={hasManualDraftOdds}
                 tournamentInfo={tournamentInfo}
+                isAdmin={isAdmin}
               />
             ) : shouldShowDraftBoard ? (
               <>
