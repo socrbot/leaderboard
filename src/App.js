@@ -494,12 +494,13 @@ function App() {
     fetchDraftStatus();
   }, [fetchDraftStatus]);
 
-  // Poll draft status every 10 s while draft is active (started & not complete)
+  // Poll draft status every 10 s while draft is locked or active (not yet complete)
   useEffect(() => {
-    if (!draftStatus.IsDraftStarted || draftStatus.IsDraftComplete) return;
+    if (draftStatus.IsDraftComplete) return;
+    if (!draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted) return;
     const interval = setInterval(fetchDraftStatus, 10000);
     return () => clearInterval(interval);
-  }, [draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, fetchDraftStatus]);
+  }, [draftStatus.IsDraftLocked, draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, fetchDraftStatus]);
 
   // Sync teams + draftPicks state from enriched draftStatus (authoritative source)
   useEffect(() => {
