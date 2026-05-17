@@ -470,17 +470,11 @@ function App() {
     console.log('Fetching draft status for tournament:', selectedTournamentId);
     setDraftStatusLoading(true);
     try {
-      // Fetch draft status and tournament doc in parallel for locked odds
-      const [draftRes, tournRes] = await Promise.all([
-        fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`),
-        fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`),
-      ]);
+      const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
-      const tournData = tournRes.ok ? await tournRes.json() : {};
       console.log('Draft status received:', status);
-      // Merge DraftLockedOdds from the tournament doc into status
-      setDraftStatus({ ...status, DraftLockedOdds: tournData.DraftLockedOdds || [] });
+      setDraftStatus(status);
     } catch (error) {
       console.error('Error fetching draft status:', error);
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
