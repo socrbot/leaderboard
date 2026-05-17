@@ -987,6 +987,12 @@ function App() {
                 draftStatus={draftStatus}
                 onDraftComplete={fetchDraftStatus}
                 onStatusRefresh={fetchDraftStatus}
+                topPlayers={augmentedDraftBoardPlayers}
+                draftBoardLoading={draftBoardLoading}
+                draftBoardError={draftBoardError}
+                oddsId={tournamentOddsId}
+                hasManualDraftOdds={hasManualDraftOdds}
+                tournamentInfo={tournamentInfo}
               />
             ) : shouldShowDraftBoard ? (
               <>
