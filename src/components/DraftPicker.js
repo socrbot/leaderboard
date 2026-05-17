@@ -30,7 +30,7 @@ const DraftPicker = ({
   } = draftStatus || {};
 
   const lockedOdds = draftStatus?.DraftLockedOdds || [];
-  const isMyTurn = isAdmin || (currentPickTeam && user && currentPickTeam.ownerUid === user.uid);
+  const isMyTurn = currentPickTeam && user && currentPickTeam.ownerUid === user.uid;
   const sortedTeams = [...teams].sort((a, b) => (a.draftOrder || 999) - (b.draftOrder || 999));
 
   // All available players across every tier (free-tier picking — any tier, any order)
