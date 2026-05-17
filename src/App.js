@@ -588,8 +588,9 @@ function App() {
     }
 
     return draftBoardPlayers.map(player => {
-      const teamName = selectedTeamGolfersMap[player.name];
       const draftPick = draftPicks.find(pick => pick.playerName === player.name);
+      // Use live draftPicks as primary source during draft, fall back to hook data post-draft
+      const teamName = (draftPick ? draftPick.teamName : null) || selectedTeamGolfersMap[player.name];
       return {
         ...player,
         teamAssigned: teamName,

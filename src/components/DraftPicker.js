@@ -65,9 +65,9 @@ const DraftPicker = ({
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to submit pick');
       if (data.draftComplete) {
-        onDraftComplete && onDraftComplete();
+        await (onDraftComplete && onDraftComplete());
       } else {
-        onStatusRefresh && onStatusRefresh();
+        await (onStatusRefresh && onStatusRefresh());
       }
     } catch (err) {
       setPickError(err.message);
