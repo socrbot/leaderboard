@@ -187,16 +187,19 @@ function App() {
     setPreloadedTournamentData(preloadedData);
   }, []);
 
-  // Fetch all tournaments (all years) for the picker dropdown
+  // Fetch all tournaments (all years) for the picker dropdown — scoped to active league
   useEffect(() => {
     const fetchAll = async () => {
       try {
-        const res = await fetch(TOURNAMENTS_API_ENDPOINT);
+        const params = new URLSearchParams();
+        if (activeLeagueId) params.set('leagueId', activeLeagueId);
+        const url = `${TOURNAMENTS_API_ENDPOINT}${params.toString() ? `?${params}` : ''}`;
+        const res = await fetch(url);
         if (res.ok) setAllTournaments(await res.json());
       } catch {}
     };
     fetchAll();
-  }, [refreshTrigger]);
+  }, [refreshTrigger, activeLeagueId]);
 
   // Close tournament picker when clicking outside
   useEffect(() => {

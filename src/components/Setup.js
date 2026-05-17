@@ -2,6 +2,7 @@
 import React from 'react';
 import TournamentCreation from './TournamentCreation';
 import GlobalTeamsManagement from './GlobalTeamsManagement';
+import LeagueMembersTeams from './LeagueMembersTeams';
 import TeamManagement from './TeamManagement';
 import LeagueManagement from './LeagueManagement';
 import '../App.css';
@@ -28,7 +29,9 @@ const Setup = ({
 
   const tabs = {
     'league': <LeagueManagement activeLeagueId={activeLeagueId} onLeagueChange={onLeagueChange} />,
-    'global-teams': <GlobalTeamsManagement selectedYear={selectedYear} />,
+    'global-teams': activeLeagueId
+      ? <LeagueMembersTeams activeLeagueId={activeLeagueId} />
+      : <GlobalTeamsManagement selectedYear={selectedYear} />,
     'tournament-creation': <TournamentCreation onTournamentCreated={onTournamentCreated} activeLeagueId={activeLeagueId} />,
     'draft-management': (
       <TeamManagement

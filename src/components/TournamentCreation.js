@@ -1,6 +1,6 @@
 // src/components/TournamentCreation.js
-import React, { useState } from 'react';
-import { BACKEND_BASE_URL } from '../apiConfig';
+import React, { useState, useEffect } from 'react';
+import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
 
 const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
@@ -10,6 +10,15 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   const [newYear, setNewYear] = useState(new Date().getFullYear().toString());
   const [newOddsId, setNewOddsId] = useState('');
   const [isCreating, setIsCreating] = useState(false);
+  const [leagueName, setLeagueName] = useState('');
+
+  useEffect(() => {
+    if (!activeLeagueId) { setLeagueName(''); return; }
+    fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => d?.name && setLeagueName(d.name))
+      .catch(() => {});
+  }, [activeLeagueId]);
 
   const handleCreateTournament = async () => {
     if (!newTournamentName.trim() || !newTournId.trim() || !newYear.trim() || !newOddsId.trim()) {
@@ -61,7 +70,13 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   return (
     <div className="tournament-creation">
       <h3>Create New Tournament</h3>
-      <p className="subtitle">Set up a new tournament with API connection details</p>
+      {activeLeagueId ? (
+        <p className="subtitle">
+          Creating tournament for league: <strong>{leagueName || activeLeagueId}</strong>
+        </p>
+      ) : (
+        <p className="subtitle">Set up a new tournament with API connection details</p>
+      )}
 
       <div className="tournament-form">
         <div className="form-grid">
