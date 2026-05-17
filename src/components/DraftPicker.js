@@ -45,8 +45,6 @@ const DraftPicker = ({
   const filteredPlayers = trimmedSearch
     ? allAvailablePlayers.filter(p => p.name.toLowerCase().includes(trimmedSearch))
     : [];
-  const exactMatch = trimmedSearch.length >= 2 && allAvailablePlayers.some(p => p.name.toLowerCase() === trimmedSearch);
-  const showCustomOption = trimmedSearch.length >= 2 && !exactMatch;
 
   const submitPick = useCallback(async (playerName) => {
     if (!tournamentId || !playerName) return;
@@ -219,10 +217,10 @@ const DraftPicker = ({
                         borderRadius: '6px',
                         fontSize: '0.9em',
                         boxSizing: 'border-box',
-                        marginBottom: filteredPlayers.length > 0 || showCustomOption ? '8px' : '0',
+                        marginBottom: filteredPlayers.length > 0 ? '8px' : '0',
                       }}
                     />
-                    {(filteredPlayers.length > 0 || showCustomOption) && (
+                    {filteredPlayers.length > 0 && (
                       <div style={{ display: 'flex', flexDirection: 'column', gap: '4px', maxHeight: '220px', overflowY: 'auto' }}>
                         {filteredPlayers.map(player => (
                           <button
@@ -257,31 +255,6 @@ const DraftPicker = ({
                             </span>
                           </button>
                         ))}
-                        {showCustomOption && (
-                          <button
-                            disabled={picking}
-                            onClick={() => { submitPick(searchTerm.trim()); setSearchTerm(''); }}
-                            style={{
-                              width: '100%',
-                              padding: '8px 12px',
-                              backgroundColor: picking ? '#333' : '#2a1a00',
-                              color: '#fff',
-                              border: '1px solid #FFD700',
-                              borderRadius: '6px',
-                              cursor: picking ? 'not-allowed' : 'pointer',
-                              fontSize: '0.85em',
-                              textAlign: 'left',
-                              display: 'flex',
-                              justifyContent: 'space-between',
-                              alignItems: 'center',
-                            }}
-                            onMouseEnter={e => { if (!picking) e.currentTarget.style.backgroundColor = '#3a2800'; }}
-                            onMouseLeave={e => { if (!picking) e.currentTarget.style.backgroundColor = '#2a1a00'; }}
-                          >
-                            <span style={{ fontWeight: 'bold' }}>&ldquo;{searchTerm.trim()}&rdquo;</span>
-                            <span style={{ fontSize: '0.75em', color: '#FFD700' }}>custom pick</span>
-                          </button>
-                        )}
                       </div>
                     )}
                   </div>
