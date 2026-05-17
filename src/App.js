@@ -471,7 +471,14 @@ function App() {
       const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
-      setDraftStatus(prev => JSON.stringify(prev) === JSON.stringify(status) ? prev : status);
+      setDraftStatus(prev => {
+        if (JSON.stringify(prev) === JSON.stringify(status)) return prev;
+        // Draft just completed — refresh leaderboard data to pick up golferNames
+        if (!prev.IsDraftComplete && status.IsDraftComplete) {
+          setLeaderboardRefreshKey(k => k + 1);
+        }
+        return status;
+      });
     } catch (error) {
       console.error('Error fetching draft status:', error);
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
