@@ -17,6 +17,13 @@ export default function UserSettings({ activeLeagueId }) {
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
+  const [showJoinForm, setShowJoinForm] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+  const [joinTeamName, setJoinTeamName] = useState('');
+  const [joining, setJoining] = useState(false);
+  const [joinError, setJoinError] = useState('');
+  const [joinSuccess, setJoinSuccess] = useState('');
+
   const load = useCallback(async () => {
     setLoading(true);
     try {
@@ -63,6 +70,37 @@ export default function UserSettings({ activeLeagueId }) {
       prev.includes(tid) ? prev.filter(id => id !== tid) : [...prev, tid]
     );
     setSaved(false);
+  };
+
+  const handleJoin = async (e) => {
+    e.preventDefault();
+    const code = joinCode.trim().toUpperCase();
+    if (!code) { setJoinError('Please enter an invite code.'); return; }
+    setJoining(true);
+    setJoinError('');
+    setJoinSuccess('');
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`${LEAGUES_API_ENDPOINT}/join`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ inviteCode: code, teamName: (joinTeamName.trim() || user?.displayName || '') }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setJoinError(data.error || 'Invalid invite code.');
+      } else {
+        setJoinSuccess(data.alreadyMember ? 'Already a member of that league.' : 'Joined successfully!');
+        setJoinCode('');
+        setJoinTeamName('');
+        setShowJoinForm(false);
+        load(); // refresh profile to show new league
+      }
+    } catch {
+      setJoinError('Network error. Please try again.');
+    } finally {
+      setJoining(false);
+    }
   };
 
   const handleSave = async () => {
@@ -122,9 +160,9 @@ export default function UserSettings({ activeLeagueId }) {
           </tbody>
         </table>
 
-        {userProfile?.leagues?.length > 0 && (
-          <div style={{ marginTop: 14 }}>
-            <div style={{ ...styles.profileLabel, marginBottom: 6 }}>My Leagues</div>
+        <div style={{ marginTop: 14 }}>
+          <div style={{ ...styles.profileLabel, marginBottom: 6 }}>My Leagues</div>
+          {userProfile?.leagues?.length > 0 ? (
             <ul style={styles.leagueList}>
               {userProfile.leagues.map(l => (
                 <li key={l.leagueId} style={styles.leagueItem}>
@@ -138,8 +176,56 @@ export default function UserSettings({ activeLeagueId }) {
                 </li>
               ))}
             </ul>
-          </div>
-        )}
+          ) : (
+            <p style={{ color: '#666', fontSize: '0.85rem', margin: '4px 0 8px' }}>No leagues yet.</p>
+          )}
+
+          {joinSuccess && <p style={{ color: '#4caf50', fontSize: '0.85rem', margin: '6px 0' }}>{joinSuccess}</p>}
+
+          {showJoinForm ? (
+            <form onSubmit={handleJoin} style={styles.joinForm}>
+              <input
+                type="text"
+                placeholder="Team name (optional)"
+                value={joinTeamName}
+                onChange={e => setJoinTeamName(e.target.value)}
+                maxLength={40}
+                disabled={joining}
+                className="form-input"
+                style={styles.joinInput}
+              />
+              <input
+                type="text"
+                placeholder="Invite code"
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                maxLength={10}
+                disabled={joining}
+                className="form-input"
+                style={styles.joinInput}
+                autoCapitalize="characters"
+                autoComplete="off"
+              />
+              {joinError && <p style={{ color: '#c0392b', fontSize: '0.8rem', margin: '4px 0' }}>{joinError}</p>}
+              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+                <button type="submit" disabled={joining} className="btn-primary" style={{ fontSize: '0.85rem', padding: '6px 14px' }}>
+                  {joining ? 'Joining…' : 'Join'}
+                </button>
+                <button type="button" onClick={() => { setShowJoinForm(false); setJoinError(''); }} className="btn-secondary" style={{ fontSize: '0.85rem', padding: '6px 14px' }}>
+                  Cancel
+                </button>
+              </div>
+            </form>
+          ) : (
+            <button
+              onClick={() => { setShowJoinForm(true); setJoinSuccess(''); }}
+              className="btn-secondary"
+              style={{ marginTop: 8, fontSize: '0.85rem', padding: '6px 14px' }}
+            >
+              + Join a New League
+            </button>
+          )}
+        </div>
       </div>
 
       {/* Annual Championship */}
@@ -253,6 +339,16 @@ const styles = {
     display: 'flex',
     alignItems: 'center',
     fontSize: '0.9rem',
+  },
+  joinForm: {
+    marginTop: 10,
+    display: 'flex',
+    flexDirection: 'column',
+    gap: 6,
+  },
+  joinInput: {
+    fontSize: '0.9rem',
+    padding: '6px 10px',
   },
   activeBadge: {
     marginLeft: 8,
