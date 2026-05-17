@@ -40,6 +40,18 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   const [tournamentName, setTournamentName] = useState('');
   const [isCreating, setIsCreating] = useState(false);
 
+  // Season config (pre-configured tournament list)
+  const [seasonConfig, setSeasonConfig] = useState([]);
+  const [selectedConfigEntry, setSelectedConfigEntry] = useState(null);
+  const [isQuickCreating, setIsQuickCreating] = useState(false);
+
+  useEffect(() => {
+    fetch(`${BACKEND_BASE_URL}/season_config?year=${year}`)
+      .then(r => r.ok ? r.json() : [])
+      .then(data => setSeasonConfig(Array.isArray(data) ? data : []))
+      .catch(() => setSeasonConfig([]));
+  }, [year]);
+
   useEffect(() => {
     if (!activeLeagueId) { setLeagueName(''); return; }
     fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`)
@@ -156,6 +168,37 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
 
   const canCreate = selectedScheduleItem && selectedOddsId && tournamentName.trim() && !isCreating;
 
+  const handleQuickCreate = async () => {
+    if (!selectedConfigEntry) return;
+    setIsQuickCreating(true);
+    try {
+      const response = await fetch(`${BACKEND_BASE_URL}/tournaments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: selectedConfigEntry.name,
+          orgId: '1',
+          tournId: selectedConfigEntry.tournId,
+          year: selectedConfigEntry.year,
+          oddsId: selectedConfigEntry.oddsId,
+          leagueId: activeLeagueId || ''
+        })
+      });
+      if (!response.ok) {
+        const err = await response.json();
+        throw new Error(err.error || 'Failed to create tournament');
+      }
+      const result = await response.json();
+      setSelectedConfigEntry(null);
+      alert(`Tournament "${result.name}" created successfully!`);
+      if (onTournamentCreated) onTournamentCreated();
+    } catch (error) {
+      alert(`Error: ${error.message}`);
+    } finally {
+      setIsQuickCreating(false);
+    }
+  };
+
   return (
     <div className="tournament-creation">
       <h3>Create New Tournament</h3>
@@ -168,6 +211,47 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
       )}
 
       <div className="tournament-form">
+        {/* Quick Create from Season Config */}
+        {seasonConfig.length > 0 && (
+          <div className="form-group" style={{ borderBottom: '1px solid #444', paddingBottom: '1.25rem', marginBottom: '0.5rem' }}>
+            <label htmlFor="season-config-select">Quick Create from Season Schedule</label>
+            <div className="form-row-inline">
+              <select
+                id="season-config-select"
+                className="form-input"
+                value={selectedConfigEntry?.tournId || ''}
+                onChange={e => {
+                  const entry = seasonConfig.find(t => t.tournId === e.target.value) || null;
+                  setSelectedConfigEntry(entry);
+                }}
+              >
+                <option value="">— select a pre-configured tournament —</option>
+                {seasonConfig.map(t => (
+                  <option key={t.tournId} value={t.tournId}>
+                    {t.name}{t.startDate ? ` (${t.startDate.slice(0, 10)})` : ''}
+                  </option>
+                ))}
+              </select>
+              <button
+                onClick={handleQuickCreate}
+                disabled={!selectedConfigEntry || isQuickCreating}
+                className="btn-primary"
+                style={{ whiteSpace: 'nowrap' }}
+              >
+                {isQuickCreating ? 'Creating...' : 'Quick Create'}
+              </button>
+            </div>
+            {selectedConfigEntry && (
+              <small className="form-help">
+                tournId: <strong>{selectedConfigEntry.tournId}</strong> · oddsId: <strong>{selectedConfigEntry.oddsId}</strong>
+              </small>
+            )}
+            <p className="form-help" style={{ marginTop: '0.75rem', borderTop: '1px solid #333', paddingTop: '0.75rem' }}>
+              Or configure manually below:
+            </p>
+          </div>
+        )}
+
         {/* Year + Load */}
         <div className="form-group form-row-inline">
           <div>
