@@ -7,6 +7,7 @@ export default function JoinLeague() {
   const { user, getIdToken, refreshUserData, signOut } = useAuth();
 
   const [inviteCode, setInviteCode] = useState('');
+  const [teamName, setTeamName] = useState(user?.displayName || '');
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState('');
 
@@ -27,7 +28,7 @@ export default function JoinLeague() {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ inviteCode: code }),
+        body: JSON.stringify({ inviteCode: code, teamName: teamName.trim() || user?.displayName || '' }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -55,6 +56,18 @@ export default function JoinLeague() {
           Enter your invite code to join and see the full leaderboard.
         </p>
         <form onSubmit={handleSubmit} style={styles.form}>
+          <label style={styles.label}>Team Name</label>
+          <input
+            type="text"
+            value={teamName}
+            onChange={(e) => setTeamName(e.target.value)}
+            placeholder={user?.displayName || 'Your team name'}
+            maxLength={40}
+            style={styles.input}
+            autoComplete="off"
+            disabled={submitting}
+          />
+          <label style={styles.label}>Invite Code</label>
           <input
             type="text"
             value={inviteCode}
@@ -124,6 +137,12 @@ const styles = {
     display: 'flex',
     flexDirection: 'column',
     gap: '0.75rem',
+  },
+  label: {
+    textAlign: 'left',
+    fontSize: '0.8rem',
+    color: '#aaa',
+    marginBottom: '-0.25rem',
   },
   input: {
     padding: '0.75rem 1rem',
