@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 
-const AnnualChampionship = ({ selectedYear }) => {
+const AnnualChampionship = ({ selectedYear, leagueId }) => {
   const [annualData, setAnnualData] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -13,7 +13,10 @@ const AnnualChampionship = ({ selectedYear }) => {
       setError(null);
       try {
         console.log(`🏆 Annual Championship: Fetching data for year ${selectedYear}...`);
-        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}`);
+        const url = new URL(`${BACKEND_BASE_URL}/annual_championship`);
+        url.searchParams.set('year', selectedYear);
+        if (leagueId) url.searchParams.set('leagueId', leagueId);
+        const response = await fetch(url.toString());
         
         if (!response.ok) {
           throw new Error(`Failed to fetch annual championship data: ${response.status}`);
@@ -32,7 +35,7 @@ const AnnualChampionship = ({ selectedYear }) => {
     };
 
     fetchAnnualChampionship();
-  }, [selectedYear]);
+  }, [selectedYear, leagueId]);
 
   const formatScore = (score) => {
     if (score === null || score === undefined) return '-';

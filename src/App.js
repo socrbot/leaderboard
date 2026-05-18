@@ -9,7 +9,7 @@ import TournamentScores from './components/TournamentScores';
 import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
 import { useAuth } from './contexts/AuthContext';
-import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from './apiConfig';
 
 function App() {
   // Memoized helper function to format scores for display
@@ -74,11 +74,20 @@ function App() {
   const isAdmin = userData?.role === 'admin';
   // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
   const [activeLeagueId, setActiveLeagueId] = useState(null);
+  const [activeLeagueName, setActiveLeagueName] = useState(null);
   useEffect(() => {
     if (activeLeagueId === null && userData?.leagueIds?.[0]) {
       setActiveLeagueId(userData.leagueIds[0]);
     }
   }, [userData, activeLeagueId]);
+  // Fetch league name whenever activeLeagueId changes
+  useEffect(() => {
+    if (!activeLeagueId) { setActiveLeagueName(null); return; }
+    fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(d => setActiveLeagueName(d?.name || null))
+      .catch(() => setActiveLeagueName(null));
+  }, [activeLeagueId]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -891,6 +900,12 @@ function App() {
         </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
+          {activeLeagueName && user && (
+            <div className="status-league-block">
+              <p className="status-section-title">My League</p>
+              <p className="status-league-name">{activeLeagueName}</p>
+            </div>
+          )}
           <p className="status-section-title">Tournament Details</p>
           <div className="tournament-picker" ref={pickerRef}>
             <button
@@ -978,7 +993,7 @@ function App() {
               setActiveTab={setSetupActiveTab}
             />
           ) : showAnnualChampionship ? (
-            <AnnualChampionship selectedYear={selectedYear} />
+            <AnnualChampionship selectedYear={selectedYear} leagueId={activeLeagueId} />
           ) : showTournamentScores ? (
             <TournamentScores
               tournamentId={selectedTournamentId}
@@ -1178,7 +1193,7 @@ function App() {
               setActiveTab={setSetupActiveTab}
             />
           ) : showAnnualChampionship ? (
-            <AnnualChampionship selectedYear={selectedYear} />
+            <AnnualChampionship selectedYear={selectedYear} leagueId={activeLeagueId} />
           ) : (
             <div style={{ padding: '20px', textAlign: 'center' }}>
               Please create or select a tournament to get started.
