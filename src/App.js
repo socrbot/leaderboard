@@ -691,7 +691,7 @@ function App() {
             </div>
             <div className="brand-text">
               <h1 className="app-title">Alumni Golf Tournament</h1>
-              <p className="app-subtitle">West Virginia</p>
+              <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
             </div>
           </div>
 
@@ -900,12 +900,6 @@ function App() {
         </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
-          {activeLeagueName && user && (
-            <div className="status-league-block">
-              <p className="status-section-title">My League</p>
-              <p className="status-league-name">{activeLeagueName}</p>
-            </div>
-          )}
           <p className="status-section-title">Tournament Details</p>
           <div className="tournament-picker" ref={pickerRef}>
             <button
