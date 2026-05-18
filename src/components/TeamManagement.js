@@ -9,6 +9,10 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
   const [isMobile, setIsMobile] = useState(false);
   const [teams, setTeams] = useState([]);
   const [isClearingManualOdds, setIsClearingManualOdds] = useState(false);
+  const [lockedOdds, setLockedOdds] = useState([]);
+  // Per-team "add golfer" state: { [ownerUid]: searchText }
+  const [addSearch, setAddSearch] = useState({});
+  const [editLoading, setEditLoading] = useState({});
 
   // --- Draft Status State ---
   const [draftStatus, setDraftStatus] = useState({
@@ -43,6 +47,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
       if (!tRes.ok) throw new Error(`HTTP error! status: ${tRes.status}`);
       const tournamentData = await tRes.json();
       const isLocked = !!(tournamentData.DraftLockedOdds && tournamentData.DraftLockedOdds.length > 0);
+      setLockedOdds(tournamentData.DraftLockedOdds || []);
 
       if (!isLocked && leagueId) {
         // Pre-lock: show current league members
@@ -155,7 +160,51 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
     }
   };
 
-  return (
+  // --- Admin: remove a golfer from a team ---
+  const handleAdminRemove = async (ownerUid, playerName) => {
+    if (!window.confirm(`Remove ${playerName} from this team?`)) return;
+    const key = `${ownerUid}-remove-${playerName}`;
+    setEditLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/admin_edit_pick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'remove', ownerUid, playerName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to remove golfer');
+      await loadTeams();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setEditLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
+
+  // --- Admin: add a golfer to a team ---
+  const handleAdminAdd = async (ownerUid) => {
+    const playerName = (addSearch[ownerUid] || '').trim();
+    if (!playerName) return;
+    const key = `${ownerUid}-add`;
+    setEditLoading(prev => ({ ...prev, [key]: true }));
+    try {
+      const token = await getIdToken();
+      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/admin_edit_pick`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ action: 'add', ownerUid, playerName }),
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Failed to add golfer');
+      setAddSearch(prev => ({ ...prev, [ownerUid]: '' }));
+      await loadTeams();
+    } catch (err) {
+      alert(`Error: ${err.message}`);
+    } finally {
+      setEditLoading(prev => ({ ...prev, [key]: false }));
+    }
+  };
     <div className="team-management-container">
       <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
 
@@ -234,29 +283,107 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
         <div className="teams-flex-container">
           {[...teams]
             .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
-            .map((team) => (
-              <div key={team.ownerUid || team.name} className="team-card">
-                <div className="team-card-header">
-                  <h3 style={{ margin: '0', color: 'white' }}>
-                    {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}
-                  </h3>
-                  <span style={{ fontSize: '0.8em', color: '#aaa' }}>
-                    {(team.golferNames || []).length} / 4 picks
-                  </span>
-                </div>
+            .map((team) => {
+              const filledPicks = (team.golferNames || []).filter(Boolean);
+              const canAdd = draftStatus.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
+              const searchText = addSearch[team.ownerUid] || '';
+              const suggestions = searchText.length >= 2
+                ? lockedOdds
+                    .map(p => p.name)
+                    .filter(n => n && n.toLowerCase().includes(searchText.toLowerCase()) && !filledPicks.includes(n))
+                    .slice(0, 8)
+                : [];
+              return (
+                <div key={team.ownerUid || team.name} className="team-card">
+                  <div className="team-card-header">
+                    <h3 style={{ margin: '0', color: 'white' }}>
+                      {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}
+                    </h3>
+                    <span style={{ fontSize: '0.8em', color: '#aaa' }}>
+                      {filledPicks.length} / 4 picks
+                    </span>
+                  </div>
 
-                <ul className="team-golfer-list">
-                  {(team.golferNames || []).length === 0 && (
-                    <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>
-                      No golfers picked yet.
-                    </li>
+                  <ul className="team-golfer-list">
+                    {filledPicks.length === 0 && (
+                      <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>
+                        No golfers picked yet.
+                      </li>
+                    )}
+                    {(team.golferNames || []).filter(Boolean).map((golfer) => (
+                      <li key={golfer} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <span>{golfer}</span>
+                        {draftStatus.IsDraftLocked && (
+                          <button
+                            onClick={() => handleAdminRemove(team.ownerUid, golfer)}
+                            disabled={!!editLoading[`${team.ownerUid}-remove-${golfer}`]}
+                            style={{
+                              background: 'none', border: 'none', color: '#e57373',
+                              cursor: 'pointer', fontSize: '1rem', padding: '0 4px', lineHeight: 1,
+                            }}
+                            title="Remove golfer"
+                          >
+                            ×
+                          </button>
+                        )}
+                      </li>
+                    ))}
+                  </ul>
+
+                  {/* Admin add golfer */}
+                  {canAdd && (
+                    <div style={{ padding: '8px 12px', borderTop: '1px solid #555', position: 'relative' }}>
+                      <div style={{ display: 'flex', gap: '6px' }}>
+                        <input
+                          type="text"
+                          placeholder="Search golfer…"
+                          value={searchText}
+                          onChange={e => setAddSearch(prev => ({ ...prev, [team.ownerUid]: e.target.value }))}
+                          style={{
+                            flex: 1, padding: '5px 8px', borderRadius: '4px',
+                            border: '1px solid #555', background: '#2a2a2a', color: '#fff', fontSize: '0.85rem'
+                          }}
+                        />
+                        <button
+                          onClick={() => handleAdminAdd(team.ownerUid)}
+                          disabled={!searchText.trim() || !!editLoading[`${team.ownerUid}-add`]}
+                          style={{
+                            padding: '5px 12px', borderRadius: '4px', border: 'none',
+                            background: '#2d6a2d', color: '#fff', cursor: 'pointer', fontSize: '0.85rem'
+                          }}
+                        >
+                          {editLoading[`${team.ownerUid}-add`] ? '…' : 'Add'}
+                        </button>
+                      </div>
+                      {suggestions.length > 0 && (
+                        <ul style={{
+                          position: 'absolute', left: '12px', right: '12px', top: '100%',
+                          background: '#333', border: '1px solid #555', borderRadius: '4px',
+                          margin: 0, padding: 0, listStyle: 'none', zIndex: 100, maxHeight: '180px', overflowY: 'auto'
+                        }}>
+                          {suggestions.map(name => (
+                            <li
+                              key={name}
+                              onClick={() => {
+                                setAddSearch(prev => ({ ...prev, [team.ownerUid]: name }));
+                              }}
+                              style={{
+                                padding: '7px 12px', cursor: 'pointer', fontSize: '0.85rem',
+                                color: '#eee', borderBottom: '1px solid #444'
+                              }}
+                              onMouseEnter={e => e.currentTarget.style.background = '#444'}
+                              onMouseLeave={e => e.currentTarget.style.background = ''}
+                            >
+                              {name}
+                            </li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
                   )}
-                  {(team.golferNames || []).map((golfer) => (
-                    <li key={golfer}>{golfer}</li>
-                  ))}
-                </ul>
-              </div>
-            ))}
+                </div>
+              );
+            })}
         </div>
       )}
 
