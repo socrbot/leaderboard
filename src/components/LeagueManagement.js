@@ -280,32 +280,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
               </button>
             </div>
           </div>
-
-          {/* Members */}
-          <div className="league-section">
-            <h3 className="league-section-title">Members</h3>
-            {members.length === 0 ? (
-              <p className="league-hint">No members have joined yet. Share the invite code above.</p>
-            ) : (
-              <ul className="league-member-list">
-                {members.map(m => (
-                  <li key={m.uid} className="league-member-row">
-                    <span className="league-member-name">{m.displayName || m.email || m.uid}</span>
-                    {m.email && m.displayName && (
-                      <span className="league-member-email">{m.email}</span>
-                    )}
-                    <button
-                      className="league-btn-danger-sm"
-                      onClick={() => handleRemoveMember(m.uid, m.email || m.displayName)}
-                      disabled={saving}
-                    >
-                      Remove
-                    </button>
-                  </li>
-                ))}
-              </ul>
-            )}
-          </div>
         </>
       )}
 
