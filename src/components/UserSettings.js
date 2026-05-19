@@ -119,7 +119,7 @@ export default function UserSettings({ activeLeagueId }) {
   return (
     <div className="team-management">
       <h2>My Settings{leagueName ? ` — ${leagueName}` : ''}</h2>
-      <p className="subtitle">Choose which tournaments you're playing in and whether to enter the annual championship.</p>
+      <p className="subtitle">Manage your profile and annual championship preference.</p>
 
       {/* Profile Card */}
       <div style={styles.section}>
