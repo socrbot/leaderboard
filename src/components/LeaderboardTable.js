@@ -1,16 +1,14 @@
 // src/components/LeaderboardTable.js
 import React, { memo, useMemo, useState, useCallback } from 'react';
 
-const LeaderboardRow = memo(({ team, formatScoreForDisplay }) => {
-  const [expanded, setExpanded] = useState(false);
-  const toggle = useCallback(() => setExpanded(prev => !prev), []);
+const LeaderboardRow = memo(({ team, formatScoreForDisplay, expanded, onToggle }) => {
   const hasCut = team.golfers && team.golfers.some(g => g.status && g.status.toUpperCase() === 'CUT');
 
   return (
     <React.Fragment key={`team-${team.team}`}>
       <tr
         className={`team-row team-${team.team.replace(/[^a-zA-Z0-9]/g, '')} team-row-expandable`}
-        onClick={toggle}
+        onClick={onToggle}
         title={expanded ? 'Collapse golfers' : 'Expand golfers'}
       >
         <td>{team.position}</td>
@@ -54,15 +52,33 @@ const LeaderboardTable = memo(({
   handleHeaderClick, 
   renderSortArrow 
 }) => {
+  // Keyed by team name: true = expanded, false/undefined = collapsed
+  const [expandedMap, setExpandedMap] = useState({});
+  const allExpanded = sortedLeaderboardData.length > 0 &&
+    sortedLeaderboardData.every(t => expandedMap[t.team]);
+
+  const toggleAll = useCallback(() => {
+    const next = !allExpanded;
+    const newMap = {};
+    sortedLeaderboardData.forEach(t => { newMap[t.team] = next; });
+    setExpandedMap(newMap);
+  }, [allExpanded, sortedLeaderboardData]);
+
+  const toggleOne = useCallback((teamName) => {
+    setExpandedMap(prev => ({ ...prev, [teamName]: !prev[teamName] }));
+  }, []);
+
   const renderedRows = useMemo(() => 
     sortedLeaderboardData.map((team) => (
       <LeaderboardRow 
         key={`team-${team.team}`}
         team={team} 
-        formatScoreForDisplay={formatScoreForDisplay} 
+        formatScoreForDisplay={formatScoreForDisplay}
+        expanded={!!expandedMap[team.team]}
+        onToggle={() => toggleOne(team.team)}
       />
     )), 
-    [sortedLeaderboardData, formatScoreForDisplay]
+    [sortedLeaderboardData, formatScoreForDisplay, expandedMap, toggleOne]
   );
 
   return (
@@ -70,7 +86,13 @@ const LeaderboardTable = memo(({
       <thead>
         <tr>
           <th>POS</th>
-          <th className="team-golfer-header">TEAM / GOLFER</th>
+          <th
+            className="team-golfer-header sortable-header"
+            onClick={toggleAll}
+            title={allExpanded ? 'Collapse all teams' : 'Expand all teams'}
+          >
+            TEAM / GOLFER <span style={{ fontSize: '0.7em', opacity: 0.6 }}>{allExpanded ? '▾' : '▸'}</span>
+          </th>
           <th onClick={() => handleHeaderClick('total')} className="sortable-header">
             TOTAL{renderSortArrow('total')}
           </th>
