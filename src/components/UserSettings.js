@@ -1,15 +1,13 @@
 // src/components/UserSettings.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
-import { BACKEND_BASE_URL, TOURNAMENTS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from '../apiConfig';
+import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
 
 export default function UserSettings({ activeLeagueId }) {
   const { user, getIdToken } = useAuth();
 
-  const [tournaments, setTournaments] = useState([]);
   const [leagueName, setLeagueName] = useState('');
-  const [enrolled, setEnrolled] = useState([]); // list of tournamentIds
   const [participatesInAnnual, setParticipatesInAnnual] = useState(true);
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -30,22 +28,14 @@ export default function UserSettings({ activeLeagueId }) {
       const token = await getIdToken();
       const authHeaders = { Authorization: `Bearer ${token}` };
 
-      const [settingsRes, tournamentsRes, profileRes] = await Promise.all([
+      const [settingsRes, profileRes] = await Promise.all([
         fetch(`${BACKEND_BASE_URL}/user/settings`, { headers: authHeaders }),
-        activeLeagueId
-          ? fetch(`${TOURNAMENTS_API_ENDPOINT}?leagueId=${activeLeagueId}`)
-          : Promise.resolve(null),
         fetch(`${BACKEND_BASE_URL}/user/profile`, { headers: authHeaders }),
       ]);
 
       if (settingsRes.ok) {
         const s = await settingsRes.json();
-        setEnrolled(s.enrolledTournaments || []);
         setParticipatesInAnnual(s.participatesInAnnual !== false);
-      }
-
-      if (tournamentsRes && tournamentsRes.ok) {
-        setTournaments(await tournamentsRes.json());
       }
 
       if (profileRes && profileRes.ok) {
@@ -64,13 +54,6 @@ export default function UserSettings({ activeLeagueId }) {
   }, [activeLeagueId, getIdToken]);
 
   useEffect(() => { load(); }, [load]);
-
-  const toggleEnrolment = (tid) => {
-    setEnrolled(prev =>
-      prev.includes(tid) ? prev.filter(id => id !== tid) : [...prev, tid]
-    );
-    setSaved(false);
-  };
 
   const handleJoin = async (e) => {
     e.preventDefault();
@@ -114,7 +97,7 @@ export default function UserSettings({ activeLeagueId }) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ enrolledTournaments: enrolled, participatesInAnnual }),
+        body: JSON.stringify({ participatesInAnnual }),
       });
       if (!res.ok) {
         const d = await res.json();
@@ -240,39 +223,6 @@ export default function UserSettings({ activeLeagueId }) {
           />
           Include me in the Annual Championship standings
         </label>
-      </div>
-
-      {/* Tournament Enrolment */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Tournaments</h3>
-        {tournaments.length === 0 ? (
-          <p style={{ color: '#888' }}>No tournaments available in your league yet.</p>
-        ) : (
-          <table className="teams-table">
-            <thead>
-              <tr>
-                <th>Tournament</th>
-                <th>Year</th>
-                <th style={{ textAlign: 'center' }}>I'm playing</th>
-              </tr>
-            </thead>
-            <tbody>
-              {tournaments.map(t => (
-                <tr key={t.id}>
-                  <td>{t.name}</td>
-                  <td>{t.year}</td>
-                  <td style={{ textAlign: 'center' }}>
-                    <input
-                      type="checkbox"
-                      checked={enrolled.includes(t.id)}
-                      onChange={() => toggleEnrolment(t.id)}
-                    />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
       </div>
 
       {error && <p style={{ color: '#c0392b' }}>{error}</p>}
