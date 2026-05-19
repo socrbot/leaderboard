@@ -9,7 +9,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
   const [myLeagues, setMyLeagues] = useState([]);       // list from /api/leagues/mine
   const [selectedId, setSelectedId] = useState(activeLeagueId || null);
   const [league, setLeague] = useState(null);
-  const [members, setMembers] = useState([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
@@ -48,18 +47,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
     }
   }, []);
 
-  const fetchMembers = useCallback(async (leagueId) => {
-    if (!leagueId) return;
-    try {
-      const headers = await authHeaders();
-      const res = await fetch(`${LEAGUES_API_ENDPOINT}/${leagueId}/members`, { headers });
-      if (!res.ok) return;
-      setMembers(await res.json());
-    } catch {
-      // non-fatal
-    }
-  }, [authHeaders]);
-
   // On mount: load admin's leagues, then select the active one (or first available)
   useEffect(() => {
     (async () => {
@@ -69,7 +56,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
       if (initialId) {
         setSelectedId(initialId);
         await fetchLeague(initialId);
-        await fetchMembers(initialId);
       }
       setLoading(false);
     })();
@@ -78,11 +64,9 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
   const handleSelectLeague = async (leagueId) => {
     setSelectedId(leagueId);
     setLeague(null);
-    setMembers([]);
     setError('');
     setEditingName(false);
     await fetchLeague(leagueId);
-    await fetchMembers(leagueId);
     if (onLeagueChange) onLeagueChange(leagueId);
   };
 
@@ -158,26 +142,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
       setCopied(true);
       setTimeout(() => setCopied(false), 2000);
     });
-  };
-
-  const handleRemoveMember = async (uid, label) => {
-    if (!selectedId) return;
-    if (!window.confirm(`Remove ${label} from the league?`)) return;
-    setSaving(true);
-    setError('');
-    try {
-      const headers = await authHeaders();
-      const res = await fetch(`${LEAGUES_API_ENDPOINT}/${selectedId}/members/${uid}`, { method: 'DELETE', headers });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to remove member');
-      setMembers(prev => prev.filter(m => m.uid !== uid));
-      setLeague(prev => ({ ...prev, memberCount: Math.max(0, (prev.memberCount || 1) - 1) }));
-      setMyLeagues(prev => prev.map(l => l.leagueId === selectedId ? { ...l, memberCount: Math.max(0, (l.memberCount || 1) - 1) } : l));
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
   };
 
   if (loading) return <div className="league-loading">Loading leagues…</div>;
