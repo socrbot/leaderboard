@@ -205,6 +205,8 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
       setEditLoading(prev => ({ ...prev, [key]: false }));
     }
   };
+
+  return (
     <div className="team-management-container">
       <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
 
