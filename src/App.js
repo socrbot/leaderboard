@@ -95,12 +95,11 @@ function App() {
   const [showSetup, setShowSetup] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
 
-  // After sign-in: open Setup if admin, otherwise just stay on leaderboard.
+  // After sign-in: clear pending state and stay on current non-setup view.
   useEffect(() => {
     if (pendingSetup && user && userData !== null) {
       setPendingSetup(false);
-      if (isAdmin) setShowSetup(true);
-      // Non-admins: do nothing — button is now hidden so they just see the leaderboard
+      setShowSetup(false);
     }
   }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
@@ -752,22 +751,11 @@ function App() {
               >
                 Sign In
               </button>
-            ) : isAdmin ? (
-              <button
-                className="nav-link"
-                onClick={() => {
-                  setShowAnnualChampionship(false);
-                  setShowTournamentScores(false);
-                  setShowSetup(true);
-                }}
-              >
-                Setup
-              </button>
             ) : null}
           </nav>
 
           {/* User avatar — always visible; opens My Settings */}
-          {user && !isAdmin && (
+          {user && (
             <button
               className={`user-avatar-btn${showUserSettings ? ' active' : ''}`}
               onClick={() => {
@@ -1243,30 +1231,7 @@ function App() {
           >
             Sign In
           </button>
-        ) : isAdmin ? (
-          <button
-            className={`bottom-nav-link ${showSetup ? 'active' : ''}`}
-            onClick={() => {
-              setShowAnnualChampionship(false);
-              setShowTournamentScores(false);
-              setShowSetup(true);
-            }}
-          >
-            Setup
-          </button>
-        ) : (
-          <button
-            className={`bottom-nav-link${showUserSettings ? ' active' : ''}`}
-            onClick={() => {
-              setShowAnnualChampionship(false);
-              setShowTournamentScores(false);
-              setShowSetup(false);
-              setShowUserSettings(s => !s);
-            }}
-          >
-            My Profile
-          </button>
-        )}
+        ) : null}
       </nav>
 
       {/* Second mobile bottom bar — setup tabs, only shown in Setup view */}
