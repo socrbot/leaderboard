@@ -8,6 +8,7 @@ import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
 import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
+import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from './apiConfig';
 
@@ -71,6 +72,7 @@ function App() {
   }, []);
 
   const { user, userData, signOut, signInWithGoogle } = useAuth();
+  const [signingIn, setSigningIn] = useState(false);
   const isAdmin = userData?.role === 'admin';
   // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
   const [activeLeagueId, setActiveLeagueId] = useState(null);
@@ -670,6 +672,20 @@ function App() {
   }, [draftStatus.IsDraftComplete]);
 
   // --- Main Render Logic ---
+
+  // Gate: unauthenticated users see the landing page
+  if (!user) {
+    const handleLandingSignIn = async () => {
+      setSigningIn(true);
+      try {
+        await signInWithGoogle();
+      } finally {
+        setSigningIn(false);
+      }
+    };
+    return <LandingPage onSignIn={handleLandingSignIn} signingIn={signingIn} />;
+  }
+
   if (loadingTournaments) return <div>Loading tournaments...</div>;
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
 
