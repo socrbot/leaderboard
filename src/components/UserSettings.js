@@ -4,7 +4,7 @@ import { useAuth } from '../contexts/AuthContext';
 import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
 
-export default function UserSettings({ activeLeagueId }) {
+export default function UserSettings({ activeLeagueId, onSignOut }) {
   const { user, getIdToken } = useAuth();
 
   const [leagueName, setLeagueName] = useState('');
@@ -237,6 +237,18 @@ export default function UserSettings({ activeLeagueId }) {
         </button>
         {saved && <span style={{ color: '#27ae60', fontSize: '0.9rem' }}>Saved ✓</span>}
       </div>
+
+      {onSignOut && (
+        <div style={{ marginTop: 24, borderTop: '1px solid #333', paddingTop: 16 }}>
+          <button
+            onClick={onSignOut}
+            className="btn-secondary"
+            style={{ fontSize: '0.85rem', padding: '6px 16px', color: '#f87171', borderColor: '#f87171' }}
+          >
+            Sign Out
+          </button>
+        </div>
+      )}
     </div>
   );
 }

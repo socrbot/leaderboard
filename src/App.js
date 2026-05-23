@@ -763,29 +763,31 @@ function App() {
               >
                 Setup
               </button>
-            ) : (
-              <>
-                <button
-                  className={`nav-link${showUserSettings ? ' active' : ''}`}
-                  onClick={() => {
-                    setShowAnnualChampionship(false);
-                    setShowTournamentScores(false);
-                    setShowSetup(false);
-                    setShowUserSettings(s => !s);
-                  }}
-                >
-                  My Settings
-                </button>
-                <button
-                  className="nav-link"
-                  onClick={signOut}
-                  title={`Signed in as ${user.email}`}
-                >
-                  Sign Out
-                </button>
-              </>
-            )}
+            ) : null}
           </nav>
+
+          {/* User avatar — always visible; opens My Settings */}
+          {user && !isAdmin && (
+            <button
+              className={`user-avatar-btn${showUserSettings ? ' active' : ''}`}
+              onClick={() => {
+                setShowAnnualChampionship(false);
+                setShowTournamentScores(false);
+                setShowSetup(false);
+                setShowUserSettings(s => !s);
+              }}
+              title={`Signed in as ${user.email}`}
+              aria-label="My Settings"
+            >
+              {user.photoURL ? (
+                <img src={user.photoURL} alt={user.displayName || 'Profile'} className="user-avatar-img" referrerPolicy="no-referrer" />
+              ) : (
+                <span className="user-avatar-initials">
+                  {(user.displayName || user.email || '?').charAt(0).toUpperCase()}
+                </span>
+              )}
+            </button>
+          )}
         </div>
       </header>
       {/* Status bar: context-aware — Annual, Setup, or Tournament Details */}
@@ -982,7 +984,7 @@ function App() {
 
       <div className="main-content">
         {showUserSettings ? (
-          <UserSettings activeLeagueId={activeLeagueId} />
+          <UserSettings activeLeagueId={activeLeagueId} onSignOut={() => { setShowUserSettings(false); signOut(); }} />
         ) : selectedTournamentId ? (
           showSetup ? (
             <Setup
@@ -1266,10 +1268,15 @@ function App() {
           </button>
         ) : (
           <button
-            className="bottom-nav-link"
-            onClick={signOut}
+            className={`bottom-nav-link${showUserSettings ? ' active' : ''}`}
+            onClick={() => {
+              setShowAnnualChampionship(false);
+              setShowTournamentScores(false);
+              setShowSetup(false);
+              setShowUserSettings(s => !s);
+            }}
           >
-            Sign Out
+            My Profile
           </button>
         )}
       </nav>

@@ -190,6 +190,48 @@ body {
 }
 
 /* =================================================================
+   USER AVATAR CIRCLE (always visible — desktop & mobile)
+   ================================================================= */
+
+.user-avatar-btn {
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  padding: 0;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease;
+  margin-left: 0.5rem;
+}
+
+.user-avatar-btn:hover,
+.user-avatar-btn.active {
+  border-color: rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(74, 222, 128, 0.25);
+}
+
+.user-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
+
+.user-avatar-initials {
+  color: #ffffff;
+  font-size: 0.9rem;
+  font-weight: 600;
+  font-family: inherit;
+  user-select: none;
+}
+
+/* =================================================================
    BOTTOM NAV (mobile only — hidden on desktop)
    ================================================================= */
 
