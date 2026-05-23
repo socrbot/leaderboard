@@ -907,19 +907,7 @@ function App() {
               onClick={() => setSetupActiveTab('my-profile')}
             >
               My Profile
-            </button>
-            <button
-              className="setup-nav-link setup-nav-signout"
-              onClick={() => { setShowSetup(false); signOut(); }}
-            >
-              Sign Out
-            </button>
-          </div>
-        </>
-      ) : selectedTournamentId ? (
-        <div className="status-bar">
-          <p className="status-section-title">Tournament Details</p>
-          <div className="tournament-picker" ref={pickerRef}>
+              ) : null}
             <button
               className="picker-trigger"
               onClick={() => setShowTournamentPicker(p => !p)}
