@@ -391,6 +391,7 @@ function App() {
     setShowSetup(false);
     setShowAnnualChampionship(false);
     setShowTournamentScores(false);
+    setShowUserSettings(false);
     setLeaderboardRefreshKey(prev => prev + 1);
   };
 
@@ -729,6 +730,7 @@ function App() {
                 setShowAnnualChampionship(false);
                 setShowAnnualYearPicker(false);
                 setShowTournamentScores(true);
+                setShowUserSettings(false);
               }}
               disabled={!selectedTournamentId}
             >
@@ -740,6 +742,7 @@ function App() {
                 setShowSetup(false);
                 setShowAnnualChampionship(true);
                 setShowTournamentScores(false);
+                setShowUserSettings(false);
               }}
             >
               Annual
@@ -1209,6 +1212,7 @@ function App() {
             setShowAnnualChampionship(false);
             setShowAnnualYearPicker(false);
             setShowTournamentScores(true);
+            setShowUserSettings(false);
           }}
           disabled={!selectedTournamentId}
         >
@@ -1220,6 +1224,7 @@ function App() {
             setShowSetup(false);
             setShowAnnualChampionship(true);
             setShowTournamentScores(false);
+            setShowUserSettings(false);
           }}
         >
           Annual
