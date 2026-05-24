@@ -191,7 +191,7 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
   return (
     <div className="league-v2-shell">
       <div className="league-v2-header">
-        <h2 className="league-v2-title">Current Leagues</h2>
+        <h2 className="league-v2-title">League Management</h2>
       </div>
 
       <section className="league-v2-grid">
@@ -204,38 +204,25 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
             <article key={league.leagueId} className={`league-v2-card${isActive ? ' active' : ''}`}>
               <button className="league-v2-summary" onClick={() => toggleExpanded(league.leagueId)}>
                 <div className="league-v2-summary-left">
-                  <span className="material-symbols-outlined league-v2-icon" aria-hidden="true">
-                    {isActive ? 'golf_course' : 'emoji_events'}
-                  </span>
                   <div>
                     <h3 className="league-v2-card-title">{league.name}</h3>
                     <p className="league-v2-card-subtitle">{league.memberCount ?? 0} Members • {isActive ? 'Active' : 'Open'}</p>
                     <p className="league-v2-invite-row">
                       <span>{league.inviteCode || 'NO-CODE'}</span>
-                      <span
-                        className="material-symbols-outlined league-v2-copy"
-                        role="button"
-                        tabIndex={0}
+                      <button
+                        type="button"
+                        className="league-v2-copy-btn"
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCopyCode(league.leagueId, league.inviteCode);
                         }}
-                        onKeyDown={(e) => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            handleCopyCode(league.leagueId, league.inviteCode);
-                          }
-                        }}
                       >
-                        {copiedLeagueId === league.leagueId ? 'check' : 'content_copy'}
-                      </span>
+                        {copiedLeagueId === league.leagueId ? 'Copied' : 'Copy'}
+                      </button>
                     </p>
                   </div>
                 </div>
-                <span className={`material-symbols-outlined league-v2-chevron${isExpanded ? ' expanded' : ''}`} aria-hidden="true">
-                  expand_more
-                </span>
+                <span className={`league-v2-chevron${isExpanded ? ' expanded' : ''}`} aria-hidden="true">▾</span>
               </button>
 
               {isExpanded && (
@@ -259,14 +246,13 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
 
                           <div className="league-v2-member-actions">
                             <button
-                              className="league-v2-icon-btn"
+                              className="league-v2-icon-btn league-v2-remove-btn"
                               onClick={() => handleRemoveMember(league.leagueId, member.uid, member.displayName)}
                               disabled={saving}
                               aria-label="Remove user"
                             >
-                              <span className="material-symbols-outlined">person_remove</span>
+                              x
                             </button>
-                            <span className="material-symbols-outlined league-v2-muted" aria-hidden="true">mail</span>
                           </div>
                         </li>
                       ))}

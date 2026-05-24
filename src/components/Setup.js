@@ -1,10 +1,7 @@
 // src/components/Setup.js
 import React from 'react';
-import TournamentCreation from './TournamentCreation';
-import GlobalTeamsManagement from './GlobalTeamsManagement';
-import LeagueMembersTeams from './LeagueMembersTeams';
-import TeamManagement from './TeamManagement';
 import LeagueManagement from './LeagueManagement';
+import TournamentManagement from './TournamentManagement';
 import UserSettings from './UserSettings';
 import '../App.css';
 
@@ -26,18 +23,15 @@ const Setup = ({
   setActiveTab
 }) => {
   // fallback if activeTab not provided
-  const tab = activeTab || 'global-teams';
+  const tab = activeTab || 'league-management';
 
   const tabs = {
-    'league': <LeagueManagement activeLeagueId={activeLeagueId} onLeagueChange={onLeagueChange} />,
-    'global-teams': activeLeagueId
-      ? <LeagueMembersTeams activeLeagueId={activeLeagueId} />
-      : <GlobalTeamsManagement selectedYear={selectedYear} />,
-    'tournament-creation': <TournamentCreation onTournamentCreated={onTournamentCreated} activeLeagueId={activeLeagueId} />,
-    'draft-management': (
-      <TeamManagement
+    'league-management': <LeagueManagement activeLeagueId={activeLeagueId} onLeagueChange={onLeagueChange} />,
+    'tournament-management': (
+      <TournamentManagement
         tournamentId={tournamentId}
-        leagueId={activeLeagueId}
+        selectedYear={selectedYear}
+        activeLeagueId={activeLeagueId}
         onTournamentCreated={onTournamentCreated}
         onTeamsSaved={onTeamsSaved}
         tournamentOddsId={tournamentOddsId}
@@ -53,7 +47,7 @@ const Setup = ({
   return (
     <div className="setup-container">
       <div className="setup-content">
-        {tabs[tab] || tabs['global-teams']}
+        {tabs[tab] || tabs['league-management']}
       </div>
     </div>
   );

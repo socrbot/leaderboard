@@ -104,7 +104,7 @@ function App() {
   }, [isAdmin, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
-  const [setupActiveTab, setSetupActiveTab] = useState('league');
+  const [setupActiveTab, setSetupActiveTab] = useState('league-management');
   const [selectedYear, setSelectedYear] = useState(new Date().getFullYear().toString());
   const [availableYears, setAvailableYears] = useState([]);
   const [showAnnualYearPicker, setShowAnnualYearPicker] = useState(false);
@@ -960,32 +960,16 @@ function App() {
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
           <div className="setup-nav-bar">
             <button
-              className={`setup-nav-link ${setupActiveTab === 'league' ? 'active' : ''}`}
-              onClick={() => setSetupActiveTab('league')}
+              className={`setup-nav-link ${setupActiveTab === 'league-management' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('league-management')}
             >
-              League
+              League Management
             </button>
             <button
-              className={`setup-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
-              onClick={() => setSetupActiveTab('global-teams')}
+              className={`setup-nav-link ${setupActiveTab === 'tournament-management' ? 'active' : ''}`}
+              onClick={() => setSetupActiveTab('tournament-management')}
             >
-              Manage Teams
-            </button>
-            <button
-              className={`setup-nav-link ${setupActiveTab === 'tournament-creation' ? 'active' : ''}`}
-              onClick={() => setSetupActiveTab('tournament-creation')}
-            >
-              Create Tournament
-            </button>
-            <button
-              className={`setup-nav-link ${setupActiveTab === 'draft-management' ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
-              onClick={() => {
-                if (!selectedTournamentId) return;
-                setSetupActiveTab('draft-management');
-              }}
-              disabled={!selectedTournamentId}
-            >
-              Draft Management
+              Tournament Management
             </button>
             <button
               className={`setup-nav-link ${setupActiveTab === 'my-profile' ? 'active' : ''}`}
@@ -1322,7 +1306,7 @@ function App() {
               Please create or select a tournament to get started.
               <br /><br />
               <p style={{ color: '#ccc', fontSize: '0.9rem' }}>
-                You can manage Global Teams in Setup or view the Annual Championship anytime using the buttons above.
+                You can manage your leagues in Setup or view the Annual Championship anytime using the buttons above.
               </p>
             </div>
           )
@@ -1375,32 +1359,16 @@ function App() {
       {showSetup && (
         <nav className="bottom-nav setup-bottom-nav">
           <button
-            className={`bottom-nav-link ${setupActiveTab === 'league' ? 'active' : ''}`}
-            onClick={() => setSetupActiveTab('league')}
+            className={`bottom-nav-link ${setupActiveTab === 'league-management' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('league-management')}
           >
-            League
+            League Management
           </button>
           <button
-            className={`bottom-nav-link ${setupActiveTab === 'global-teams' ? 'active' : ''}`}
-            onClick={() => setSetupActiveTab('global-teams')}
+            className={`bottom-nav-link ${setupActiveTab === 'tournament-management' ? 'active' : ''}`}
+            onClick={() => setSetupActiveTab('tournament-management')}
           >
-            Teams
-          </button>
-          <button
-            className={`bottom-nav-link ${setupActiveTab === 'tournament-creation' ? 'active' : ''}`}
-            onClick={() => setSetupActiveTab('tournament-creation')}
-          >
-            Create
-          </button>
-          <button
-            className={`bottom-nav-link ${setupActiveTab === 'draft-management' ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
-            onClick={() => {
-              if (!selectedTournamentId) return;
-              setSetupActiveTab('draft-management');
-            }}
-            disabled={!selectedTournamentId}
-          >
-            Draft
+            Tournament Management
           </button>
           <button
             className={`bottom-nav-link ${setupActiveTab === 'my-profile' ? 'active' : ''}`}

@@ -74,7 +74,6 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
       <section className="league-v2-card league-v2-members-card">
         <div className="league-v2-summary league-v2-members-summary">
           <div className="league-v2-summary-left">
-            <span className="material-symbols-outlined league-v2-icon" aria-hidden="true">golf_course</span>
             <div>
               <h3 className="league-v2-card-title">{leagueName || 'League'}</h3>
               <p className="league-v2-card-subtitle">{members.length} Members • {inviteCode || 'No Code'}</p>
@@ -107,9 +106,8 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
                       className="league-v2-icon-btn"
                       aria-label="Remove user"
                     >
-                      <span className="material-symbols-outlined">{removing === m.uid ? 'hourglass_top' : 'person_remove'}</span>
+                      {removing === m.uid ? 'Removing...' : 'x'}
                     </button>
-                    <span className="material-symbols-outlined league-v2-muted" aria-hidden="true">mail</span>
                   </div>
                 </li>
               ))}
