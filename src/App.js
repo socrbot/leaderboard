@@ -898,7 +898,19 @@ function App() {
               onClick={() => setSetupActiveTab('my-profile')}
             >
               My Profile
-              ) : null}
+            </button>
+            <button
+              className="setup-nav-link setup-nav-signout"
+              onClick={() => { setShowSetup(false); signOut(); }}
+            >
+              Sign Out
+            </button>
+          </div>
+        </>
+      ) : selectedTournamentId ? (
+        <div className="status-bar">
+          <p className="status-section-title">Tournament Details</p>
+          <div className="tournament-picker" ref={pickerRef}>
             <button
               className="picker-trigger"
               onClick={() => setShowTournamentPicker(p => !p)}
@@ -909,28 +921,28 @@ function App() {
               </span>
               <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
             </button>
-              {showTournamentPicker && (
-                <div className="picker-dropdown">
-                  {tournamentsByYear.map(([year, ts]) => (
-                    <div key={year} className="picker-year-group">
-                      <p className="picker-year-label">{year}</p>
-                      {ts.map(t => (
-                        <button
-                          key={t.id}
-                          className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
-                          onClick={() => {
-                            setSelectedTournamentId(t.id);
-                            setLeaderboardRefreshKey(prev => prev + 1);
-                            setShowTournamentPicker(false);
-                          }}
-                        >
-                          {t.name}
-                        </button>
-                      ))}
-                    </div>
-                  ))}
-                </div>
-              )}
+            {showTournamentPicker && (
+              <div className="picker-dropdown">
+                {tournamentsByYear.map(([year, ts]) => (
+                  <div key={year} className="picker-year-group">
+                    <p className="picker-year-label">{year}</p>
+                    {ts.map(t => (
+                      <button
+                        key={t.id}
+                        className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
+                        onClick={() => {
+                          setSelectedTournamentId(t.id);
+                          setLeaderboardRefreshKey(prev => prev + 1);
+                          setShowTournamentPicker(false);
+                        }}
+                      >
+                        {t.name}
+                      </button>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
           {tournamentInfo?.StartDate && (
             <p className="status-line">
