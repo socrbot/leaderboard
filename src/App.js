@@ -333,6 +333,13 @@ function App() {
     fetchTournaments();
   }, [refreshTrigger, selectedYear, activeLeagueId, preloadTournamentData]);
 
+  useEffect(() => {
+    setSelectedTournamentId('');
+    setTeams([]);
+    setDraftPicks([]);
+    setShowTournamentPicker(false);
+  }, [activeLeagueId]);
+
   
 
   // Load teams for the selected tournament

@@ -42,7 +42,7 @@ const Setup = ({
         onManualOddsUpdated={onManualOddsUpdated}
       />
     ),
-    'my-profile': <UserSettings activeLeagueId={activeLeagueId} />,
+    'my-profile': <UserSettings activeLeagueId={activeLeagueId} onSignOut={onSignOut} />,
   };
 
   return (

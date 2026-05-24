@@ -1,5 +1,5 @@
 // src/components/TeamManagement.js
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 import { useAuth } from '../contexts/AuthContext';
 import '../App.css'; // Importing the CSS file
@@ -15,6 +15,14 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
   const [editLoading, setEditLoading] = useState({});
   const [showDraftOdds, setShowDraftOdds] = useState(true);
   const [showDraftBoard, setShowDraftBoard] = useState(true);
+  const [tournamentContext, setTournamentContext] = useState({
+    name: '',
+    venue: '',
+    startDate: '',
+    endDate: '',
+    leagueId: '',
+  });
+  const [isLeagueMismatch, setIsLeagueMismatch] = useState(false);
 
   // --- Draft Status State ---
   const [draftStatus, setDraftStatus] = useState({
@@ -23,6 +31,21 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
     IsDraftComplete: false
   });
   const [isDraftActionLoading, setIsDraftActionLoading] = useState(false);
+
+  const formatDate = useCallback((value) => {
+    if (!value) return '';
+    const date = new Date(value);
+    if (Number.isNaN(date.getTime())) return '';
+    return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }, []);
+
+  const tournamentDateRange = useMemo(() => {
+    const start = formatDate(tournamentContext.startDate);
+    const end = formatDate(tournamentContext.endDate);
+    if (!start && !end) return '';
+    if (start && end) return `${start}-${end}`;
+    return start || end;
+  }, [formatDate, tournamentContext.endDate, tournamentContext.startDate]);
 
   // Check for mobile on mount and resize
   useEffect(() => {
@@ -41,6 +64,9 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
   const loadTeams = useCallback(async () => {
     if (!tournamentId) {
       setTeams([]);
+      setLockedOdds([]);
+      setTournamentContext({ name: '', venue: '', startDate: '', endDate: '', leagueId: '' });
+      setIsLeagueMismatch(false);
       return;
     }
     try {
@@ -48,6 +74,23 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
       const tRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
       if (!tRes.ok) throw new Error(`HTTP error! status: ${tRes.status}`);
       const tournamentData = await tRes.json();
+      const resolvedTournamentLeagueId = tournamentData.leagueId || tournamentData.leagueID || tournamentData.LeagueId || tournamentData.league_id || '';
+      setTournamentContext({
+        name: tournamentData.name || tournamentData.Name || 'Tournament',
+        venue: tournamentData.venue || tournamentData.Venue || tournamentData.Courses?.[0]?.Name || '',
+        startDate: tournamentData.startDate || tournamentData.StartDate || '',
+        endDate: tournamentData.endDate || tournamentData.EndDate || '',
+        leagueId: resolvedTournamentLeagueId,
+      });
+
+      if (leagueId && resolvedTournamentLeagueId && String(resolvedTournamentLeagueId) !== String(leagueId)) {
+        setTeams([]);
+        setLockedOdds([]);
+        setIsLeagueMismatch(true);
+        return;
+      }
+
+      setIsLeagueMismatch(false);
       const isLocked = !!(tournamentData.DraftLockedOdds && tournamentData.DraftLockedOdds.length > 0);
       setLockedOdds(tournamentData.DraftLockedOdds || []);
 
@@ -73,6 +116,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
     } catch (error) {
       console.error('Error loading teams:', error);
       setTeams([]);
+      setIsLeagueMismatch(false);
     }
   }, [tournamentId, leagueId, getIdToken]);
 
@@ -102,7 +146,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
 
   // --- Unified Draft Action Handler ---
   const handleDraftAction = async () => {
-    if (!tournamentId) return;
+    if (!tournamentId || isLeagueMismatch) return;
     setIsDraftActionLoading(true);
     let endpoint = '';
     let confirmMsg = '';
@@ -145,7 +189,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
 
   // --- Clear Manual Odds Handler ---
   const handleClearManualOdds = async () => {
-    if (!tournamentId) return;
+    if (!tournamentId || isLeagueMismatch) return;
     setIsClearingManualOdds(true);
     try {
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/clear_manual_odds`, {
@@ -214,23 +258,44 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
         <h1 className="team-management-title" style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
       )}
 
+      {tournamentId && (
+        <div className="tournament-management-card" style={{ marginBottom: '12px' }}>
+          <div className="tournament-card-body" style={{ gap: '6px' }}>
+            <p className="tournament-card-kicker">Selected Tournament</p>
+            <h2 className="tournament-card-title" style={{ margin: 0 }}>
+              {tournamentContext.name || 'Tournament'}
+            </h2>
+            <p className="tournament-card-meta" style={{ margin: 0 }}>
+              {[tournamentContext.venue, tournamentDateRange].filter(Boolean).join(' • ') || 'Tournament details unavailable'}
+            </p>
+          </div>
+        </div>
+      )}
+
+      {isLeagueMismatch && (
+        <p className="form-error" style={{ marginBottom: '12px' }}>
+          This tournament is outside the active league context. Switch leagues or select a tournament from the current league.
+        </p>
+      )}
+
       <div className={`tournament-card draft-odds-card ${showDraftOdds ? 'expanded' : ''}`}>
         <button className="tournament-card-summary" onClick={() => setShowDraftOdds(prev => !prev)} type="button">
           <div className="tournament-card-summary-left">
             <div>
               <p className="tournament-card-kicker">Draft Odds</p>
               <h2 className="tournament-card-title">Draft Odds</h2>
-              <p className="tournament-card-meta">Lock odds, start the draft, or clear manual odds.</p>
+              <p className="tournament-card-meta">{tournamentContext.name ? `Actions for ${tournamentContext.name}` : 'Lock odds, start the draft, or clear manual odds.'}</p>
             </div>
           </div>
           <div className="tournament-card-status-group">
             <span className="tournament-card-status">{hasManualDraftOdds ? 'Manual active' : 'Live feed'}</span>
-            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">Γû╛</span>
+            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">▾</span>
           </div>
         </button>
-        <div className="expand-content">
-          <div className="overflow-hidden bg-surface-container-low">
-            <div className="tournament-card-body space-y-xl">
+        {showDraftOdds && (
+          <div className="expand-content">
+            <div className="overflow-hidden bg-surface-container-low">
+              <div className="tournament-card-body space-y-xl">
               <div className="draft-status-copy">
                 {hasManualDraftOdds ? (
                   <p className="draft-status-line draft-status-manual">
@@ -265,7 +330,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
               {!draftStatus.IsDraftComplete && (
                 <button
                   onClick={handleDraftAction}
-                  disabled={isDraftActionLoading || !tournamentId}
+                  disabled={isDraftActionLoading || !tournamentId || isLeagueMismatch}
                   className="draft-action-btn"
                 >
                   {isDraftActionLoading
@@ -282,9 +347,10 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
                   Draft is complete!
                 </p>
               )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
       <div className={`tournament-card draft-board-card ${showDraftBoard ? 'expanded' : ''}`}>
@@ -293,17 +359,18 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
             <div>
               <p className="tournament-card-kicker">Draft Board</p>
               <h2 className="tournament-card-title">Draft Board</h2>
-              <p className="tournament-card-meta">Expand teams to manage golfers and draft order.</p>
+              <p className="tournament-card-meta">{tournamentContext.name ? `Manage teams for ${tournamentContext.name}` : 'Expand teams to manage golfers and draft order.'}</p>
             </div>
           </div>
           <div className="tournament-card-status-group">
             <span className="tournament-card-status">{teams.length} teams</span>
-            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">Γû╛</span>
+            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">▾</span>
           </div>
         </button>
-        <div className="expand-content">
-          <div className="overflow-hidden bg-surface-container-low">
-            <div className="tournament-card-body">
+        {showDraftBoard && (
+          <div className="expand-content">
+            <div className="overflow-hidden bg-surface-container-low">
+              <div className="tournament-card-body">
               <h2 className="team-management-section-title" style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
               {teams.length === 0 ? (
                 <p style={{
@@ -449,9 +516,10 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
                     })}
                 </div>
               )}
+              </div>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
     </div>
