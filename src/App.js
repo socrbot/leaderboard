@@ -10,7 +10,7 @@ import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
-import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, PLAYER_HEADSHOTS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, PLAYER_HEADSHOTS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 
 function App() {
   // Memoized helper function to format scores for display
@@ -94,17 +94,52 @@ function App() {
       }
       try {
         const token = await getIdToken();
-        const res = await fetch(`${LEAGUES_API_ENDPOINT}/mine`, {
-          headers: { Authorization: `Bearer ${token}` },
+        const headers = { Authorization: `Bearer ${token}` };
+
+        const profileRes = await fetch(`${BACKEND_BASE_URL}/user/profile`, {
+          headers,
         });
-        if (!res.ok) {
-          setManagedLeagues([]);
-          return;
+
+        let profileLeagues = [];
+        if (profileRes.ok) {
+          const profileData = await profileRes.json();
+          profileLeagues = Array.isArray(profileData?.leagues)
+            ? profileData.leagues.map((league) => ({
+                leagueId: league.leagueId,
+                name: league.name || 'Unnamed League',
+              }))
+            : [];
         }
-        const leagues = await res.json();
-        const normalized = Array.isArray(leagues) ? leagues : [];
+
+        const mineRes = await fetch(`${LEAGUES_API_ENDPOINT}/mine`, {
+          headers,
+        });
+
+        let adminLeagues = [];
+        if (mineRes.ok) {
+          const leagues = await mineRes.json();
+          adminLeagues = Array.isArray(leagues)
+            ? leagues.map((league) => ({
+                leagueId: league.leagueId,
+                name: league.name || 'Unnamed League',
+              }))
+            : [];
+        }
+
+        const mergedMap = new Map();
+        [...profileLeagues, ...adminLeagues].forEach((league) => {
+          if (league?.leagueId) {
+            mergedMap.set(league.leagueId, league);
+          }
+        });
+
+        const normalized = Array.from(mergedMap.values());
         setManagedLeagues(normalized);
+
         if (!activeLeagueId && normalized.length > 0) {
+          setActiveLeagueId(normalized[0].leagueId);
+        }
+        if (activeLeagueId && normalized.length > 0 && !normalized.some((league) => league.leagueId === activeLeagueId)) {
           setActiveLeagueId(normalized[0].leagueId);
         }
       } catch {
@@ -908,20 +943,24 @@ function App() {
                   </button>
                   {showHeaderLeagueMenu && (
                     <div className="app-league-menu">
-                      {managedLeagues.map((league) => (
-                        <button
-                          key={league.leagueId}
-                          type="button"
-                          className={`app-league-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
-                          onClick={() => {
-                            setActiveLeagueId(league.leagueId);
-                            setActiveLeagueName(league.name || null);
-                            setShowHeaderLeagueMenu(false);
-                          }}
-                        >
-                          {league.name}
-                        </button>
-                      ))}
+                      {managedLeagues.length > 0 ? (
+                        managedLeagues.map((league) => (
+                          <button
+                            key={league.leagueId}
+                            type="button"
+                            className={`app-league-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
+                            onClick={() => {
+                              setActiveLeagueId(league.leagueId);
+                              setActiveLeagueName(league.name || null);
+                              setShowHeaderLeagueMenu(false);
+                            }}
+                          >
+                            {league.name}
+                          </button>
+                        ))
+                      ) : (
+                        <div className="app-league-empty">No leagues available</div>
+                      )}
                     </div>
                   )}
                 </div>
