@@ -175,11 +175,6 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
   return (
     <div className="user-settings-shell">
       <div className="user-settings-stack">
-        <header className="user-settings-header-block">
-          <h2 className="user-settings-title">My Profile{leagueName ? ` - ${leagueName}` : ''}</h2>
-          <p className="user-settings-subtitle">Manage your profile, leagues, and season preferences.</p>
-        </header>
-
         <section className="user-settings-panel user-settings-profile-panel">
           <div className="user-settings-glow" aria-hidden="true" />
           <div className="user-settings-profile-row">
