@@ -136,6 +136,17 @@ function App() {
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
   const [draftBoardError, setDraftBoardError] = useState(null);
 
+  const normalizePlayerName = useCallback((name) => {
+    return (name || '')
+      .toString()
+      .normalize('NFD')
+      .replace(/[\u0300-\u036f]/g, '')
+      .replace(/[^a-zA-Z0-9 ]/g, '')
+      .replace(/\s+/g, ' ')
+      .trim()
+      .toLowerCase();
+  }, []);
+
   // State for teams and draft picks
   const [teams, setTeams] = useState([]);
   const [draftPicks, setDraftPicks] = useState([]);
@@ -440,7 +451,7 @@ function App() {
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
     const fetchPlayerOddsForDraftBoard = async () => {
-      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds) || isTournamentInProgress) {
+      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds)) {
         setDraftBoardLoading(false);
         setDraftBoardPlayers([]);
         setDraftBoardError(null);
@@ -467,7 +478,25 @@ function App() {
     };
 
     fetchPlayerOddsForDraftBoard();
-  }, [selectedTournamentId, tournamentOddsId, isTournamentInProgress, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
+  }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
+
+  const playerHeadshotMap = useMemo(() => {
+    const map = {};
+    for (const player of draftBoardPlayers || []) {
+      const playerName = player.name || player.Name;
+      const photoUrl = player.photoUrl || player.PhotoUrl || player.playerImageUrl || player.PlayerImageUrl;
+      const key = normalizePlayerName(playerName);
+      if (key && photoUrl) {
+        map[key] = photoUrl;
+      }
+    }
+    return map;
+  }, [draftBoardPlayers, normalizePlayerName]);
+
+  const getGolferHeadshot = useCallback((name) => {
+    const key = normalizePlayerName(name);
+    return key ? playerHeadshotMap[key] || null : null;
+  }, [playerHeadshotMap, normalizePlayerName]);
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
@@ -1072,7 +1101,24 @@ function App() {
                                   className="golfer-row"
                                   style={{ opacity: golfer.isDrafted ? 1 : 0.4 }}
                                 >
-                                  <td className="golfer-name-cell">{golfer.name}</td>
+                                  <td className="golfer-name-cell">
+                                    <span className="golfer-name-with-photo">
+                                      {getGolferHeadshot(golfer.name) ? (
+                                        <img
+                                          src={getGolferHeadshot(golfer.name)}
+                                          alt={golfer.name}
+                                          className="golfer-headshot"
+                                          loading="lazy"
+                                          referrerPolicy="no-referrer"
+                                        />
+                                      ) : (
+                                        <span className="golfer-headshot-fallback" aria-hidden="true">
+                                          {(golfer.name || '?').charAt(0).toUpperCase()}
+                                        </span>
+                                      )}
+                                      <span className="golfer-name-text">{golfer.name}</span>
+                                    </span>
+                                  </td>
                                   <td></td>
                                   <td>-</td>
                                   <td>-</td>
@@ -1145,7 +1191,22 @@ function App() {
                             return (
                               <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>
                                 <td className="golfer-name-cell">
-                                  <span className="golfer-name-text">{golfer.name}</span>
+                                  <span className="golfer-name-with-photo">
+                                    {getGolferHeadshot(golfer.name) ? (
+                                      <img
+                                        src={getGolferHeadshot(golfer.name)}
+                                        alt={golfer.name}
+                                        className="golfer-headshot"
+                                        loading="lazy"
+                                        referrerPolicy="no-referrer"
+                                      />
+                                    ) : (
+                                      <span className="golfer-headshot-fallback" aria-hidden="true">
+                                        {(golfer.name || '?').charAt(0).toUpperCase()}
+                                      </span>
+                                    )}
+                                    <span className="golfer-name-text">{golfer.name}</span>
+                                  </span>
                                   {isCut
                                     ? <span className="golfer-cut-label">CUT</span>
                                     : golfer.thru && golfer.thru !== 'F' && golfer.thru !== ''

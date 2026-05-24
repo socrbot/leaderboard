@@ -641,8 +641,40 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 }
 
 /* ── Golfer name + status inline ── */
+.golfer-name-with-photo {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.golfer-headshot {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  object-fit: cover;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  flex-shrink: 0;
+}
+
+.golfer-headshot-fallback {
+  width: 22px;
+  height: 22px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.12);
+  color: rgba(255, 255, 255, 0.85);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
 .golfer-name-text {
   font-weight: 600;
+  min-width: 0;
 }
 
 .golfer-cut-label {
@@ -798,6 +830,14 @@ select:focus {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .golfer-name-with-photo {
+    display: grid;
+    grid-template-columns: 22px minmax(0, 1fr);
+    column-gap: 8px;
+    align-items: center;
+    width: 100%;
   }
 
   .golfer-name-cell .golfer-status-label,
