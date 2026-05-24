@@ -8,7 +8,6 @@ import './UserSettings.css';
 export default function UserSettings({ activeLeagueId, onSignOut }) {
   const { user, getIdToken } = useAuth();
 
-  const [leagueName, setLeagueName] = useState('');
   const [leagueAnnualSettings, setLeagueAnnualSettings] = useState({});
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -72,16 +71,9 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
         setTeamNameInput(incomingTeamName);
       }
 
-      if (activeLeagueId) {
-        const lr = await fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`);
-        if (lr.ok) {
-          const d = await lr.json();
-          setLeagueName(d.name || '');
-        }
-      }
     } catch {}
     setLoading(false);
-  }, [activeLeagueId, getIdToken]);
+  }, [getIdToken]);
 
   useEffect(() => { load(); }, [load]);
 
