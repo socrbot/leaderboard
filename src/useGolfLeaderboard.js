@@ -57,8 +57,20 @@ export const useGolfLeaderboard = (
                     year: tournamentData.year || '2025',
                     par: tournamentData.par || 71
                 });
-                setIsTournamentInProgress(tournamentData.IsInProgress || false);
-                setIsTournamentOver(tournamentData.IsOver || false);
+                const isInProgress = Boolean(
+                    tournamentData.IsInProgress ||
+                    tournamentData.isInProgress ||
+                    tournamentData.isActive
+                );
+                const isOver = Boolean(
+                    tournamentData.IsOver ||
+                    tournamentData.isOver ||
+                    tournamentData.isComplete ||
+                    tournamentData.isOfficiallyComplete
+                );
+
+                setIsTournamentInProgress(isInProgress);
+                setIsTournamentOver(isOver);
                 setTournamentOddsId(tournamentData.oddsId || '');
                 setIsDraftStarted(tournamentData.IsDraftStarted || false);
                 setHasManualDraftOdds(tournamentData.hasManualDraftOdds || false);
@@ -125,8 +137,30 @@ export const useGolfLeaderboard = (
                     throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
                 }
 
-                // Backend returns calculated team data directly in teamScores field
-                const calculatedTeamData = result.teamScores || result.teams || [];
+                // Backend returns calculated team data directly in teamScores field.
+                // Some migrated tournaments can be marked complete but still have no stored scores.
+                // In that case, render a placeholder leaderboard from team assignments.
+                let calculatedTeamData = result.teamScores || result.teams || [];
+                if ((!calculatedTeamData || calculatedTeamData.length === 0) && teamAssignments.length > 0) {
+                    calculatedTeamData = teamAssignments.map(team => ({
+                        team: team.name,
+                        total: null,
+                        r1: null,
+                        r2: null,
+                        r3: null,
+                        r4: null,
+                        golfers: (team.golferNames || []).map(golferName => ({
+                            name: golferName,
+                            status: '',
+                            r1: { score: null, isLive: false },
+                            r2: { score: null, isLive: false },
+                            r3: { score: null, isLive: false },
+                            r4: { score: null, isLive: false },
+                            total: null,
+                            thru: ''
+                        }))
+                    }));
+                }
                 console.log('🏆 Calculated team data:', calculatedTeamData);
                 console.log('🔍 First team structure:', calculatedTeamData[0]);
                 
