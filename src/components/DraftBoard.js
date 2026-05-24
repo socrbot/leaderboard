@@ -193,7 +193,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
               fontSize: isMobile ? '0.75em' : '0.7em',
               fontStyle: 'italic'
             }}>
-              Odds averaged across major sportsbooks via SportsData.io
+              Odds averaged across major sportsbooks
             </div>
           </div>
           )}

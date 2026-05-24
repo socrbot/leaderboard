@@ -24,13 +24,13 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   const [year, setYear] = useState(currentYear);
   const [leagueName, setLeagueName] = useState('');
 
-  // Step 1: RapidAPI schedule
+  // Step 1: season schedule
   const [scheduleItems, setScheduleItems] = useState([]);
   const [scheduleLoading, setScheduleLoading] = useState(false);
   const [scheduleError, setScheduleError] = useState('');
   const [selectedScheduleItem, setSelectedScheduleItem] = useState(null);
 
-  // Step 2: SportsData.io odds tournaments
+  // Step 2: odds tournaments
   const [oddsItems, setOddsItems] = useState([]);
   const [oddsLoading, setOddsLoading] = useState(false);
   const [oddsError, setOddsError] = useState('');
@@ -247,7 +247,7 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
             </div>
             {selectedConfigEntry && (
               <small className="form-help">
-                tournId: <strong>{selectedConfigEntry.tournId}</strong> · oddsId: <strong>{selectedConfigEntry.oddsId}</strong>
+                tournament ID: <strong>{selectedConfigEntry.tournId}</strong> · odds reference: <strong>{selectedConfigEntry.oddsId}</strong>
               </small>
             )}
             <p className="form-help" style={{ marginTop: '0.75rem', borderTop: '1px solid #333', paddingTop: '0.75rem' }}>
@@ -301,7 +301,7 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
             </select>
             {selectedScheduleItem && (
               <small className="form-help">
-                tournId: <strong>{selectedScheduleItem.tournId}</strong>
+                tournament ID: <strong>{selectedScheduleItem.tournId}</strong>
                 {parseDateField(selectedScheduleItem.date?.start) && ` · ${parseDateField(selectedScheduleItem.date?.start)}`}
               </small>
             )}
@@ -345,7 +345,7 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
                 </select>
                 {selectedOddsId && (
                   <small className="form-help">
-                    oddsId: <strong>{selectedOddsId}</strong>
+                    odds reference: <strong>{selectedOddsId}</strong>
                     {selectedOddsId && oddsItems.find(t => t.oddsId === selectedOddsId)?.name === tournamentName
                       ? ' ✓ exact name match'
                       : ' — verify this is correct'}

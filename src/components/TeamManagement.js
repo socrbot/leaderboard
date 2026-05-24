@@ -222,7 +222,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
             </p>
           ) : (
             <p style={{ color: '#ADD8E6', marginBottom: '10px' }}>
-              Using Live SportsData.io Odds.
+              Using live odds feed.
             </p>
           )}
           {hasManualDraftOdds && !draftStatus.IsDraftLocked && (
