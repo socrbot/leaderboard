@@ -115,14 +115,9 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
 
       const tournaments = await res.json();
       const normalized = Array.isArray(tournaments) ? tournaments : [];
-      const sorted = [...normalized].sort((a, b) => {
-        const aDate = new Date(a.startDate || a.StartDate || 0).getTime();
-        const bDate = new Date(b.startDate || b.StartDate || 0).getTime();
-        return Number.isNaN(aDate) || Number.isNaN(bDate) ? 0 : bDate - aDate;
-      });
 
       const enriched = await Promise.all(
-        sorted.map(async (tournament) => {
+        normalized.map(async (tournament) => {
           try {
             const detailRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournament.id}`);
             if (!detailRes.ok) return tournament;
@@ -158,10 +153,22 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
         })
       );
 
-      setLeagueTournaments(enriched);
+      const getStartTimestamp = (tournament) => {
+        const raw =
+          tournament?.startDate ||
+          tournament?.StartDate ||
+          tournament?.Tournament?.StartDate ||
+          0;
+        const ts = new Date(raw).getTime();
+        return Number.isNaN(ts) ? Number.MAX_SAFE_INTEGER : ts;
+      };
+
+      const chronological = [...enriched].sort((a, b) => getStartTimestamp(a) - getStartTimestamp(b));
+
+      setLeagueTournaments(chronological);
 
       await Promise.all(
-        sorted.map((t) => fetchDraftStatusForTournament(t.id))
+        chronological.map((t) => fetchDraftStatusForTournament(t.id))
       );
     } catch {
       setLeagueTournaments([]);

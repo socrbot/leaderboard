@@ -103,8 +103,7 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
                   <div>
                     <p className="tournament-dropdown-title">{selectedConfigEntry?.name || ''}</p>
                     <p className="tournament-dropdown-meta">
-                      {selectedConfigEntry?.startDate ? `${selectedConfigEntry.startDate.slice(0, 10)} · ` : ''}
-                      {selectedConfigEntry ? `ID: ${selectedConfigEntry.tournId}` : ''}
+                      {selectedConfigEntry?.startDate ? selectedConfigEntry.startDate.slice(0, 10) : ''}
                     </p>
                   </div>
                   <span className="tournament-dropdown-arrow" aria-hidden="true">▾</span>
@@ -125,7 +124,6 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
                           <strong>{t.name}</strong>
                           {t.startDate ? <small>{t.startDate.slice(0, 10)}</small> : null}
                         </span>
-                        <small>{t.tournId}</small>
                       </button>
                     ))}
                   </div>
@@ -140,11 +138,7 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
                 {isQuickCreating ? 'Creating...' : 'Create'}
               </button>
             </div>
-            {selectedConfigEntry && (
-              <small className="form-help">
-                tournament ID: <strong>{selectedConfigEntry.tournId}</strong> · odds reference: <strong>{selectedConfigEntry.oddsId}</strong>
-              </small>
-            )}
+            
           </div>
         )}
 

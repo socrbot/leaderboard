@@ -260,12 +260,27 @@ function App() {
 
   // Tournaments grouped by year (newest first) for the picker
   const tournamentsByYear = useMemo(() => {
+    const getStartTimestamp = (tournament) => {
+      const raw =
+        tournament?.startDate ||
+        tournament?.StartDate ||
+        tournament?.Tournament?.StartDate ||
+        0;
+      const ts = new Date(raw).getTime();
+      return Number.isNaN(ts) ? Number.MAX_SAFE_INTEGER : ts;
+    };
+
     const grouped = {};
     allTournaments.forEach(t => {
       const y = t.year || 'Unknown';
       if (!grouped[y]) grouped[y] = [];
       grouped[y].push(t);
     });
+
+    Object.keys(grouped).forEach((year) => {
+      grouped[year].sort((a, b) => getStartTimestamp(a) - getStartTimestamp(b));
+    });
+
     return Object.entries(grouped).sort(([a], [b]) => Number(b) - Number(a));
   }, [allTournaments]);
 

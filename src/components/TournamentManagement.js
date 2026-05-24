@@ -70,43 +70,50 @@ const TournamentManagement = ({
   return (
     <div className="tournament-management-shell">
       <section className="tournament-management-panel">
-        <label className="tournament-management-label">Current League Context</label>
-        <div className="tournament-management-context-card" ref={leagueMenuRef}>
-          <button
-            type="button"
-            className="tournament-management-context-trigger"
-            onClick={() => setShowLeagueMenu((prev) => !prev)}
-            aria-expanded={showLeagueMenu}
-          >
-            <div>
-              <p className="tournament-management-context-title">{selectedLeague?.name || 'Select a league'}</p>
-              <p className="tournament-management-context-meta">
-                {leaguesLoading ? 'Loading managed leagues...' : `${managedLeagues.length || 0} leagues available`}
-              </p>
-            </div>
-            <span className="tournament-management-context-arrow" aria-hidden="true">▾</span>
-          </button>
+        <h3 className="tournament-management-section-title">Current League Context</h3>
+        <div className="tournament-management-card">
+          <div className="form-group tournament-dropdown-group">
+            <label>Select League</label>
+            <div className="tournament-dropdown-card" ref={leagueMenuRef}>
+              <button
+                type="button"
+                className="tournament-dropdown-trigger"
+                onClick={() => setShowLeagueMenu((prev) => !prev)}
+                aria-expanded={showLeagueMenu}
+              >
+                <div>
+                  <p className="tournament-dropdown-title">{selectedLeague?.name || 'Select a league'}</p>
+                  <p className="tournament-dropdown-meta">
+                    {leaguesLoading ? 'Loading managed leagues...' : `${managedLeagues.length || 0} leagues available`}
+                  </p>
+                </div>
+                <span className="tournament-dropdown-arrow" aria-hidden="true">▾</span>
+              </button>
 
-          {showLeagueMenu && (
-            <div className="tournament-management-context-menu">
-              {managedLeagues.length > 0 ? managedLeagues.map((league) => (
-                <button
-                  key={league.leagueId}
-                  type="button"
-                  className={`tournament-management-context-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
-                  onClick={() => {
-                    onLeagueChange?.(league.leagueId);
-                    setShowLeagueMenu(false);
-                  }}
-                >
-                  <span>{league.name}</span>
-                  {league.leagueId === activeLeagueId ? <strong>Active</strong> : null}
-                </button>
-              )) : (
-                <p className="tournament-management-context-empty">No managed leagues found.</p>
+              {showLeagueMenu && (
+                <div className="tournament-dropdown-menu">
+                  {managedLeagues.length > 0 ? managedLeagues.map((league) => (
+                    <button
+                      key={league.leagueId}
+                      type="button"
+                      className={`tournament-dropdown-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
+                      onClick={() => {
+                        onLeagueChange?.(league.leagueId);
+                        setShowLeagueMenu(false);
+                      }}
+                    >
+                      <span>
+                        <strong>{league.name}</strong>
+                        {league.leagueId === activeLeagueId ? <small>Active league</small> : null}
+                      </span>
+                    </button>
+                  )) : (
+                    <p className="tournament-management-context-empty">No managed leagues found.</p>
+                  )}
+                </div>
               )}
             </div>
-          )}
+          </div>
         </div>
       </section>
 
