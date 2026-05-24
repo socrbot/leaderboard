@@ -1132,13 +1132,19 @@ select:focus {
 }
 
 @media (max-width: 768px) {
+  /* Keep top header actions minimal on mobile; use bottom ribbon for Leaderboard/Scores. */
+  .modern-header .modern-nav .nav-link:nth-child(1),
+  .modern-header .modern-nav .nav-link:nth-child(2) {
+    display: none !important;
+  }
+
   /* Hide desktop setup nav bar — use second bottom bar instead */
   .setup-nav-bar {
     display: none;
   }
 
   .setup-mobile-exit-bar {
-    display: flex;
+    display: none !important;
     gap: 0.5rem;
     justify-content: center;
     align-items: center;

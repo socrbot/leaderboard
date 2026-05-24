@@ -812,31 +812,6 @@ function App() {
 
           {/* Navigation Section */}
           <nav className="modern-nav">
-            {!showSetup && (
-              <>
-                <button
-                  className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
-                  onClick={() => { setShowAnnualYearPicker(false); handleShowLeaderboardClick(); }}
-                  disabled={!selectedTournamentId}
-                >
-                  Leaderboard
-                </button>
-                <button
-                  className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
-                  onClick={() => {
-                    if (!selectedTournamentId) return;
-                    setShowSetup(false);
-                    setShowAnnualChampionship(false);
-                    setShowAnnualYearPicker(false);
-                    setShowTournamentScores(true);
-                    setShowUserSettings(false);
-                  }}
-                  disabled={!selectedTournamentId}
-                >
-                  Tournament Scores
-                </button>
-              </>
-            )}
             <button
               className="nav-link"
               onClick={() => {
@@ -923,16 +898,6 @@ function App() {
           <div className="status-bar">
             <p className="status-section-title">Profile</p>
           </div>
-          {showSetup && (
-            <div className="setup-mobile-exit-bar">
-              <button className="setup-mobile-exit-btn" onClick={handleShowLeaderboardClick}>
-                Leaderboard
-              </button>
-              <button className="setup-mobile-exit-btn" onClick={handleShowScoresClick}>
-                Scores
-              </button>
-            </div>
-          )}
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
           {showSetup && (
             <div className="setup-nav-bar">
