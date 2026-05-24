@@ -32,6 +32,7 @@ const Setup = ({
         tournamentId={tournamentId}
         selectedYear={selectedYear}
         activeLeagueId={activeLeagueId}
+        onLeagueChange={onLeagueChange}
         onTournamentCreated={onTournamentCreated}
         onTeamsSaved={onTeamsSaved}
         tournamentOddsId={tournamentOddsId}

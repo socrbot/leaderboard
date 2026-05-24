@@ -311,26 +311,22 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
 
         <section className="user-settings-panel user-settings-actions-panel">
           <h3 className="user-settings-section-label">Security and Account</h3>
-          {onSignOut && (
-            <button onClick={onSignOut} className="user-settings-btn user-settings-btn-danger">
-              Sign Out
+          <div className="user-settings-action-row">
+            <button onClick={handleSave} disabled={saving} className="user-settings-btn user-settings-btn-primary user-settings-btn-flex">
+              {saving ? 'Saving...' : 'Save Settings'}
             </button>
-          )}
-        </section>
-
-        <section className="user-settings-panel user-settings-actions-panel">
-          <h3 className="user-settings-section-label">League Actions</h3>
-          <p className="user-settings-hint">Manage your leagues, members, and invite code from the sections above.</p>
+            {onSignOut && (
+              <button onClick={onSignOut} className="user-settings-btn user-settings-btn-danger user-settings-btn-flex">
+                Sign Out
+              </button>
+            )}
+          </div>
+          <div className="user-settings-save-row">
+            {saved && <span className="user-settings-saved">Saved</span>}
+          </div>
         </section>
 
         {error && <p className="user-settings-error-text">{error}</p>}
-
-        <div className="user-settings-save-row">
-          <button onClick={handleSave} disabled={saving} className="user-settings-btn user-settings-btn-primary">
-            {saving ? 'Saving...' : 'Save Settings'}
-          </button>
-          {saved && <span className="user-settings-saved">Saved</span>}
-        </div>
       </div>
     </div>
   );

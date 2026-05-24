@@ -122,24 +122,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
     }
   };
 
-  const handleRegenerateCode = async (leagueId) => {
-    if (!leagueId) return;
-    if (!window.confirm('Generate a new invite code? The old code will stop working immediately.')) return;
-    setSaving(true);
-    setError('');
-    try {
-      const headers = await authHeaders();
-      const res = await fetch(`${LEAGUES_API_ENDPOINT}/${leagueId}/regenerate_code`, { method: 'POST', headers });
-      const data = await res.json();
-      if (!res.ok) throw new Error(data.error || 'Failed to regenerate code');
-      setMyLeagues(prev => prev.map(l => (l.leagueId === leagueId ? { ...l, inviteCode: data.inviteCode } : l)));
-    } catch (e) {
-      setError(e.message);
-    } finally {
-      setSaving(false);
-    }
-  };
-
   const handleCopyCode = (leagueId, inviteCode) => {
     if (!inviteCode) return;
     navigator.clipboard.writeText(inviteCode).then(() => {
@@ -212,12 +194,14 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
                       <button
                         type="button"
                         className="league-v2-copy-btn"
+                        aria-label={copiedLeagueId === league.leagueId ? 'Copied invite code' : 'Copy invite code'}
                         onClick={(e) => {
                           e.stopPropagation();
                           handleCopyCode(league.leagueId, league.inviteCode);
                         }}
                       >
-                        {copiedLeagueId === league.leagueId ? 'Copied' : 'Copy'}
+                        <span aria-hidden="true">{copiedLeagueId === league.leagueId ? '✓' : '⧉'}</span>
+                        <span>{copiedLeagueId === league.leagueId ? 'Copied' : 'Copy'}</span>
                       </button>
                     </p>
                   </div>
@@ -259,18 +243,6 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
                     </ul>
                   )}
 
-                  <div className="league-v2-card-actions">
-                    <button className="league-v2-btn league-v2-btn-secondary" onClick={() => handleSelectLeague(league.leagueId)}>
-                      {isActive ? 'Active League' : 'Set Active'}
-                    </button>
-                    <button
-                      className="league-v2-btn league-v2-btn-secondary"
-                      onClick={() => handleRegenerateCode(league.leagueId)}
-                      disabled={saving}
-                    >
-                      New Code
-                    </button>
-                  </div>
                 </div>
               )}
             </article>

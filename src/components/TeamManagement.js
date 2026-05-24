@@ -13,6 +13,8 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
   // Per-team "add golfer" state: { [ownerUid]: searchText }
   const [addSearch, setAddSearch] = useState({});
   const [editLoading, setEditLoading] = useState({});
+  const [showDraftOdds, setShowDraftOdds] = useState(true);
+  const [showDraftBoard, setShowDraftBoard] = useState(true);
 
   // --- Draft Status State ---
   const [draftStatus, setDraftStatus] = useState({
@@ -212,82 +214,111 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
         <h1 className="team-management-title" style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
       )}
 
-      {/* Draft Actions Section */}
-      <div className="draft-actions-card">
-        <h2 className="draft-actions-title">Draft Actions</h2>
+      <div className={`tournament-card draft-odds-card ${showDraftOdds ? 'expanded' : ''}`}>
+        <button className="tournament-card-summary" onClick={() => setShowDraftOdds(prev => !prev)} type="button">
+          <div className="tournament-card-summary-left">
+            <div>
+              <p className="tournament-card-kicker">Draft Odds</p>
+              <h2 className="tournament-card-title">Draft Odds</h2>
+              <p className="tournament-card-meta">Lock odds, start the draft, or clear manual odds.</p>
+            </div>
+          </div>
+          <div className="tournament-card-status-group">
+            <span className="tournament-card-status">{hasManualDraftOdds ? 'Manual active' : 'Live feed'}</span>
+            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">▾</span>
+          </div>
+        </button>
+        <div className="expand-content">
+          <div className="overflow-hidden bg-surface-container-low">
+            <div className="tournament-card-body space-y-xl">
+              <div className="draft-status-copy">
+                {hasManualDraftOdds ? (
+                  <p className="draft-status-line draft-status-manual">
+                    Manual Draft Odds are currently ACTIVE.
+                  </p>
+                ) : (
+                  <p className="draft-status-line draft-status-live">
+                    Using live odds feed.
+                  </p>
+                )}
+                {hasManualDraftOdds && !draftStatus.IsDraftLocked && (
+                  <button
+                    onClick={handleClearManualOdds}
+                    disabled={isClearingManualOdds || !tournamentId}
+                    className="draft-clear-btn"
+                  >
+                    {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
+                  </button>
+                )}
+                {draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted && (
+                  <p className="draft-status-line draft-status-ready">
+                    Odds locked! Set draft order for all teams below, then start the draft.
+                  </p>
+                )}
+                {draftStatus.IsDraftStarted && (
+                  <p className="draft-status-line draft-status-active">
+                    Draft is in progress. Members are making their picks.
+                  </p>
+                )}
+              </div>
 
-        {/* Manual Odds Status and Clear Button */}
-        <div className="draft-status-copy">
-          {hasManualDraftOdds ? (
-            <p className="draft-status-line draft-status-manual">
-              Manual Draft Odds are currently ACTIVE.
-            </p>
-          ) : (
-            <p className="draft-status-line draft-status-live">
-              Using live odds feed.
-            </p>
-          )}
-          {hasManualDraftOdds && !draftStatus.IsDraftLocked && (
-            <button
-              onClick={handleClearManualOdds}
-              disabled={isClearingManualOdds || !tournamentId}
-              className="draft-clear-btn"
-            >
-              {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
-            </button>
-          )}
-          {draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted && (
-            <p className="draft-status-line draft-status-ready">
-              Odds locked! Set draft order for all teams below, then start the draft.
-            </p>
-          )}
-          {draftStatus.IsDraftStarted && (
-            <p className="draft-status-line draft-status-active">
-              Draft is in progress. Members are making their picks.
-            </p>
-          )}
+              {!draftStatus.IsDraftComplete && (
+                <button
+                  onClick={handleDraftAction}
+                  disabled={isDraftActionLoading || !tournamentId}
+                  className="draft-action-btn"
+                >
+                  {isDraftActionLoading
+                    ? 'Processing...'
+                    : !draftStatus.IsDraftLocked
+                      ? 'Lock Draft Odds'
+                      : !draftStatus.IsDraftStarted
+                        ? 'Start Draft'
+                        : 'Complete Draft'}
+                </button>
+              )}
+              {draftStatus.IsDraftComplete && (
+                <p className="draft-status-line draft-status-complete">
+                  Draft is complete!
+                </p>
+              )}
+            </div>
+          </div>
         </div>
-
-        {/* Unified Draft Action Button */}
-        {!draftStatus.IsDraftComplete && (
-          <button
-            onClick={handleDraftAction}
-            disabled={isDraftActionLoading || !tournamentId}
-            className="draft-action-btn"
-          >
-            {isDraftActionLoading
-              ? 'Processing...'
-              : !draftStatus.IsDraftLocked
-                ? 'Lock Draft Odds'
-                : !draftStatus.IsDraftStarted
-                  ? 'Start Draft'
-                  : 'Complete Draft'}
-          </button>
-        )}
-        {draftStatus.IsDraftComplete && (
-          <p className="draft-status-line draft-status-complete">
-            Draft is complete!
-          </p>
-        )}
       </div>
 
-
-      {/* Enrolled Teams — read-only during/after draft lock */}
-      <h2 className="team-management-section-title" style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
-      {teams.length === 0 ? (
-        <p style={{
-          textAlign: 'center',
-          fontSize: isMobile ? '1em' : '1.1em',
-          padding: isMobile ? '10px' : '0',
-          color: '#aaa'
-        }}>
-          No teams yet. Teams are created from enrolled league members when you lock draft odds.
-        </p>
-      ) : (
-        <div className="teams-flex-container">
-          {[...teams]
-            .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
-            .map((team) => {
+      <div className={`tournament-card draft-board-card ${showDraftBoard ? 'expanded' : ''}`}>
+        <button className="tournament-card-summary" onClick={() => setShowDraftBoard(prev => !prev)} type="button">
+          <div className="tournament-card-summary-left">
+            <div>
+              <p className="tournament-card-kicker">Draft Board</p>
+              <h2 className="tournament-card-title">Draft Board</h2>
+              <p className="tournament-card-meta">Expand teams to manage golfers and draft order.</p>
+            </div>
+          </div>
+          <div className="tournament-card-status-group">
+            <span className="tournament-card-status">{teams.length} teams</span>
+            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">▾</span>
+          </div>
+        </button>
+        <div className="expand-content">
+          <div className="overflow-hidden bg-surface-container-low">
+            <div className="tournament-card-body">
+              <h2 className="team-management-section-title" style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
+              {teams.length === 0 ? (
+                <p style={{
+                  textAlign: 'center',
+                  fontSize: isMobile ? '1em' : '1.1em',
+                  padding: isMobile ? '10px' : '0',
+                  color: '#aaa'
+                }}>
+                  No teams yet. Teams are created from enrolled league members when you lock draft odds.
+                </p>
+              ) : (
+                <div className="teams-flex-container">
+                  {[...teams]
+                    .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
+                    .map((team) => {
               const filledPicks = (team.golferNames || []).filter(Boolean);
               const canAdd = draftStatus.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
               const searchText = addSearch[team.ownerUid] || '';
@@ -386,10 +417,11 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
                     </div>
                   )}
                 </div>
-              );
-            })}
+              )}
+            </div>
+          </div>
         </div>
-      )}
+      </div>
 
     </div>
   );

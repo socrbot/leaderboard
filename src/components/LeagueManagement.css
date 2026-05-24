@@ -14,7 +14,7 @@
 
 .league-v2-title {
   margin: 0;
-  font-size: 1.35rem;
+  font-size: 1.45rem;
   line-height: 1.15;
   color: #a4d39a;
   font-weight: 700;
@@ -56,7 +56,8 @@
 }
 
 .league-v2-card.active {
-  border-color: rgba(164, 211, 154, 0.28);
+  border-color: rgba(164, 211, 154, 0.34);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18), inset 0 0 0 1px rgba(191, 239, 181, 0.08);
 }
 
 .league-v2-summary {
@@ -64,41 +65,41 @@
   background: transparent;
   border: none;
   color: inherit;
-  padding: 14px;
+  padding: 14px 16px;
   cursor: pointer;
   display: flex;
   align-items: center;
   justify-content: space-between;
-  gap: 12px;
+  gap: 10px;
   text-align: left;
 }
 
 .league-v2-summary-left {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
+  gap: 10px;
   min-width: 0;
 }
 
 .league-v2-card-title {
   margin: 0;
-  font-size: 1rem;
+  font-size: 1.05rem;
   line-height: 1.2;
   color: #f0f4eb;
   font-weight: 700;
 }
 
 .league-v2-card-subtitle {
-  margin: 3px 0 0;
+  margin: 2px 0 0;
   color: #9ba198;
   font-size: 0.76rem;
 }
 
 .league-v2-invite-row {
-  margin: 8px 0 0;
+  margin: 7px 0 0;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
+  gap: 8px;
   color: #bfefb5;
   font-size: 0.76rem;
   font-weight: 700;
@@ -107,11 +108,14 @@
 }
 
 .league-v2-copy-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   border: none;
   background: transparent;
   color: #9ba198;
   padding: 0;
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 700;
   letter-spacing: 0.04em;
   cursor: pointer;
@@ -135,7 +139,7 @@
 }
 
 .league-v2-body {
-  padding: 0 14px 14px;
+  padding: 0 16px 16px;
 }
 
 .league-v2-body-label {
@@ -160,7 +164,7 @@
   align-items: center;
   justify-content: space-between;
   gap: 10px;
-  padding: 9px 10px;
+  padding: 10px 11px;
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.06);
   background: rgba(255, 255, 255, 0.02);
@@ -223,13 +227,6 @@
   cursor: not-allowed;
 }
 
-.league-v2-card-actions {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-  margin-top: 12px;
-}
-
 .league-v2-btn {
   border-radius: 8px;
   border: 1px solid transparent;
@@ -267,7 +264,7 @@
 }
 
 .league-v2-create-panel {
-  padding: 14px;
+  padding: 16px;
 }
 
 .league-v2-create-title {

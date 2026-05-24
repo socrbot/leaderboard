@@ -15,11 +15,11 @@ html {
 }
 
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Hanken Grotesk', sans-serif;
   margin: 0;
   padding: 0;
-  background-color: #1e1e1e;
-  color: white;
+  background-color: #131313;
+  color: #e5e2e1;
   /* NOTE: contain:paint removed — it breaks position:fixed children (bottom nav) */
   /* Smooth scrolling and mobile optimizations */
   -webkit-overflow-scrolling: touch;

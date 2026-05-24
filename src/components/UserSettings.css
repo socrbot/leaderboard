@@ -4,7 +4,7 @@
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 4px 0 12px;
+  padding: 8px 0 20px;
   color: #e5e2e1;
   font-family: 'Hanken Grotesk', sans-serif;
 }
@@ -12,7 +12,7 @@
 .user-settings-stack {
   width: min(960px, 100%);
   display: grid;
-  gap: 12px;
+  gap: 14px;
 }
 
 .user-settings-header-block {
@@ -38,8 +38,8 @@
   overflow: hidden;
   background: #1b1b1c;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  border-radius: 10px;
-  padding: 14px;
+  border-radius: 12px;
+  padding: 16px;
 }
 
 .user-settings-profile-panel {
@@ -61,66 +61,71 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 14px;
 }
 
 .user-settings-avatar {
-  width: 56px;
-  height: 56px;
-  border-radius: 7px;
+  width: 80px;
+  height: 80px;
+  border-radius: 12px;
   background: linear-gradient(155deg, #133316 12%, #204a22 88%);
   border: 2px solid #a4d39a;
   color: #dff9da;
-  font-size: 0.98rem;
+  font-size: 1.15rem;
   font-weight: 800;
   display: grid;
   place-items: center;
 }
 
+.user-settings-profile-copy {
+  min-width: 0;
+}
+
 .user-settings-name {
   margin: 0;
-  font-size: 0.82rem;
-  line-height: 1.1;
+  font-size: clamp(1.35rem, 4.8vw, 2rem);
+  line-height: 1.08;
   font-weight: 700;
   color: #f0f4eb;
+  letter-spacing: -0.01em;
 }
 
 .user-settings-email {
-  margin: 2px 0 5px;
+  margin: 4px 0 8px;
   color: #aeb5aa;
-  font-size: 0.67rem;
+  font-size: 0.84rem;
 }
 
 .user-settings-team-pill {
   margin: 0;
   display: inline-block;
-  color: #a4d39a;
-  font-size: 0.58rem;
+  color: #bfefb5;
+  font-size: 0.72rem;
   font-weight: 700;
-  letter-spacing: 0.07em;
+  letter-spacing: 0.08em;
   text-transform: uppercase;
 }
 
 .user-settings-team-pill-row {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 
 .user-settings-team-edit-wrap {
   display: flex;
   align-items: center;
-  gap: 5px;
+  gap: 7px;
 }
 
 .user-settings-team-input {
-  border-radius: 6px;
+  border-radius: 8px;
   border: 1px solid #42493f;
   background: #202020;
   color: #e5e2e1;
-  padding: 4px 7px;
-  min-width: 164px;
-  font-size: 0.68rem;
+  padding: 7px 9px;
+  min-width: 180px;
+  font-size: 0.8rem;
 }
 
 .user-settings-team-input:focus {
@@ -132,7 +137,7 @@
   border: none;
   background: transparent;
   color: #4ade80;
-  font-size: 0.72rem;
+  font-size: 0.82rem;
   line-height: 1;
   padding: 2px;
   cursor: pointer;
@@ -158,15 +163,15 @@
 
 .user-settings-league-grid {
   display: grid;
-  gap: 8px;
+  gap: 10px;
   margin-bottom: 10px;
 }
 
 .user-settings-league-card {
-  background: rgba(255, 255, 255, 0.02);
-  border: 1px solid rgba(255, 255, 255, 0.06);
-  border-radius: 8px;
-  padding: 9px 10px;
+  background: #1a1a1a;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 12px 12px 11px;
 }
 
 .user-settings-league-head {
@@ -177,7 +182,7 @@
 
 .user-settings-league-name {
   margin: 0;
-  font-size: 0.83rem;
+  font-size: 1rem;
   color: #edf1ea;
   font-weight: 700;
   line-height: 1.15;
@@ -186,12 +191,12 @@
 .user-settings-league-sub {
   margin: 0;
   color: #9ba198;
-  font-size: 0.68rem;
+  font-size: 0.72rem;
   letter-spacing: 0.02em;
 }
 
 .user-settings-league-annual-row {
-  margin-top: 4px;
+  margin-top: 6px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -199,9 +204,9 @@
 }
 
 .user-settings-league-meta {
-  margin: 6px 0 0;
+  margin: 8px 0 0;
   color: #73d97a;
-  font-size: 0.7rem;
+  font-size: 0.72rem;
   font-weight: 600;
 }
 
@@ -217,10 +222,10 @@
   justify-content: space-between;
   gap: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-top: 10px;
-  margin-top: 10px;
+  padding-top: 12px;
+  margin-top: 12px;
   color: #dde2d8;
-  font-size: 0.89rem;
+  font-size: 0.9rem;
 }
 
 .user-settings-toggle-wrap {
@@ -282,8 +287,8 @@
 }
 
 .user-settings-join-block {
-  margin-top: 10px;
-  padding-top: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
   border-top: 1px solid rgba(255, 255, 255, 0.06);
 }
 
@@ -300,12 +305,12 @@
 
 .user-settings-input {
   width: 100%;
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid #42493f;
   background: #202020;
   color: #e5e2e1;
-  padding: 9px 11px;
-  font-size: 0.89rem;
+  padding: 10px 12px;
+  font-size: 0.9rem;
 }
 
 .user-settings-input::placeholder {
@@ -329,10 +334,10 @@
 }
 
 .user-settings-btn {
-  border-radius: 8px;
+  border-radius: 10px;
   border: 1px solid transparent;
-  padding: 8px 13px;
-  font-size: 0.78rem;
+  padding: 9px 13px;
+  font-size: 0.76rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
@@ -365,7 +370,6 @@
 }
 
 .user-settings-btn-danger {
-  width: 100%;
   background: rgba(147, 0, 10, 0.12);
   border-color: rgba(255, 180, 171, 0.34);
   color: #ffb4ab;
@@ -375,11 +379,24 @@
   padding-bottom: 12px;
 }
 
+.user-settings-action-row {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.user-settings-btn-flex {
+  flex: 1 1 0;
+}
+
 .user-settings-save-row {
   display: flex;
   align-items: center;
+  justify-content: flex-end;
   gap: 10px;
-  margin-top: 2px;
+  margin-top: 8px;
+  min-height: 1.1rem;
 }
 
 .user-settings-saved {
@@ -420,19 +437,29 @@
   }
 
   .user-settings-avatar {
-    width: 62px;
-    height: 62px;
+    width: 84px;
+    height: 84px;
   }
 
   .user-settings-name {
-    font-size: 0.9rem;
+    font-size: clamp(1.45rem, 2.4vw, 2.15rem);
   }
 
   .user-settings-email {
-    font-size: 0.72rem;
+    font-size: 0.86rem;
   }
 
   .user-settings-team-pill {
-    font-size: 0.62rem;
+    font-size: 0.75rem;
+  }
+}
+
+@media (max-width: 520px) {
+  .user-settings-action-row {
+    flex-direction: column;
+  }
+
+  .user-settings-btn-flex {
+    width: 100%;
   }
 }

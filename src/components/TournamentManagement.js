@@ -1,6 +1,7 @@
 // src/components/TournamentManagement.js
-import React, { useCallback, useEffect, useState } from 'react';
-import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { LEAGUES_API_ENDPOINT } from '../apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 import TournamentCreation from './TournamentCreation';
 import TeamManagement from './TeamManagement';
 import './TournamentManagement.css';
@@ -8,6 +9,7 @@ import './TournamentManagement.css';
 const TournamentManagement = ({
   tournamentId,
   activeLeagueId,
+  onLeagueChange,
   onTournamentCreated,
   onTeamsSaved,
   tournamentOddsId,
@@ -16,75 +18,95 @@ const TournamentManagement = ({
   onDraftStarted,
   onManualOddsUpdated,
 }) => {
-  const [leagueName, setLeagueName] = useState('');
-  const [currentTournament, setCurrentTournament] = useState(null);
-
-  const loadContext = useCallback(async () => {
-    if (activeLeagueId) {
-      try {
-        const res = await fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setLeagueName(data?.name || '');
-        }
-      } catch {
-        setLeagueName('');
-      }
-    } else {
-      setLeagueName('');
-    }
-
-    if (tournamentId) {
-      try {
-        const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
-        if (res.ok) {
-          setCurrentTournament(await res.json());
-        }
-      } catch {
-        setCurrentTournament(null);
-      }
-    } else {
-      setCurrentTournament(null);
-    }
-  }, [activeLeagueId, tournamentId]);
+  const { getIdToken } = useAuth();
+  const [managedLeagues, setManagedLeagues] = useState([]);
+  const [leaguesLoading, setLeaguesLoading] = useState(false);
+  const [showLeagueMenu, setShowLeagueMenu] = useState(false);
+  const leagueMenuRef = useRef(null);
 
   useEffect(() => {
-    loadContext();
-  }, [loadContext]);
+    const loadLeagues = async () => {
+      setLeaguesLoading(true);
+      try {
+        const token = await getIdToken();
+        const res = await fetch(`${LEAGUES_API_ENDPOINT}/mine`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          setManagedLeagues([]);
+          return;
+        }
+        const leagues = await res.json();
+        setManagedLeagues(Array.isArray(leagues) ? leagues : []);
+        if (!activeLeagueId && Array.isArray(leagues) && leagues.length > 0 && onLeagueChange) {
+          onLeagueChange(leagues[0].leagueId);
+        }
+      } catch {
+        setManagedLeagues([]);
+      } finally {
+        setLeaguesLoading(false);
+      }
+    };
 
-  const tournamentTitle = currentTournament?.name || currentTournament?.Name || 'No tournament selected';
-  const draftChip = !tournamentId
-    ? 'No active tournament'
-    : hasManualDraftOdds && !isDraftStarted
-      ? 'Manual odds active'
-      : isDraftStarted
-        ? 'Draft in progress'
-        : 'Draft ready';
+    loadLeagues();
+  }, [activeLeagueId, getIdToken, onLeagueChange]);
+
+  useEffect(() => {
+    if (!showLeagueMenu) return;
+    const handleClickOutside = (event) => {
+      if (leagueMenuRef.current && !leagueMenuRef.current.contains(event.target)) {
+        setShowLeagueMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showLeagueMenu]);
+
+  const selectedLeague = useMemo(
+    () => managedLeagues.find((league) => league.leagueId === activeLeagueId) || managedLeagues[0] || null,
+    [activeLeagueId, managedLeagues]
+  );
 
   return (
     <div className="tournament-management-shell">
-      <header className="tournament-management-hero">
-        <div className="tournament-management-hero-copy">
-          <p className="tournament-management-kicker">Setup</p>
-          <h2 className="tournament-management-title">Manage League</h2>
-          <p className="tournament-management-subtitle">
-            Create tournaments, review draft readiness, and manage team picks from one focused workspace.
-          </p>
-        </div>
-        <div className="tournament-management-hero-chip">
-          <span className="tournament-management-hero-chip-label">Admin workflow</span>
-          <strong>{draftChip}</strong>
-        </div>
-      </header>
-
       <section className="tournament-management-panel">
-        <label className="tournament-management-label">Current league context</label>
-        <div className="tournament-management-context-card">
-          <div>
-            <p className="tournament-management-context-title">{leagueName || activeLeagueId || 'No league selected'}</p>
-            <p className="tournament-management-context-meta">{tournamentTitle}</p>
-          </div>
-          <div className="tournament-management-context-status">{draftChip}</div>
+        <label className="tournament-management-label">Current League Context</label>
+        <div className="tournament-management-context-card" ref={leagueMenuRef}>
+          <button
+            type="button"
+            className="tournament-management-context-trigger"
+            onClick={() => setShowLeagueMenu((prev) => !prev)}
+            aria-expanded={showLeagueMenu}
+          >
+            <div>
+              <p className="tournament-management-context-title">{selectedLeague?.name || 'Select a league'}</p>
+              <p className="tournament-management-context-meta">
+                {leaguesLoading ? 'Loading managed leagues...' : `${managedLeagues.length || 0} leagues available`}
+              </p>
+            </div>
+            <span className="tournament-management-context-arrow" aria-hidden="true">▾</span>
+          </button>
+
+          {showLeagueMenu && (
+            <div className="tournament-management-context-menu">
+              {managedLeagues.length > 0 ? managedLeagues.map((league) => (
+                <button
+                  key={league.leagueId}
+                  type="button"
+                  className={`tournament-management-context-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
+                  onClick={() => {
+                    onLeagueChange?.(league.leagueId);
+                    setShowLeagueMenu(false);
+                  }}
+                >
+                  <span>{league.name}</span>
+                  {league.leagueId === activeLeagueId ? <strong>Active</strong> : null}
+                </button>
+              )) : (
+                <p className="tournament-management-context-empty">No managed leagues found.</p>
+              )}
+            </div>
+          )}
         </div>
       </section>
 
@@ -99,23 +121,8 @@ const TournamentManagement = ({
       </section>
 
       <section className="tournament-management-panel">
-        <div className="tournament-management-section-head">
-          <h3 className="tournament-management-section-title">Tournament Draft Status</h3>
-          <span className="tournament-management-section-chip">{draftChip}</span>
-        </div>
-
-        <div className="tournament-management-card tournament-management-draft-card">
-          <div className="tournament-management-draft-summary">
-            <div>
-              <p className="tournament-management-draft-label">Current tournament</p>
-              <h4 className="tournament-management-draft-title">{tournamentTitle}</h4>
-              <p className="tournament-management-draft-meta">
-                {tournamentId ? `Tournament ID: ${tournamentId}` : 'Select or create a tournament to manage draft status.'}
-              </p>
-            </div>
-            <div className="tournament-management-draft-badge">{draftChip}</div>
-          </div>
-
+        <h3 className="tournament-management-section-title">Tournament Draft Status</h3>
+        <div className="tournament-management-stack">
           <TeamManagement
             tournamentId={tournamentId}
             leagueId={activeLeagueId}
