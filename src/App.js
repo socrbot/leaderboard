@@ -10,7 +10,7 @@ import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
-import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, PLAYER_HEADSHOTS_API_ENDPOINT, LEAGUES_API_ENDPOINT } from './apiConfig';
 
 function App() {
   // Memoized helper function to format scores for display
@@ -135,6 +135,8 @@ function App() {
   const [draftBoardPlayers, setDraftBoardPlayers] = useState([]);
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
   const [draftBoardError, setDraftBoardError] = useState(null);
+  const [alwaysHeadshotMap, setAlwaysHeadshotMap] = useState({});
+  const headshotRequestKeyRef = useRef('');
 
   const normalizePlayerName = useCallback((name) => {
     return (name || '')
@@ -414,6 +416,7 @@ function App() {
     isTournamentInProgress,
     isTournamentOver,
     tournamentOddsId,
+    teamAssignments,
     selectedTeamGolfersMap,
     teamColors,
     isDraftStarted,
@@ -480,8 +483,59 @@ function App() {
     fetchPlayerOddsForDraftBoard();
   }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
 
+  const draftedGolferNamesForHeadshots = useMemo(() => {
+    const uniqueNames = new Set();
+    for (const team of teamAssignments || []) {
+      for (const golferName of team.golferNames || []) {
+        if (golferName && golferName.trim()) {
+          uniqueNames.add(golferName.trim());
+        }
+      }
+    }
+    return Array.from(uniqueNames);
+  }, [teamAssignments]);
+
+  useEffect(() => {
+    const fetchAlwaysAvailableHeadshots = async () => {
+      if (!selectedTournamentId || draftedGolferNamesForHeadshots.length === 0) {
+        setAlwaysHeadshotMap({});
+        headshotRequestKeyRef.current = '';
+        return;
+      }
+
+      const normalizedRequestKey = draftedGolferNamesForHeadshots
+        .map((name) => normalizePlayerName(name))
+        .filter(Boolean)
+        .sort()
+        .join('|');
+
+      const requestKey = `${selectedTournamentId}:${normalizedRequestKey}`;
+      if (headshotRequestKeyRef.current === requestKey) {
+        return;
+      }
+
+      headshotRequestKeyRef.current = requestKey;
+
+      try {
+        const namesParam = encodeURIComponent(draftedGolferNamesForHeadshots.join(','));
+        const response = await fetch(`${PLAYER_HEADSHOTS_API_ENDPOINT}?names=${namesParam}`);
+        if (!response.ok) {
+          throw new Error(`HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        setAlwaysHeadshotMap(data.headshotsByName || {});
+      } catch (error) {
+        console.error('Error fetching always-available player headshots:', error);
+        setAlwaysHeadshotMap({});
+      }
+    };
+
+    fetchAlwaysAvailableHeadshots();
+  }, [selectedTournamentId, draftedGolferNamesForHeadshots, normalizePlayerName]);
+
   const playerHeadshotMap = useMemo(() => {
-    const map = {};
+    const map = { ...alwaysHeadshotMap };
     for (const player of draftBoardPlayers || []) {
       const playerName = player.name || player.Name;
       const photoUrl = player.photoUrl || player.PhotoUrl || player.playerImageUrl || player.PlayerImageUrl;
@@ -491,7 +545,7 @@ function App() {
       }
     }
     return map;
-  }, [draftBoardPlayers, normalizePlayerName]);
+  }, [alwaysHeadshotMap, draftBoardPlayers, normalizePlayerName]);
 
   const getGolferHeadshot = useCallback((name) => {
     const key = normalizePlayerName(name);
