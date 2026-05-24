@@ -1,0 +1,349 @@
+@import url('https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;600;700;800&display=swap');
+
+.user-settings-shell {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 12px;
+  color: #e5e2e1;
+  font-family: 'Hanken Grotesk', sans-serif;
+}
+
+.user-settings-stack {
+  width: min(960px, 100%);
+  display: grid;
+  gap: 12px;
+}
+
+.user-settings-header-block {
+  margin-bottom: 4px;
+}
+
+.user-settings-title {
+  margin: 0;
+  font-size: clamp(1.5rem, 2.6vw, 2rem);
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  color: #a4d39a;
+}
+
+.user-settings-subtitle {
+  margin: 6px 0 0;
+  color: #c2c9bc;
+  font-size: 0.93rem;
+}
+
+.user-settings-panel {
+  position: relative;
+  overflow: hidden;
+  background: #1b1b1c;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 10px;
+  padding: 14px;
+}
+
+.user-settings-profile-panel {
+  border-color: rgba(164, 211, 154, 0.22);
+}
+
+.user-settings-glow {
+  position: absolute;
+  width: 170px;
+  height: 170px;
+  right: -60px;
+  top: -75px;
+  border-radius: 999px;
+  background: radial-gradient(circle, rgba(74, 222, 128, 0.32), rgba(74, 222, 128, 0));
+}
+
+.user-settings-profile-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+}
+
+.user-settings-avatar {
+  width: 70px;
+  height: 70px;
+  border-radius: 10px;
+  background: linear-gradient(155deg, #133316 12%, #204a22 88%);
+  border: 2px solid #a4d39a;
+  color: #dff9da;
+  font-size: 1.25rem;
+  font-weight: 800;
+  display: grid;
+  place-items: center;
+}
+
+.user-settings-name {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.2;
+  color: #f0f4eb;
+}
+
+.user-settings-email {
+  margin: 3px 0 8px;
+  color: #aeb5aa;
+  font-size: 0.9rem;
+}
+
+.user-settings-team-pill {
+  margin: 0;
+  display: inline-block;
+  color: #a4d39a;
+  font-size: 0.73rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.user-settings-section-label {
+  margin: 0 0 10px;
+  color: #aeb5aa;
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.user-settings-league-grid {
+  display: grid;
+  gap: 8px;
+  margin-bottom: 10px;
+}
+
+.user-settings-league-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  border-radius: 8px;
+  padding: 10px;
+}
+
+.user-settings-league-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.user-settings-league-name {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #edf1ea;
+}
+
+.user-settings-league-meta {
+  margin: 6px 0 0;
+  color: #9ba198;
+  font-size: 0.83rem;
+}
+
+.user-settings-active-badge {
+  border: 1px solid rgba(164, 211, 154, 0.6);
+  color: #bfefb5;
+  background: rgba(164, 211, 154, 0.12);
+  border-radius: 99px;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  padding: 2px 8px;
+}
+
+.user-settings-hint {
+  margin: 2px 0 0;
+  color: #9ba198;
+  font-size: 0.85rem;
+}
+
+.user-settings-toggle-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  padding-top: 10px;
+  margin-top: 10px;
+  color: #dde2d8;
+  font-size: 0.89rem;
+}
+
+.user-settings-toggle-wrap {
+  position: relative;
+  width: 38px;
+  height: 20px;
+  flex-shrink: 0;
+}
+
+.user-settings-toggle-input {
+  position: absolute;
+  opacity: 0;
+  inset: 0;
+  margin: 0;
+  cursor: pointer;
+}
+
+.user-settings-toggle-track {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: 999px;
+  background: #4a4d4a;
+  transition: background 0.18s ease;
+}
+
+.user-settings-toggle-track::after {
+  content: '';
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 999px;
+  background: #ffffff;
+  transition: transform 0.18s ease;
+}
+
+.user-settings-toggle-input:checked + .user-settings-toggle-track {
+  background: #4ade80;
+}
+
+.user-settings-toggle-input:checked + .user-settings-toggle-track::after {
+  transform: translateX(18px);
+}
+
+.user-settings-join-block {
+  margin-top: 10px;
+  padding-top: 10px;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.user-settings-join-form {
+  display: grid;
+  gap: 8px;
+}
+
+.user-settings-input {
+  width: 100%;
+  border-radius: 8px;
+  border: 1px solid #42493f;
+  background: #202020;
+  color: #e5e2e1;
+  padding: 9px 11px;
+  font-size: 0.89rem;
+}
+
+.user-settings-input::placeholder {
+  color: #8e938a;
+}
+
+.user-settings-input:focus {
+  outline: none;
+  border-color: #77dd6a;
+}
+
+.user-settings-join-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.user-settings-btn {
+  border-radius: 8px;
+  border: 1px solid transparent;
+  padding: 8px 13px;
+  font-size: 0.78rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: transform 0.16s ease, opacity 0.16s ease, background 0.16s ease, border-color 0.16s ease;
+}
+
+.user-settings-btn:hover:not(:disabled) {
+  opacity: 0.93;
+}
+
+.user-settings-btn:active:not(:disabled) {
+  transform: scale(0.98);
+}
+
+.user-settings-btn:disabled {
+  opacity: 0.66;
+  cursor: not-allowed;
+}
+
+.user-settings-btn-primary {
+  background: #a4d39a;
+  color: #0f3810;
+}
+
+.user-settings-btn-secondary {
+  background: #232424;
+  border-color: rgba(255, 255, 255, 0.11);
+  color: #d8ddd3;
+}
+
+.user-settings-btn-danger {
+  width: 100%;
+  background: rgba(147, 0, 10, 0.12);
+  border-color: rgba(255, 180, 171, 0.34);
+  color: #ffb4ab;
+}
+
+.user-settings-actions-panel {
+  padding-bottom: 12px;
+}
+
+.user-settings-save-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 2px;
+}
+
+.user-settings-saved {
+  color: #4ade80;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.user-settings-error-text {
+  margin: 2px 0 0;
+  color: #ffb4ab;
+  font-size: 0.82rem;
+}
+
+.user-settings-success-text {
+  margin: 0;
+  color: #4ade80;
+  font-size: 0.82rem;
+  font-weight: 600;
+}
+
+.user-settings-loading {
+  margin: 0;
+  color: #c2c9bc;
+}
+
+@media (min-width: 768px) {
+  .user-settings-shell {
+    padding-top: 8px;
+  }
+
+  .user-settings-stack {
+    gap: 14px;
+  }
+
+  .user-settings-panel {
+    padding: 16px;
+  }
+
+  .user-settings-avatar {
+    width: 78px;
+    height: 78px;
+  }
+}

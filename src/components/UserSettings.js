@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
+import './UserSettings.css';
 
 export default function UserSettings({ activeLeagueId, onSignOut }) {
   const { user, getIdToken } = useAuth();
@@ -21,6 +22,8 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
   const [joinSuccess, setJoinSuccess] = useState('');
+  const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true);
+  const [emailUpdatesEnabled, setEmailUpdatesEnabled] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -112,213 +115,177 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
     }
   };
 
-  if (loading) return <div className="team-management"><p>Loading your settings…</p></div>;
+  if (loading) {
+    return (
+      <div className="user-settings-shell">
+        <div className="user-settings-panel">
+          <p className="user-settings-loading">Loading your settings...</p>
+        </div>
+      </div>
+    );
+  }
 
   const activeLeagueEntry = userProfile?.leagues?.find(l => l.leagueId === activeLeagueId);
+  const displayName = userProfile?.displayName || user?.displayName || 'Member';
+  const profileEmail = userProfile?.email || user?.email || '—';
+  const initials = displayName
+    .split(' ')
+    .filter(Boolean)
+    .slice(0, 2)
+    .map(part => part[0]?.toUpperCase())
+    .join('') || 'M';
 
   return (
-    <div className="team-management">
-      <h2>My Settings{leagueName ? ` — ${leagueName}` : ''}</h2>
-      <p className="subtitle">Manage your profile and annual championship preference.</p>
+    <div className="user-settings-shell">
+      <div className="user-settings-stack">
+        <header className="user-settings-header-block">
+          <h2 className="user-settings-title">My Profile{leagueName ? ` - ${leagueName}` : ''}</h2>
+          <p className="user-settings-subtitle">Manage your profile, leagues, and season preferences.</p>
+        </header>
 
-      {/* Profile Card */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>My Profile</h3>
-        <table style={styles.profileTable}>
-          <tbody>
-            <tr>
-              <td style={styles.profileLabel}>Email</td>
-              <td style={styles.profileValue}>{userProfile?.email || user?.email || '—'}</td>
-            </tr>
-            <tr>
-              <td style={styles.profileLabel}>Display Name</td>
-              <td style={styles.profileValue}>{userProfile?.displayName || user?.displayName || '—'}</td>
-            </tr>
-            {activeLeagueEntry && (
-              <tr>
-                <td style={styles.profileLabel}>Team Name</td>
-                <td style={styles.profileValue}>{activeLeagueEntry.teamName || '—'}</td>
-              </tr>
+        <section className="user-settings-panel user-settings-profile-panel">
+          <div className="user-settings-glow" aria-hidden="true" />
+          <div className="user-settings-profile-row">
+            <div className="user-settings-avatar" aria-hidden="true">{initials}</div>
+            <div className="user-settings-profile-copy">
+              <h3 className="user-settings-name">{displayName}</h3>
+              <p className="user-settings-email">{profileEmail}</p>
+              <p className="user-settings-team-pill">
+                {activeLeagueEntry?.teamName || 'No team name set'}
+              </p>
+            </div>
+          </div>
+        </section>
+
+        <section className="user-settings-panel">
+          <h3 className="user-settings-section-label">League Participation</h3>
+
+          <div className="user-settings-league-grid">
+            {userProfile?.leagues?.length > 0 ? userProfile.leagues.map(l => (
+              <article key={l.leagueId} className="user-settings-league-card">
+                <div className="user-settings-league-head">
+                  <h4 className="user-settings-league-name">{l.name || l.leagueId}</h4>
+                  {l.leagueId === activeLeagueId && <span className="user-settings-active-badge">Active</span>}
+                </div>
+                <p className="user-settings-league-meta">{l.teamName ? `Team: ${l.teamName}` : 'No team name selected'}</p>
+              </article>
+            )) : (
+              <p className="user-settings-hint">No leagues yet. Join with an invite code below.</p>
             )}
-          </tbody>
-        </table>
+          </div>
 
-        <div style={{ marginTop: 14 }}>
-          <div style={{ ...styles.profileLabel, marginBottom: 6 }}>My Leagues</div>
-          {userProfile?.leagues?.length > 0 ? (
-            <ul style={styles.leagueList}>
-              {userProfile.leagues.map(l => (
-                <li key={l.leagueId} style={styles.leagueItem}>
-                  <span style={{ color: '#e0e0e0' }}>{l.name || l.leagueId}</span>
-                  {l.teamName && (
-                    <span style={{ color: '#888', marginLeft: 8, fontSize: '0.85rem' }}>({l.teamName})</span>
-                  )}
-                  {l.leagueId === activeLeagueId && (
-                    <span style={styles.activeBadge}>active</span>
-                  )}
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <p style={{ color: '#666', fontSize: '0.85rem', margin: '4px 0 8px' }}>No leagues yet.</p>
-          )}
-
-          {joinSuccess && <p style={{ color: '#4caf50', fontSize: '0.85rem', margin: '6px 0' }}>{joinSuccess}</p>}
-
-          {showJoinForm ? (
-            <form onSubmit={handleJoin} style={styles.joinForm}>
+          <label className="user-settings-toggle-row" htmlFor="annual-opt-in">
+            <span>Include me in annual championship standings</span>
+            <span className="user-settings-toggle-wrap">
               <input
-                type="text"
-                placeholder="Team name (optional)"
-                value={joinTeamName}
-                onChange={e => setJoinTeamName(e.target.value)}
-                maxLength={40}
-                disabled={joining}
-                className="form-input"
-                style={styles.joinInput}
+                id="annual-opt-in"
+                className="user-settings-toggle-input"
+                type="checkbox"
+                checked={participatesInAnnual}
+                onChange={e => { setParticipatesInAnnual(e.target.checked); setSaved(false); }}
               />
+              <span className="user-settings-toggle-track" />
+            </span>
+          </label>
+
+          {joinSuccess && <p className="user-settings-success-text">{joinSuccess}</p>}
+
+          <div className="user-settings-join-block">
+            {showJoinForm ? (
+              <form onSubmit={handleJoin} className="user-settings-join-form">
+                <input
+                  type="text"
+                  placeholder="Team name (optional)"
+                  value={joinTeamName}
+                  onChange={e => setJoinTeamName(e.target.value)}
+                  maxLength={40}
+                  disabled={joining}
+                  className="user-settings-input"
+                />
+                <input
+                  type="text"
+                  placeholder="Enter league code"
+                  value={joinCode}
+                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                  maxLength={10}
+                  disabled={joining}
+                  className="user-settings-input"
+                  autoCapitalize="characters"
+                  autoComplete="off"
+                />
+                {joinError && <p className="user-settings-error-text">{joinError}</p>}
+                <div className="user-settings-join-actions">
+                  <button type="submit" disabled={joining} className="user-settings-btn user-settings-btn-primary">
+                    {joining ? 'Joining...' : 'Join League'}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => { setShowJoinForm(false); setJoinError(''); }}
+                    className="user-settings-btn user-settings-btn-secondary"
+                  >
+                    Cancel
+                  </button>
+                </div>
+              </form>
+            ) : (
+              <button
+                onClick={() => { setShowJoinForm(true); setJoinSuccess(''); }}
+                className="user-settings-btn user-settings-btn-secondary"
+              >
+                + Join a New League
+              </button>
+            )}
+          </div>
+        </section>
+
+        <section className="user-settings-panel">
+          <h3 className="user-settings-section-label">Notification Settings</h3>
+          <label className="user-settings-toggle-row" htmlFor="push-toggle">
+            <span>Push notifications</span>
+            <span className="user-settings-toggle-wrap">
               <input
-                type="text"
-                placeholder="Invite code"
-                value={joinCode}
-                onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                maxLength={10}
-                disabled={joining}
-                className="form-input"
-                style={styles.joinInput}
-                autoCapitalize="characters"
-                autoComplete="off"
+                id="push-toggle"
+                className="user-settings-toggle-input"
+                type="checkbox"
+                checked={pushNotificationsEnabled}
+                onChange={e => setPushNotificationsEnabled(e.target.checked)}
               />
-              {joinError && <p style={{ color: '#c0392b', fontSize: '0.8rem', margin: '4px 0' }}>{joinError}</p>}
-              <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-                <button type="submit" disabled={joining} className="btn-primary" style={{ fontSize: '0.85rem', padding: '6px 14px' }}>
-                  {joining ? 'Joining…' : 'Join'}
-                </button>
-                <button type="button" onClick={() => { setShowJoinForm(false); setJoinError(''); }} className="btn-secondary" style={{ fontSize: '0.85rem', padding: '6px 14px' }}>
-                  Cancel
-                </button>
-              </div>
-            </form>
-          ) : (
-            <button
-              onClick={() => { setShowJoinForm(true); setJoinSuccess(''); }}
-              className="btn-secondary"
-              style={{ marginTop: 8, fontSize: '0.85rem', padding: '6px 14px' }}
-            >
-              + Join a New League
+              <span className="user-settings-toggle-track" />
+            </span>
+          </label>
+          <label className="user-settings-toggle-row" htmlFor="email-toggle">
+            <span>Email updates</span>
+            <span className="user-settings-toggle-wrap">
+              <input
+                id="email-toggle"
+                className="user-settings-toggle-input"
+                type="checkbox"
+                checked={emailUpdatesEnabled}
+                onChange={e => setEmailUpdatesEnabled(e.target.checked)}
+              />
+              <span className="user-settings-toggle-track" />
+            </span>
+          </label>
+        </section>
+
+        <section className="user-settings-panel user-settings-actions-panel">
+          <h3 className="user-settings-section-label">Security and Account</h3>
+          {onSignOut && (
+            <button onClick={onSignOut} className="user-settings-btn user-settings-btn-danger">
+              Sign Out
             </button>
           )}
-        </div>
-      </div>
+        </section>
 
-      {/* Annual Championship */}
-      <div style={styles.section}>
-        <h3 style={styles.sectionTitle}>Annual Championship</h3>
-        <label style={styles.toggleRow}>
-          <input
-            type="checkbox"
-            checked={participatesInAnnual}
-            onChange={e => { setParticipatesInAnnual(e.target.checked); setSaved(false); }}
-            style={{ marginRight: 10 }}
-          />
-          Include me in the Annual Championship standings
-        </label>
-      </div>
+        {error && <p className="user-settings-error-text">{error}</p>}
 
-      {error && <p style={{ color: '#c0392b' }}>{error}</p>}
-
-      <div style={{ marginTop: 16, display: 'flex', alignItems: 'center', gap: 12 }}>
-        <button
-          onClick={handleSave}
-          disabled={saving}
-          className="create-tournament-btn"
-        >
-          {saving ? 'Saving…' : 'Save Settings'}
-        </button>
-        {saved && <span style={{ color: '#27ae60', fontSize: '0.9rem' }}>Saved ✓</span>}
-      </div>
-
-      {onSignOut && (
-        <div style={{ marginTop: 24, borderTop: '1px solid #333', paddingTop: 16 }}>
-          <button
-            onClick={onSignOut}
-            className="btn-secondary"
-            style={{ fontSize: '0.85rem', padding: '6px 16px', color: '#f87171', borderColor: '#f87171' }}
-          >
-            Sign Out
+        <div className="user-settings-save-row">
+          <button onClick={handleSave} disabled={saving} className="user-settings-btn user-settings-btn-primary">
+            {saving ? 'Saving...' : 'Save Settings'}
           </button>
+          {saved && <span className="user-settings-saved">Saved</span>}
         </div>
-      )}
+      </div>
     </div>
   );
 }
-
-const styles = {
-  section: {
-    background: '#1a1a1a',
-    border: '1px solid #333',
-    borderRadius: 8,
-    padding: '16px 20px',
-    marginBottom: 16,
-  },
-  sectionTitle: {
-    margin: '0 0 12px',
-    fontSize: '1rem',
-    color: '#ccc',
-    fontWeight: 600,
-  },
-  toggleRow: {
-    display: 'flex',
-    alignItems: 'center',
-    cursor: 'pointer',
-    fontSize: '0.95rem',
-  },
-  profileTable: {
-    borderCollapse: 'collapse',
-    width: '100%',
-  },
-  profileLabel: {
-    color: '#888',
-    fontSize: '0.85rem',
-    paddingRight: 16,
-    paddingBottom: 6,
-    whiteSpace: 'nowrap',
-    verticalAlign: 'top',
-  },
-  profileValue: {
-    color: '#e0e0e0',
-    fontSize: '0.95rem',
-    paddingBottom: 6,
-  },
-  leagueList: {
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
-  },
-  leagueItem: {
-    padding: '5px 0',
-    borderBottom: '1px solid #2a2a2a',
-    display: 'flex',
-    alignItems: 'center',
-    fontSize: '0.9rem',
-  },
-  joinForm: {
-    marginTop: 10,
-    display: 'flex',
-    flexDirection: 'column',
-    gap: 6,
-  },
-  joinInput: {
-    fontSize: '0.9rem',
-    padding: '6px 10px',
-  },
-  activeBadge: {
-    marginLeft: 8,
-    background: '#1a4a1a',
-    color: '#4caf50',
-    border: '1px solid #2e7d32',
-    borderRadius: 4,
-    padding: '1px 6px',
-    fontSize: '0.75rem',
-  },
-};
