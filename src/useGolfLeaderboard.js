@@ -88,37 +88,8 @@ export const useGolfLeaderboard = (
 
     // Fetch leaderboard data with team calculations from backend
     useEffect(() => {
-        // If tournament is not in progress, show empty team data for completed draft
-        if (!isTournamentInProgress) {
-            if (isDraftStarted && teamAssignments.length > 0) {
-                // Create empty team data structure for display
-                const emptyTeamData = teamAssignments.map(team => ({
-                    team: team.name,
-                    total: null,
-                    r1: null,
-                    r2: null,
-                    r3: null,
-                    r4: null,
-                    golfers: (team.golferNames || []).map(golferName => ({
-                        name: golferName,
-                        status: '',
-                        r1: { score: null, isLive: false },
-                        r2: { score: null, isLive: false },
-                        r3: { score: null, isLive: false },
-                        r4: { score: null, isLive: false },
-                        total: null,
-                        thru: ''
-                    }))
-                }));
-                setRawData(emptyTeamData);
-            } else {
-                setRawData([]);
-            }
-            setLoading(false);
-            return;
-        }
-
-        // Only fetch leaderboard if tournament is in progress and we have all required data
+        // Fetch leaderboard when we have required tournament context.
+        // Backend handles live/in-progress/completed/not-started states.
         if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId || 
             !tournamentSpecifics.orgId || !tournamentSpecifics.year || 
             tournamentSpecifics.par === undefined || tournamentSpecifics.par === null) {
@@ -173,8 +144,11 @@ export const useGolfLeaderboard = (
         // Initial fetch
         fetchLeaderboardData(true);
 
-        // Set up auto-refresh polling every 30 minutes for live tournaments
-        // Aligns with backend recommended interval and conserves API rate limits
+        // Set up auto-refresh polling only for live tournaments.
+        if (!isTournamentInProgress) {
+            return undefined;
+        }
+
         const AUTO_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
         const pollInterval = setInterval(() => {
             console.log('🔄 Auto-refreshing leaderboard data...');
