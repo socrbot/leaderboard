@@ -903,52 +903,58 @@ function App() {
       ) : showSetup ? (
         <>
           <div className="status-bar">
-            <p className="status-section-title">Setup</p>
-            <div className="tournament-picker" ref={pickerRef}>
-              <button
-                className="picker-trigger"
-                onClick={() => setShowTournamentPicker(p => !p)}
-                aria-expanded={showTournamentPicker}
-              >
-                <span className="status-line-name">
-                  {(selectedTournamentId
-                    ? (tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name)
-                    : 'No tournament selected') || 'No tournament selected'}
-                </span>
-                <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
-              </button>
-              {showTournamentPicker && (
-                <div className="picker-dropdown">
-                  {tournamentsByYear.map(([year, ts]) => (
-                    <div key={year} className="picker-year-group">
-                      <p className="picker-year-label">{year}</p>
-                      {ts.map(t => (
-                        <button
-                          key={t.id}
-                          className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
-                          onClick={() => {
-                            setSelectedTournamentId(t.id);
-                            setLeaderboardRefreshKey(prev => prev + 1);
-                            setShowTournamentPicker(false);
-                          }}
-                        >
-                          {t.name}
-                        </button>
+            {setupActiveTab === 'my-profile' ? (
+              <p className="status-section-title">My Profile</p>
+            ) : (
+              <>
+                <p className="status-section-title">Setup</p>
+                <div className="tournament-picker" ref={pickerRef}>
+                  <button
+                    className="picker-trigger"
+                    onClick={() => setShowTournamentPicker(p => !p)}
+                    aria-expanded={showTournamentPicker}
+                  >
+                    <span className="status-line-name">
+                      {(selectedTournamentId
+                        ? (tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name)
+                        : 'No tournament selected') || 'No tournament selected'}
+                    </span>
+                    <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
+                  </button>
+                  {showTournamentPicker && (
+                    <div className="picker-dropdown">
+                      {tournamentsByYear.map(([year, ts]) => (
+                        <div key={year} className="picker-year-group">
+                          <p className="picker-year-label">{year}</p>
+                          {ts.map(t => (
+                            <button
+                              key={t.id}
+                              className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
+                              onClick={() => {
+                                setSelectedTournamentId(t.id);
+                                setLeaderboardRefreshKey(prev => prev + 1);
+                                setShowTournamentPicker(false);
+                              }}
+                            >
+                              {t.name}
+                            </button>
+                          ))}
+                        </div>
                       ))}
                     </div>
-                  ))}
+                  )}
                 </div>
-              )}
-            </div>
-            {tournamentInfo?.StartDate && (
-              <p className="status-line">
-                <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
-              </p>
-            )}
-            {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
-              <p className="status-line">
-                <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
-              </p>
+                {tournamentInfo?.StartDate && (
+                  <p className="status-line">
+                    <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
+                  </p>
+                )}
+                {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+                  <p className="status-line">
+                    <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+                  </p>
+                )}
+              </>
             )}
           </div>
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}

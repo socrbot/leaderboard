@@ -9,21 +9,21 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
   const { user, getIdToken } = useAuth();
 
   const [leagueName, setLeagueName] = useState('');
-  const [participatesInAnnual, setParticipatesInAnnual] = useState(true);
+  const [leagueAnnualSettings, setLeagueAnnualSettings] = useState({});
   const [userProfile, setUserProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [error, setError] = useState('');
 
-  const [showJoinForm, setShowJoinForm] = useState(false);
   const [joinCode, setJoinCode] = useState('');
-  const [joinTeamName, setJoinTeamName] = useState('');
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
   const [joinSuccess, setJoinSuccess] = useState('');
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true);
   const [emailUpdatesEnabled, setEmailUpdatesEnabled] = useState(false);
+  const [isEditingTeamName, setIsEditingTeamName] = useState(false);
+  const [teamNameInput, setTeamNameInput] = useState('');
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -36,13 +36,40 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
         fetch(`${BACKEND_BASE_URL}/user/profile`, { headers: authHeaders }),
       ]);
 
+      let settingsData = null;
       if (settingsRes.ok) {
-        const s = await settingsRes.json();
-        setParticipatesInAnnual(s.participatesInAnnual !== false);
+        settingsData = await settingsRes.json();
       }
 
+      let profileData = null;
       if (profileRes && profileRes.ok) {
-        setUserProfile(await profileRes.json());
+        profileData = await profileRes.json();
+        setUserProfile(profileData);
+      }
+
+      const settingsMap = (settingsData && settingsData.leagueAnnualPreferences && typeof settingsData.leagueAnnualPreferences === 'object')
+        ? settingsData.leagueAnnualPreferences
+        : {};
+
+      const leagues = profileData?.leagues || [];
+      const fallbackAnnual = settingsData?.participatesInAnnual !== false;
+      const normalizedMap = {};
+      leagues.forEach((league) => {
+        const lid = league?.leagueId;
+        if (!lid) return;
+        if (Object.prototype.hasOwnProperty.call(settingsMap, lid)) {
+          normalizedMap[lid] = settingsMap[lid] !== false;
+        } else if (typeof league?.participatesInAnnual !== 'undefined') {
+          normalizedMap[lid] = league.participatesInAnnual !== false;
+        } else {
+          normalizedMap[lid] = fallbackAnnual;
+        }
+      });
+      setLeagueAnnualSettings(normalizedMap);
+
+      const incomingTeamName = (profileData?.teamName || settingsData?.teamName || '').trim();
+      if (incomingTeamName) {
+        setTeamNameInput(incomingTeamName);
       }
 
       if (activeLeagueId) {
@@ -70,7 +97,7 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
       const res = await fetch(`${LEAGUES_API_ENDPOINT}/join`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ inviteCode: code, teamName: (joinTeamName.trim() || user?.displayName || '') }),
+        body: JSON.stringify({ inviteCode: code, teamName: (user?.displayName || '') }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -78,8 +105,6 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
       } else {
         setJoinSuccess(data.alreadyMember ? 'Already a member of that league.' : 'Joined successfully!');
         setJoinCode('');
-        setJoinTeamName('');
-        setShowJoinForm(false);
         load(); // refresh profile to show new league
       }
     } catch {
@@ -94,18 +119,28 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
     setError('');
     try {
       const token = await getIdToken();
+      const payload = { leagueAnnualPreferences: leagueAnnualSettings };
+      const normalizedTeamName = teamNameInput.trim();
+      if (normalizedTeamName) {
+        payload.teamName = normalizedTeamName;
+      }
+
       const res = await fetch(`${BACKEND_BASE_URL}/user/settings`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${token}`,
         },
-        body: JSON.stringify({ participatesInAnnual }),
+        body: JSON.stringify(payload),
       });
       if (!res.ok) {
         const d = await res.json();
         setError(d.error || 'Failed to save.');
       } else {
+        if (normalizedTeamName) {
+          setUserProfile(prev => prev ? ({ ...prev, teamName: normalizedTeamName }) : prev);
+        }
+        setIsEditingTeamName(false);
         setSaved(true);
       }
     } catch {
@@ -128,6 +163,8 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
   const activeLeagueEntry = userProfile?.leagues?.find(l => l.leagueId === activeLeagueId);
   const displayName = userProfile?.displayName || user?.displayName || 'Member';
   const profileEmail = userProfile?.email || user?.email || '—';
+  const globalTeamName = userProfile?.teamName || activeLeagueEntry?.teamName || 'No team name set';
+  const shownTeamName = teamNameInput.trim() || globalTeamName;
   const initials = displayName
     .split(' ')
     .filter(Boolean)
@@ -150,9 +187,47 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
             <div className="user-settings-profile-copy">
               <h3 className="user-settings-name">{displayName}</h3>
               <p className="user-settings-email">{profileEmail}</p>
-              <p className="user-settings-team-pill">
-                {activeLeagueEntry?.teamName || 'No team name set'}
-              </p>
+              {isEditingTeamName ? (
+                <div className="user-settings-team-edit-wrap">
+                  <input
+                    type="text"
+                    className="user-settings-team-input"
+                    value={teamNameInput}
+                    onChange={(e) => { setTeamNameInput(e.target.value); setSaved(false); }}
+                    maxLength={40}
+                    placeholder="Team name"
+                  />
+                  <button
+                    type="button"
+                    className="user-settings-team-edit-btn"
+                    onClick={handleSave}
+                    disabled={saving || !teamNameInput.trim()}
+                    aria-label="Save team name"
+                  >
+                    ✓
+                  </button>
+                  <button
+                    type="button"
+                    className="user-settings-team-edit-btn"
+                    onClick={() => { setIsEditingTeamName(false); setTeamNameInput(userProfile?.teamName || ''); }}
+                    aria-label="Cancel team name edit"
+                  >
+                    x
+                  </button>
+                </div>
+              ) : (
+                <div className="user-settings-team-pill-row">
+                  <p className="user-settings-team-pill">{shownTeamName}</p>
+                  <button
+                    type="button"
+                    className="user-settings-team-edit-btn"
+                    onClick={() => setIsEditingTeamName(true)}
+                    aria-label="Edit team name"
+                  >
+                    ✎
+                  </button>
+                </div>
+              )}
             </div>
           </div>
         </section>
@@ -164,77 +239,59 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
             {userProfile?.leagues?.length > 0 ? userProfile.leagues.map(l => (
               <article key={l.leagueId} className="user-settings-league-card">
                 <div className="user-settings-league-head">
-                  <h4 className="user-settings-league-name">{l.name || l.leagueId}</h4>
+                  <div>
+                    <h4 className="user-settings-league-name">{l.name || l.leagueId}</h4>
+                    <p className="user-settings-league-sub">Annual Championship Participant</p>
+                  </div>
+                  <span className="user-settings-toggle-wrap user-settings-toggle-wrap-compact">
+                    <input
+                      id={`annual-opt-in-${l.leagueId}`}
+                      className="user-settings-toggle-input"
+                      type="checkbox"
+                      checked={leagueAnnualSettings[l.leagueId] !== false}
+                      onChange={e => {
+                        const checked = e.target.checked;
+                        setLeagueAnnualSettings(prev => ({ ...prev, [l.leagueId]: checked }));
+                        setSaved(false);
+                      }}
+                    />
+                    <span className="user-settings-toggle-track" />
+                  </span>
+                </div>
+                <div className="user-settings-league-meta-row">
+                  <p className="user-settings-league-meta">{l.teamName ? `Team: ${l.teamName}` : 'No team name selected'}</p>
                   {l.leagueId === activeLeagueId && <span className="user-settings-active-badge">Active</span>}
                 </div>
-                <p className="user-settings-league-meta">{l.teamName ? `Team: ${l.teamName}` : 'No team name selected'}</p>
               </article>
             )) : (
               <p className="user-settings-hint">No leagues yet. Join with an invite code below.</p>
             )}
           </div>
 
-          <label className="user-settings-toggle-row" htmlFor="annual-opt-in">
-            <span>Include me in annual championship standings</span>
-            <span className="user-settings-toggle-wrap">
-              <input
-                id="annual-opt-in"
-                className="user-settings-toggle-input"
-                type="checkbox"
-                checked={participatesInAnnual}
-                onChange={e => { setParticipatesInAnnual(e.target.checked); setSaved(false); }}
-              />
-              <span className="user-settings-toggle-track" />
-            </span>
-          </label>
-
           {joinSuccess && <p className="user-settings-success-text">{joinSuccess}</p>}
 
           <div className="user-settings-join-block">
-            {showJoinForm ? (
-              <form onSubmit={handleJoin} className="user-settings-join-form">
-                <input
-                  type="text"
-                  placeholder="Team name (optional)"
-                  value={joinTeamName}
-                  onChange={e => setJoinTeamName(e.target.value)}
-                  maxLength={40}
-                  disabled={joining}
-                  className="user-settings-input"
-                />
-                <input
-                  type="text"
-                  placeholder="Enter league code"
-                  value={joinCode}
-                  onChange={e => setJoinCode(e.target.value.toUpperCase())}
-                  maxLength={10}
-                  disabled={joining}
-                  className="user-settings-input"
-                  autoCapitalize="characters"
-                  autoComplete="off"
-                />
-                {joinError && <p className="user-settings-error-text">{joinError}</p>}
-                <div className="user-settings-join-actions">
-                  <button type="submit" disabled={joining} className="user-settings-btn user-settings-btn-primary">
-                    {joining ? 'Joining...' : 'Join League'}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => { setShowJoinForm(false); setJoinError(''); }}
-                    className="user-settings-btn user-settings-btn-secondary"
-                  >
-                    Cancel
-                  </button>
-                </div>
-              </form>
-            ) : (
+            <form onSubmit={handleJoin} className="user-settings-join-form user-settings-join-form-inline">
+              <input
+                type="text"
+                placeholder="Enter league code"
+                value={joinCode}
+                onChange={e => setJoinCode(e.target.value.toUpperCase())}
+                maxLength={10}
+                disabled={joining}
+                className="user-settings-input"
+                autoCapitalize="characters"
+                autoComplete="off"
+              />
               <button
-                onClick={() => { setShowJoinForm(true); setJoinSuccess(''); }}
-                className="user-settings-btn user-settings-btn-secondary"
+                type="submit"
+                disabled={joining}
+                className="user-settings-btn user-settings-btn-primary user-settings-join-submit"
               >
-                + Join a New League
+                {joining ? 'Joining...' : 'Join'}
               </button>
-            )}
+            </form>
+            {joinError && <p className="user-settings-error-text">{joinError}</p>}
           </div>
         </section>
 

@@ -61,17 +61,17 @@
   z-index: 1;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 10px;
 }
 
 .user-settings-avatar {
-  width: 70px;
-  height: 70px;
-  border-radius: 10px;
+  width: 56px;
+  height: 56px;
+  border-radius: 7px;
   background: linear-gradient(155deg, #133316 12%, #204a22 88%);
   border: 2px solid #a4d39a;
   color: #dff9da;
-  font-size: 1.25rem;
+  font-size: 0.98rem;
   font-weight: 800;
   display: grid;
   place-items: center;
@@ -79,25 +79,72 @@
 
 .user-settings-name {
   margin: 0;
-  font-size: 1.35rem;
-  line-height: 1.2;
+  font-size: 0.82rem;
+  line-height: 1.1;
+  font-weight: 700;
   color: #f0f4eb;
 }
 
 .user-settings-email {
-  margin: 3px 0 8px;
+  margin: 2px 0 5px;
   color: #aeb5aa;
-  font-size: 0.9rem;
+  font-size: 0.67rem;
 }
 
 .user-settings-team-pill {
   margin: 0;
   display: inline-block;
   color: #a4d39a;
-  font-size: 0.73rem;
+  font-size: 0.58rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.07em;
   text-transform: uppercase;
+}
+
+.user-settings-team-pill-row {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-settings-team-edit-wrap {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.user-settings-team-input {
+  border-radius: 6px;
+  border: 1px solid #42493f;
+  background: #202020;
+  color: #e5e2e1;
+  padding: 4px 7px;
+  min-width: 164px;
+  font-size: 0.68rem;
+}
+
+.user-settings-team-input:focus {
+  outline: none;
+  border-color: #77dd6a;
+}
+
+.user-settings-team-edit-btn {
+  border: none;
+  background: transparent;
+  color: #4ade80;
+  font-size: 0.72rem;
+  line-height: 1;
+  padding: 2px;
+  cursor: pointer;
+}
+
+.user-settings-team-edit-btn:hover {
+  opacity: 0.84;
+}
+
+.user-settings-team-edit-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .user-settings-section-label {
@@ -119,26 +166,44 @@
   background: rgba(255, 255, 255, 0.02);
   border: 1px solid rgba(255, 255, 255, 0.06);
   border-radius: 8px;
-  padding: 10px;
+  padding: 9px 10px;
 }
 
 .user-settings-league-head {
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   justify-content: space-between;
   gap: 10px;
 }
 
 .user-settings-league-name {
   margin: 0;
-  font-size: 0.95rem;
+  font-size: 0.83rem;
   color: #edf1ea;
+  font-weight: 700;
+  line-height: 1.15;
+}
+
+.user-settings-league-sub {
+  margin: 3px 0 0;
+  color: #9ba198;
+  font-size: 0.68rem;
+  letter-spacing: 0.02em;
 }
 
 .user-settings-league-meta {
-  margin: 6px 0 0;
-  color: #9ba198;
-  font-size: 0.83rem;
+  margin: 0;
+  color: #73d97a;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+
+.user-settings-league-meta-row {
+  margin-top: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .user-settings-active-badge {
@@ -146,11 +211,11 @@
   color: #bfefb5;
   background: rgba(164, 211, 154, 0.12);
   border-radius: 99px;
-  font-size: 0.68rem;
+  font-size: 0.62rem;
   font-weight: 700;
   letter-spacing: 0.05em;
   text-transform: uppercase;
-  padding: 2px 8px;
+  padding: 2px 7px;
 }
 
 .user-settings-hint {
@@ -176,6 +241,20 @@
   width: 38px;
   height: 20px;
   flex-shrink: 0;
+}
+
+.user-settings-toggle-wrap-compact {
+  width: 32px;
+  height: 17px;
+}
+
+.user-settings-toggle-wrap-compact .user-settings-toggle-track::after {
+  width: 13px;
+  height: 13px;
+}
+
+.user-settings-toggle-wrap-compact .user-settings-toggle-input:checked + .user-settings-toggle-track::after {
+  transform: translateX(15px);
 }
 
 .user-settings-toggle-input {
@@ -226,6 +305,12 @@
   gap: 8px;
 }
 
+.user-settings-join-form-inline {
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 8px;
+}
+
 .user-settings-input {
   width: 100%;
   border-radius: 8px;
@@ -249,6 +334,11 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.user-settings-join-submit {
+  min-width: 74px;
+  padding-inline: 12px;
 }
 
 .user-settings-btn {
@@ -343,7 +433,19 @@
   }
 
   .user-settings-avatar {
-    width: 78px;
-    height: 78px;
+    width: 62px;
+    height: 62px;
+  }
+
+  .user-settings-name {
+    font-size: 0.9rem;
+  }
+
+  .user-settings-email {
+    font-size: 0.72rem;
+  }
+
+  .user-settings-team-pill {
+    font-size: 0.62rem;
   }
 }
