@@ -703,10 +703,7 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 .team-name-cell,
 .golfer-name-cell {
   text-align: left;
-  max-width: 280px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
+  white-space: normal;
 }
 
 /* ── Golfer name + status inline ── */
@@ -715,6 +712,7 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
   align-items: center;
   gap: 8px;
   min-width: 0;
+  flex-wrap: wrap;
 }
 
 .golfer-headshot {
@@ -743,7 +741,8 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
 
 .golfer-name-text {
   font-weight: 600;
-  min-width: 0;
+  white-space: normal;
+  overflow: visible;
 }
 
 .golfer-cut-label {

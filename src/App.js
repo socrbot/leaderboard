@@ -10,7 +10,7 @@ import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
-import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, PLAYER_HEADSHOTS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 
 function App() {
   // Memoized helper function to format scores for display
@@ -214,19 +214,6 @@ function App() {
   const [draftBoardPlayers, setDraftBoardPlayers] = useState([]);
   const [draftBoardLoading, setDraftBoardLoading] = useState(true);
   const [draftBoardError, setDraftBoardError] = useState(null);
-  const [alwaysHeadshotMap, setAlwaysHeadshotMap] = useState({});
-  const headshotRequestKeyRef = useRef('');
-
-  const normalizePlayerName = useCallback((name) => {
-    return (name || '')
-      .toString()
-      .normalize('NFD')
-      .replace(/[\u0300-\u036f]/g, '')
-      .replace(/[^a-zA-Z0-9 ]/g, '')
-      .replace(/\s+/g, ' ')
-      .trim()
-      .toLowerCase();
-  }, []);
 
   // State for teams and draft picks
   const [teams, setTeams] = useState([]);
@@ -556,7 +543,6 @@ function App() {
     isTournamentInProgress,
     isTournamentOver,
     tournamentOddsId,
-    teamAssignments,
     selectedTeamGolfersMap,
     teamColors,
     isDraftStarted,
@@ -622,75 +608,6 @@ function App() {
 
     fetchPlayerOddsForDraftBoard();
   }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
-
-  const draftedGolferNamesForHeadshots = useMemo(() => {
-    const uniqueNames = new Set();
-    for (const team of teamAssignments || []) {
-      for (const golferName of team.golferNames || []) {
-        if (golferName && golferName.trim()) {
-          uniqueNames.add(golferName.trim());
-        }
-      }
-    }
-    return Array.from(uniqueNames);
-  }, [teamAssignments]);
-
-  useEffect(() => {
-    const fetchAlwaysAvailableHeadshots = async () => {
-      if (!selectedTournamentId || draftedGolferNamesForHeadshots.length === 0) {
-        setAlwaysHeadshotMap({});
-        headshotRequestKeyRef.current = '';
-        return;
-      }
-
-      const normalizedRequestKey = draftedGolferNamesForHeadshots
-        .map((name) => normalizePlayerName(name))
-        .filter(Boolean)
-        .sort()
-        .join('|');
-
-      const requestKey = `${selectedTournamentId}:${normalizedRequestKey}`;
-      if (headshotRequestKeyRef.current === requestKey) {
-        return;
-      }
-
-      headshotRequestKeyRef.current = requestKey;
-
-      try {
-        const namesParam = encodeURIComponent(draftedGolferNamesForHeadshots.join(','));
-        const response = await fetch(`${PLAYER_HEADSHOTS_API_ENDPOINT}?names=${namesParam}`);
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}`);
-        }
-
-        const data = await response.json();
-        setAlwaysHeadshotMap(data.headshotsByName || {});
-      } catch (error) {
-        console.error('Error fetching always-available player headshots:', error);
-        setAlwaysHeadshotMap({});
-      }
-    };
-
-    fetchAlwaysAvailableHeadshots();
-  }, [selectedTournamentId, draftedGolferNamesForHeadshots, normalizePlayerName]);
-
-  const playerHeadshotMap = useMemo(() => {
-    const map = { ...alwaysHeadshotMap };
-    for (const player of draftBoardPlayers || []) {
-      const playerName = player.name || player.Name;
-      const photoUrl = player.photoUrl || player.PhotoUrl || player.playerImageUrl || player.PlayerImageUrl;
-      const key = normalizePlayerName(playerName);
-      if (key && photoUrl) {
-        map[key] = photoUrl;
-      }
-    }
-    return map;
-  }, [alwaysHeadshotMap, draftBoardPlayers, normalizePlayerName]);
-
-  const getGolferHeadshot = useCallback((name) => {
-    const key = normalizePlayerName(name);
-    return key ? playerHeadshotMap[key] || null : null;
-  }, [playerHeadshotMap, normalizePlayerName]);
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
@@ -1266,19 +1183,6 @@ function App() {
                                 >
                                   <td className="golfer-name-cell">
                                     <span className="golfer-name-with-photo">
-                                      {getGolferHeadshot(golfer.name) ? (
-                                        <img
-                                          src={getGolferHeadshot(golfer.name)}
-                                          alt={golfer.name}
-                                          className="golfer-headshot"
-                                          loading="lazy"
-                                          referrerPolicy="no-referrer"
-                                        />
-                                      ) : (
-                                        <span className="golfer-headshot-fallback" aria-hidden="true">
-                                          {(golfer.name || '?').charAt(0).toUpperCase()}
-                                        </span>
-                                      )}
                                       <span className="golfer-name-text">{golfer.name}</span>
                                     </span>
                                   </td>
@@ -1355,19 +1259,6 @@ function App() {
                               <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>
                                 <td className="golfer-name-cell">
                                   <span className="golfer-name-with-photo">
-                                    {getGolferHeadshot(golfer.name) ? (
-                                      <img
-                                        src={getGolferHeadshot(golfer.name)}
-                                        alt={golfer.name}
-                                        className="golfer-headshot"
-                                        loading="lazy"
-                                        referrerPolicy="no-referrer"
-                                      />
-                                    ) : (
-                                      <span className="golfer-headshot-fallback" aria-hidden="true">
-                                        {(golfer.name || '?').charAt(0).toUpperCase()}
-                                      </span>
-                                    )}
                                     <span className="golfer-name-text">{golfer.name}</span>
                                   </span>
                                   {isCut
