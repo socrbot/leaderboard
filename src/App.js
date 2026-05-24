@@ -78,8 +78,8 @@ function App() {
   const [activeLeagueId, setActiveLeagueId] = useState(null);
   const [activeLeagueName, setActiveLeagueName] = useState(null);
   const [managedLeagues, setManagedLeagues] = useState([]);
-  const [showHeaderLeagueMenu, setShowHeaderLeagueMenu] = useState(false);
-  const headerLeaguePickerRef = useRef(null);
+  const [showLeagueMenu, setShowLeagueMenu] = useState(false);
+  const leaguePickerRef = useRef(null);
   useEffect(() => {
     if (activeLeagueId === null && userData?.leagueIds?.[0]) {
       setActiveLeagueId(userData.leagueIds[0]);
@@ -159,15 +159,15 @@ function App() {
   }, [activeLeagueId]);
 
   useEffect(() => {
-    if (!showHeaderLeagueMenu) return;
+    if (!showLeagueMenu) return;
     const handleClickOutside = (event) => {
-      if (headerLeaguePickerRef.current && !headerLeaguePickerRef.current.contains(event.target)) {
-        setShowHeaderLeagueMenu(false);
+      if (leaguePickerRef.current && !leaguePickerRef.current.contains(event.target)) {
+        setShowLeagueMenu(false);
       }
     };
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [showHeaderLeagueMenu]);
+  }, [showLeagueMenu]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -930,43 +930,7 @@ function App() {
             </div>
             <div className="brand-text">
               <h1 className="app-title">Alumni Golf Tournament</h1>
-              {user ? (
-                <div className="app-league-picker" ref={headerLeaguePickerRef}>
-                  <button
-                    type="button"
-                    className="app-league-trigger"
-                    onClick={() => setShowHeaderLeagueMenu((prev) => !prev)}
-                    aria-expanded={showHeaderLeagueMenu}
-                  >
-                    <span className="app-subtitle">{activeLeagueName || 'Select league'}</span>
-                    <span className="app-league-chevron" aria-hidden="true">▾</span>
-                  </button>
-                  {showHeaderLeagueMenu && (
-                    <div className="app-league-menu">
-                      {managedLeagues.length > 0 ? (
-                        managedLeagues.map((league) => (
-                          <button
-                            key={league.leagueId}
-                            type="button"
-                            className={`app-league-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
-                            onClick={() => {
-                              setActiveLeagueId(league.leagueId);
-                              setActiveLeagueName(league.name || null);
-                              setShowHeaderLeagueMenu(false);
-                            }}
-                          >
-                            {league.name}
-                          </button>
-                        ))
-                      ) : (
-                        <div className="app-league-empty">No leagues available</div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              ) : (
-                <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
-              )}
+              <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
             </div>
           </div>
 
@@ -1107,6 +1071,41 @@ function App() {
         </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
+          <div className="status-league-block">
+            <p className="status-section-title">League</p>
+            <div className="tournament-picker" ref={leaguePickerRef}>
+              <button
+                className="picker-trigger"
+                onClick={() => setShowLeagueMenu(prev => !prev)}
+                aria-expanded={showLeagueMenu}
+              >
+                <span className="status-line-name">{activeLeagueName || 'Select league'}</span>
+                <span className="picker-chevron">{showLeagueMenu ? '▴' : '▾'}</span>
+              </button>
+              {showLeagueMenu && (
+                <div className="picker-dropdown">
+                  {managedLeagues.length > 0 ? (
+                    managedLeagues.map((league) => (
+                      <button
+                        key={league.leagueId}
+                        type="button"
+                        className={`picker-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
+                        onClick={() => {
+                          setActiveLeagueId(league.leagueId);
+                          setActiveLeagueName(league.name || null);
+                          setShowLeagueMenu(false);
+                        }}
+                      >
+                        {league.name}
+                      </button>
+                    ))
+                  ) : (
+                    <div className="app-league-empty">No leagues available</div>
+                  )}
+                </div>
+              )}
+            </div>
+          </div>
           <p className="status-section-title">Tournament Details</p>
           <div className="tournament-picker" ref={pickerRef}>
             <button

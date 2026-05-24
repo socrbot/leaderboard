@@ -249,8 +249,13 @@
 }
 
 .league-v2-btn-primary {
-  background: #a4d39a;
-  color: #0f3810;
+  background: linear-gradient(135deg, #1f6b1f 0%, #155115 100%);
+  border-color: rgba(22, 86, 22, 0.95);
+  color: #f3fff3;
+}
+
+.league-v2-btn-primary:hover:not(:disabled) {
+  background: linear-gradient(135deg, #1a5d1a 0%, #114611 100%);
 }
 
 .league-v2-btn-secondary {
