@@ -6,6 +6,22 @@
   font-family: 'Hanken Grotesk', sans-serif;
 }
 
+.tournament-management-header {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-bottom: 14px;
+}
+
+.tournament-management-page-title {
+  margin: 0;
+  font-size: 1.45rem;
+  line-height: 1.15;
+  color: #a4d39a;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+}
+
 .tournament-management-label,
 .tournament-management-draft-label {
   margin: 0;

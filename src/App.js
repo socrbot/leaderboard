@@ -71,17 +71,49 @@ function App() {
     };
   }, []);
 
-  const { user, userData, signOut, signInWithGoogle } = useAuth();
+  const { user, userData, signOut, signInWithGoogle, getIdToken } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
   const isAdmin = userData?.role === 'admin';
   // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
   const [activeLeagueId, setActiveLeagueId] = useState(null);
   const [activeLeagueName, setActiveLeagueName] = useState(null);
+  const [managedLeagues, setManagedLeagues] = useState([]);
+  const [showHeaderLeagueMenu, setShowHeaderLeagueMenu] = useState(false);
+  const headerLeaguePickerRef = useRef(null);
   useEffect(() => {
     if (activeLeagueId === null && userData?.leagueIds?.[0]) {
       setActiveLeagueId(userData.leagueIds[0]);
     }
   }, [userData, activeLeagueId]);
+
+  useEffect(() => {
+    const loadLeagues = async () => {
+      if (!user) {
+        setManagedLeagues([]);
+        return;
+      }
+      try {
+        const token = await getIdToken();
+        const res = await fetch(`${LEAGUES_API_ENDPOINT}/mine`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (!res.ok) {
+          setManagedLeagues([]);
+          return;
+        }
+        const leagues = await res.json();
+        const normalized = Array.isArray(leagues) ? leagues : [];
+        setManagedLeagues(normalized);
+        if (!activeLeagueId && normalized.length > 0) {
+          setActiveLeagueId(normalized[0].leagueId);
+        }
+      } catch {
+        setManagedLeagues([]);
+      }
+    };
+
+    loadLeagues();
+  }, [user, getIdToken, activeLeagueId]);
   // Fetch league name whenever activeLeagueId changes
   useEffect(() => {
     if (!activeLeagueId) { setActiveLeagueName(null); return; }
@@ -90,6 +122,17 @@ function App() {
       .then(d => setActiveLeagueName(d?.name || null))
       .catch(() => setActiveLeagueName(null));
   }, [activeLeagueId]);
+
+  useEffect(() => {
+    if (!showHeaderLeagueMenu) return;
+    const handleClickOutside = (event) => {
+      if (headerLeaguePickerRef.current && !headerLeaguePickerRef.current.contains(event.target)) {
+        setShowHeaderLeagueMenu(false);
+      }
+    };
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, [showHeaderLeagueMenu]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   const [showSetup, setShowSetup] = useState(false);
@@ -116,6 +159,7 @@ function App() {
   const [tournamentError, setTournamentError] = useState(null);
   const [showTournamentPicker, setShowTournamentPicker] = useState(false);
   const pickerRef = useRef(null);
+  const initialViewAppliedForUserRef = useRef(null);
 
   // Sorting state
   const [sortColumn, setSortColumn] = useState('total');
@@ -354,6 +398,38 @@ function App() {
     setDraftPicks([]);
     setShowTournamentPicker(false);
   }, [activeLeagueId]);
+
+  useEffect(() => {
+    if (!user) {
+      initialViewAppliedForUserRef.current = null;
+      return;
+    }
+
+    if (userData === null || loadingTournaments) {
+      return;
+    }
+
+    if (initialViewAppliedForUserRef.current === user.uid) {
+      return;
+    }
+
+    const isInLeague =
+      userData?.inLeague === true ||
+      (Array.isArray(userData?.leagueIds) && userData.leagueIds.length > 0);
+
+    setShowSetup(false);
+    setShowAnnualChampionship(false);
+    setShowTournamentScores(false);
+
+    if (isInLeague) {
+      setShowUserSettings(false);
+      setLeaderboardRefreshKey((prev) => prev + 1);
+    } else {
+      setShowUserSettings(true);
+    }
+
+    initialViewAppliedForUserRef.current = user.uid;
+  }, [loadingTournaments, user, userData]);
 
   
 
@@ -819,7 +895,39 @@ function App() {
             </div>
             <div className="brand-text">
               <h1 className="app-title">Alumni Golf Tournament</h1>
-              <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
+              {user ? (
+                <div className="app-league-picker" ref={headerLeaguePickerRef}>
+                  <button
+                    type="button"
+                    className="app-league-trigger"
+                    onClick={() => setShowHeaderLeagueMenu((prev) => !prev)}
+                    aria-expanded={showHeaderLeagueMenu}
+                  >
+                    <span className="app-subtitle">{activeLeagueName || 'Select league'}</span>
+                    <span className="app-league-chevron" aria-hidden="true">▾</span>
+                  </button>
+                  {showHeaderLeagueMenu && (
+                    <div className="app-league-menu">
+                      {managedLeagues.map((league) => (
+                        <button
+                          key={league.leagueId}
+                          type="button"
+                          className={`app-league-item${league.leagueId === activeLeagueId ? ' active' : ''}`}
+                          onClick={() => {
+                            setActiveLeagueId(league.leagueId);
+                            setActiveLeagueName(league.name || null);
+                            setShowHeaderLeagueMenu(false);
+                          }}
+                        >
+                          {league.name}
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ) : (
+                <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
+              )}
             </div>
           </div>
 
@@ -934,9 +1042,6 @@ function App() {
         </div>
       ) : showSetup || showUserSettings ? (
         <>
-          <div className="status-bar">
-            <p className="status-section-title">Profile</p>
-          </div>
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
           {showSetup && (
             <div className="setup-nav-bar">

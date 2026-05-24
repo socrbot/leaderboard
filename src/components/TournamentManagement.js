@@ -69,6 +69,10 @@ const TournamentManagement = ({
 
   return (
     <div className="tournament-management-shell">
+      <header className="tournament-management-header">
+        <h2 className="tournament-management-page-title">Tournament Management</h2>
+      </header>
+
       <section className="tournament-management-panel">
         <h3 className="tournament-management-section-title">Current League Context</h3>
         <div className="tournament-management-card">

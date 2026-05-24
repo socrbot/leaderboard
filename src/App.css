@@ -110,6 +110,63 @@ body {
   font-weight: 400;
 }
 
+.app-league-picker {
+  position: relative;
+  margin-top: 1px;
+}
+
+.app-league-trigger {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  cursor: pointer;
+}
+
+.app-league-chevron {
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 0.62rem;
+  line-height: 1;
+}
+
+.app-league-menu {
+  position: absolute;
+  left: 0;
+  top: calc(100% + 6px);
+  min-width: 170px;
+  max-width: 240px;
+  background: rgba(20, 20, 20, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.28);
+  padding: 6px;
+  display: grid;
+  gap: 4px;
+  z-index: 50;
+}
+
+.app-league-item {
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.82);
+  text-align: left;
+  padding: 7px 8px;
+  border-radius: 6px;
+  font-size: 0.76rem;
+  cursor: pointer;
+}
+
+.app-league-item:hover {
+  background: rgba(255, 255, 255, 0.08);
+}
+
+.app-league-item.active {
+  background: rgba(34, 139, 34, 0.3);
+  color: #d8f4d0;
+}
+
 /* Tournament Selectors */
 .year-select {
   min-width: 80px !important;
@@ -908,6 +965,11 @@ select:focus {
     font-size: 0.65rem;
   }
 
+  .app-league-menu {
+    min-width: 150px;
+    max-width: 200px;
+  }
+
   .modern-select {
     min-height: 36px;
   }
@@ -960,6 +1022,11 @@ select:focus {
 
   .app-subtitle {
     font-size: 0.6rem;
+  }
+
+  .app-league-menu {
+    min-width: 140px;
+    max-width: 180px;
   }
 
   .modern-select {
