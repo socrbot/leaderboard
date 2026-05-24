@@ -1,7 +1,7 @@
 # Golf Leaderboard Frontend - Business Requirements Document
 
-**Version**: 1.0  
-**Last Updated**: April 11, 2026  
+**Version**: 1.1  
+**Last Updated**: May 24, 2026  
 **Document Owner**: Product Team  
 **Project**: Alumni Golf Tournament Leaderboard System
 
@@ -144,6 +144,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 - Show all available players with betting odds
 - Display player name, tournament seed/rank
 - Show odds from multiple sportsbooks with average
+- Keep odds-source provider details hidden from end users/admin UI labels
 - Indicate selected players with visual distinction
 - Gray out / disable selected players
 - Display which team selected each player
@@ -284,7 +285,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 **Description**: Ensure 100% accuracy in score calculations and displays
 
 **Acceptance Criteria**:
-- Verify scores match RapidAPI source data
+- Verify scores match upstream leaderboard source data
 - Validate team score calculations (best 3 of 4)
 - Correctly handle special characters in player names (å, ø, ü, etc.)
 - Accurately parse score-to-par formats (-5, E, +3)
@@ -323,7 +324,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 - Team standings table:
   - Columns: Position, Team Name, R1, R2, R3, R4, Total
   - Expandable rows showing 4 team members
-- Footer: Last updated, data source attribution
+- Footer: Last updated and refresh status
 
 #### 5.2.2 Visual Design
 - Color coding:
@@ -366,6 +367,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 - Team assignments
 - Global team definitions
 - Draft status and player odds
+- Odds source mapping and sync status metadata
 - Annual championship standings
 
 #### 6.1.2 User Inputs
@@ -407,7 +409,11 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 - `POST /api/global_teams` - Create team
 - `PUT /api/global_teams/{id}` - Update team
 - `DELETE /api/global_teams/{id}` - Delete team
-- `GET /api/player_odds?oddsId={id}` - Get player odds
+- `GET /api/player_odds?oddsId={reference}` - Get player odds
+- `GET /api/odds_api_status` - Get odds API usage and quota status
+- `GET /api/odds_api/major_sport_keys` - Resolve major tournament sport keys
+- `GET /api/odds_api/major_odds?majorCode={major}` - Get normalized major odds snapshot
+- `POST /api/tournaments/{id}/sync_odds_api` - Sync major odds into tournament draft odds
 - `POST /api/tournaments/{id}/start_draft` - Start draft
 - `POST /api/tournaments/{id}/complete_draft` - Complete draft
 
@@ -484,7 +490,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 - Must use React framework (current: React 18+)
 - Must integrate with existing Flask backend
 - Must use Firebase for hosting
-- Limited by RapidAPI rate limits (20 calls/day)
+- Limited by external provider API rate limits and quota guardrails
 
 ### 10.2 Business Constraints
 - Tournaments run April - November annually
@@ -495,7 +501,7 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 ### 10.3 Assumptions
 - Users have modern web browsers (last 2 years)
 - Users have stable internet connection
-- RapidAPI provides accurate, timely data
+- Upstream sports and odds feeds provide accurate, timely data
 - Backend API maintains 99.5% uptime
 - Tournament data structure remains consistent
 
@@ -558,3 +564,4 @@ The Golf Leaderboard Frontend is a web-based application that provides real-time
 | Version | Date | Author | Changes |
 |---------|------|--------|---------|
 | 1.0 | April 11, 2026 | AI Assistant | Initial comprehensive BRD |
+| 1.1 | May 24, 2026 | AI Assistant | Updated for V2 provider-agnostic UI language, Odds API workflow endpoints, and revised integration constraints |
