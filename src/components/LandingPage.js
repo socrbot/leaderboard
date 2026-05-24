@@ -2,106 +2,87 @@
 import React from 'react';
 import './LandingPage.css';
 
-/**
- * Landing page shown to unauthenticated users.
- * Graphic: SVG golf course illustration (open-source / self-contained, no external dependencies).
- */
-const GolfCourseSVG = () => (
-  <svg
-    viewBox="0 0 400 260"
-    className="landing-svg"
-    xmlns="http://www.w3.org/2000/svg"
-    aria-hidden="true"
-  >
-    {/* Sky */}
-    <rect width="400" height="260" fill="#0d2b0d" rx="16" />
-
-    {/* Distant hills */}
-    <ellipse cx="80" cy="200" rx="120" ry="60" fill="#143d14" />
-    <ellipse cx="320" cy="210" rx="130" ry="55" fill="#163916" />
-
-    {/* Fairway */}
-    <ellipse cx="200" cy="230" rx="160" ry="50" fill="#1a5c1a" />
-    <ellipse cx="200" cy="240" rx="140" ry="38" fill="#1e6b1e" />
-
-    {/* Green */}
-    <ellipse cx="200" cy="210" rx="60" ry="22" fill="#22a822" opacity="0.9" />
-
-    {/* Hole cup shadow */}
-    <ellipse cx="200" cy="212" rx="5" ry="2" fill="#0a1a0a" />
-
-    {/* Flag pole */}
-    <line x1="200" y1="212" x2="200" y2="155" stroke="#e0e0e0" strokeWidth="1.5" />
-
-    {/* Flag */}
-    <polygon points="200,155 225,163 200,171" fill="#f87171" />
-
-    {/* Stars */}
-    {[
-      [40, 30], [80, 20], [130, 40], [180, 18], [240, 28], [300, 15], [360, 35],
-      [350, 60], [60, 55], [160, 50], [280, 50]
-    ].map(([cx, cy], i) => (
-      <circle key={i} cx={cx} cy={cy} r="1.2" fill="rgba(255,255,255,0.55)" />
-    ))}
-
-    {/* Moon */}
-    <circle cx="340" cy="40" r="18" fill="#f0e68c" opacity="0.35" />
-    <circle cx="350" cy="36" r="15" fill="#0d2b0d" />
-
-    {/* Sand bunker */}
-    <ellipse cx="255" cy="218" rx="20" ry="8" fill="#c8b86a" opacity="0.75" />
-
-    {/* Golf ball */}
-    <circle cx="185" cy="209" r="4" fill="#ffffff" />
-    <circle cx="185" cy="209" r="4" fill="none" stroke="rgba(0,0,0,0.15)" strokeWidth="0.5" />
-  </svg>
-);
-
 const LandingPage = ({ onSignIn, signingIn }) => {
   return (
-    <div className="landing-root">
-      <div className="landing-card">
-        {/* Header brand — matches app header */}
-        <div className="landing-brand">
-          <span className="landing-golf-icon">⛳</span>
-          <div>
-            <h1 className="landing-title">Alumni Golf Tournament</h1>
-            <p className="landing-subtitle">West Virginia</p>
+    <div className="landing-page">
+      <main className="landing-main">
+        <section className="landing-hero">
+          <img
+            className="landing-hero-image"
+            src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4xAretQ8E1xkfPFGJdial2YT2fyjh07X5gLCGwJrEZsBZOHeeOVVQ40tuVXl4Jm6S3OPJIbc0tBsQ7LNneA39-udcw7nBDp7tMHOSRjPm7CuRKgF6GlRgFiX_YhpcMsEsKevd3qHdh5T558VXQVKlWhtG1d6uIzmiONSP5dQLfS5qiYqzH0xFOeT-ZG_3_qacUljcdmWS6wSPNiNdfzMxDC32t38IOxkGORINUp9RGR6xe-ce12TSDwaXIJIveP6QqQ3wKxRq1ow"
+            alt="Alumni Cup"
+          />
+          <div className="landing-hero-gradient" />
+
+          <div className="landing-hero-content">
+            <div className="landing-brand-chip">ALUMNI CUP</div>
+            <h1 className="landing-hero-title">The Alumni Cup</h1>
+            <p className="landing-hero-subtitle">
+              Live scoring, draft-day strategy, and season standings in one place.
+            </p>
+
+            <button
+              className="landing-google-btn"
+              onClick={onSignIn}
+              disabled={signingIn}
+            >
+              {signingIn ? (
+                <span className="landing-spinner" aria-label="Signing in" />
+              ) : (
+                <>
+                  <GoogleIcon />
+                  <span>Sign in with Google</span>
+                </>
+              )}
+            </button>
           </div>
+        </section>
+
+        <section className="landing-bento">
+          <FeatureCard
+            tone="primary"
+            badge="LIVE"
+            title="Leaderboard"
+            text="Instant score updates and clear team movement as rounds unfold."
+          />
+          <FeatureCard
+            tone="secondary"
+            badge="DRAFT"
+            title="Team Management"
+            text="Run draft flow, assign golfers, and manage rosters with less friction."
+          />
+          <FeatureCard
+            tone="tertiary"
+            badge="SEASON"
+            title="Annual Standings"
+            text="Track cumulative performance across tournaments and crown the champion."
+          />
+        </section>
+      </main>
+
+      <footer className="landing-footer">
+        <div className="landing-footer-left">
+          <div className="landing-footer-brand">ALUMNI CUP</div>
+          <p className="landing-footer-copy">Members only. Use your invited Google account.</p>
         </div>
 
-        {/* Illustration */}
-        <GolfCourseSVG />
-
-        {/* Tagline */}
-        <p className="landing-tagline">
-          Track your league, your draft picks, and<br />
-          every round in real time.
-        </p>
-
-        {/* Login button */}
-        <button
-          className="landing-login-btn"
-          onClick={onSignIn}
-          disabled={signingIn}
-        >
-          {signingIn ? (
-            <span className="landing-spinner" aria-label="Signing in…" />
-          ) : (
-            <>
-              <GoogleIcon />
-              Sign in with Google
-            </>
-          )}
-        </button>
-
-        <p className="landing-note">
-          Members only &mdash; sign in with your invited Google account.
-        </p>
-      </div>
+        <nav className="landing-footer-links" aria-label="Landing footer links">
+          <button type="button" className="landing-footer-link">Privacy</button>
+          <button type="button" className="landing-footer-link">Terms</button>
+          <button type="button" className="landing-footer-link">Support</button>
+        </nav>
+      </footer>
     </div>
   );
 };
+
+const FeatureCard = ({ tone, badge, title, text }) => (
+  <article className={`landing-feature-card ${tone}`}>
+    <div className="landing-feature-badge">{badge}</div>
+    <h2 className="landing-feature-title">{title}</h2>
+    <p className="landing-feature-text">{text}</p>
+  </article>
+);
 
 /* Inline Google "G" logo — no external image needed */
 const GoogleIcon = () => (
