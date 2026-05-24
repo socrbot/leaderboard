@@ -35,12 +35,29 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
   }, []);
 
   const getTournamentVenue = useCallback((tournament) => {
-    return tournament?.venue || tournament?.Venue || tournament?.Courses?.[0]?.Name || '';
+    return (
+      tournament?.venue ||
+      tournament?.Venue ||
+      tournament?.Tournament?.Venue ||
+      tournament?.Tournament?.Courses?.[0]?.Name ||
+      tournament?.Courses?.[0]?.Name ||
+      ''
+    );
   }, []);
 
   const getTournamentDateRange = useCallback((tournament) => {
-    const startRaw = tournament?.startDate || tournament?.StartDate || tournament?.date?.start || '';
-    const endRaw = tournament?.endDate || tournament?.EndDate || tournament?.date?.end || '';
+    const startRaw =
+      tournament?.startDate ||
+      tournament?.StartDate ||
+      tournament?.Tournament?.StartDate ||
+      tournament?.date?.start ||
+      '';
+    const endRaw =
+      tournament?.endDate ||
+      tournament?.EndDate ||
+      tournament?.Tournament?.EndDate ||
+      tournament?.date?.end ||
+      '';
     const start = formatDate(startRaw);
     const end = formatDate(endRaw);
     if (start && end) return `${start}-${end}`;
@@ -104,7 +121,44 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
         return Number.isNaN(aDate) || Number.isNaN(bDate) ? 0 : bDate - aDate;
       });
 
-      setLeagueTournaments(sorted);
+      const enriched = await Promise.all(
+        sorted.map(async (tournament) => {
+          try {
+            const detailRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournament.id}`);
+            if (!detailRes.ok) return tournament;
+            const detail = await detailRes.json();
+
+            return {
+              ...tournament,
+              ...detail,
+              name: tournament.name || detail.name || detail.Name,
+              startDate:
+                tournament.startDate ||
+                detail.startDate ||
+                detail.StartDate ||
+                detail?.Tournament?.StartDate ||
+                '',
+              endDate:
+                tournament.endDate ||
+                detail.endDate ||
+                detail.EndDate ||
+                detail?.Tournament?.EndDate ||
+                '',
+              venue:
+                tournament.venue ||
+                detail.venue ||
+                detail.Venue ||
+                detail?.Tournament?.Venue ||
+                '',
+              Tournament: detail?.Tournament || tournament?.Tournament || null,
+            };
+          } catch {
+            return tournament;
+          }
+        })
+      );
+
+      setLeagueTournaments(enriched);
 
       await Promise.all(
         sorted.map((t) => fetchDraftStatusForTournament(t.id))
