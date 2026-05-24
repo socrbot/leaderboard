@@ -760,15 +760,20 @@ function App() {
           {/* User avatar — always visible; opens My Settings */}
           {user && (
             <button
-              className={`user-avatar-btn${showUserSettings ? ' active' : ''}`}
+              className={`user-avatar-btn${(isAdmin ? showSetup : showUserSettings) ? ' active' : ''}`}
               onClick={() => {
                 setShowAnnualChampionship(false);
                 setShowTournamentScores(false);
-                setShowSetup(false);
-                setShowUserSettings(s => !s);
+                if (isAdmin) {
+                  setShowUserSettings(false);
+                  setShowSetup(true);
+                } else {
+                  setShowSetup(false);
+                  setShowUserSettings(s => !s);
+                }
               }}
               title={`Signed in as ${user.email}`}
-              aria-label="My Settings"
+              aria-label={isAdmin ? 'Admin Setup' : 'My Settings'}
             >
               {user.photoURL ? (
                 <img src={user.photoURL} alt={user.displayName || 'Profile'} className="user-avatar-img" referrerPolicy="no-referrer" />
