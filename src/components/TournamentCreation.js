@@ -401,52 +401,54 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
             {oddsLoading && <p className="form-help">Matching odds source...</p>}
             {oddsError && <p className="form-error">{oddsError}</p>}
             {!oddsLoading && oddsItems.length > 0 && (
-              <div className="tournament-dropdown-card" ref={oddsRef}>
-                <button
-                  type="button"
-                  className="tournament-dropdown-trigger"
-                  onClick={() => setShowOddsMenu(prev => !prev)}
-                  aria-expanded={showOddsMenu}
-                >
-                  <div>
-                    <p className="tournament-dropdown-title">{selectedOddsItem?.name || 'Select odds tournament'}</p>
-                    <p className="tournament-dropdown-meta">
-                      {selectedOddsItem?.startDate ? `${selectedOddsItem.startDate.slice(0, 10)} · ` : ''}
-                      {selectedOddsId ? `ID: ${selectedOddsId}` : 'Odds source match'}
-                    </p>
-                  </div>
-                  <span className="tournament-dropdown-arrow" aria-hidden="true">▾</span>
-                </button>
-                {showOddsMenu && (
-                  <div className="tournament-dropdown-menu">
-                    {oddsItems.map(t => (
-                      <button
-                        key={t.oddsId}
-                        type="button"
-                        className={`tournament-dropdown-item${selectedOddsId === t.oddsId ? ' active' : ''}`}
-                        onClick={() => {
-                          setSelectedOddsId(t.oddsId);
-                          setShowOddsMenu(false);
-                        }}
-                      >
-                        <span>
-                          <strong>{t.name}</strong>
-                          {t.startDate ? <small>{t.startDate.slice(0, 10)}</small> : null}
-                        </span>
-                        <small>{t.oddsId}</small>
-                      </button>
-                    ))}
-                  </div>
+              <>
+                <div className="tournament-dropdown-card" ref={oddsRef}>
+                  <button
+                    type="button"
+                    className="tournament-dropdown-trigger"
+                    onClick={() => setShowOddsMenu(prev => !prev)}
+                    aria-expanded={showOddsMenu}
+                  >
+                    <div>
+                      <p className="tournament-dropdown-title">{selectedOddsItem?.name || 'Select odds tournament'}</p>
+                      <p className="tournament-dropdown-meta">
+                        {selectedOddsItem?.startDate ? `${selectedOddsItem.startDate.slice(0, 10)} · ` : ''}
+                        {selectedOddsId ? `ID: ${selectedOddsId}` : 'Odds source match'}
+                      </p>
+                    </div>
+                    <span className="tournament-dropdown-arrow" aria-hidden="true">▾</span>
+                  </button>
+                  {showOddsMenu && (
+                    <div className="tournament-dropdown-menu">
+                      {oddsItems.map(t => (
+                        <button
+                          key={t.oddsId}
+                          type="button"
+                          className={`tournament-dropdown-item${selectedOddsId === t.oddsId ? ' active' : ''}`}
+                          onClick={() => {
+                            setSelectedOddsId(t.oddsId);
+                            setShowOddsMenu(false);
+                          }}
+                        >
+                          <span>
+                            <strong>{t.name}</strong>
+                            {t.startDate ? <small>{t.startDate.slice(0, 10)}</small> : null}
+                          </span>
+                          <small>{t.oddsId}</small>
+                        </button>
+                      ))}
+                    </div>
+                  )}
+                </div>
+                {selectedOddsId && (
+                  <small className="form-help">
+                    odds reference: <strong>{selectedOddsId}</strong>
+                    {selectedOddsId && oddsItems.find(t => t.oddsId === selectedOddsId)?.name === tournamentName
+                      ? ' ✓ exact name match'
+                      : ' — verify this is correct'}
+                  </small>
                 )}
-              </div>
-              {selectedOddsId && (
-                <small className="form-help">
-                  odds reference: <strong>{selectedOddsId}</strong>
-                  {selectedOddsId && oddsItems.find(t => t.oddsId === selectedOddsId)?.name === tournamentName
-                    ? ' ✓ exact name match'
-                    : ' — verify this is correct'}
-                </small>
-              )}
+              </>
             )}
             {!oddsLoading && oddsItems.length === 0 && !oddsError && selectedScheduleItem && (
               <p className="form-help">No odds data available for this year.</p>

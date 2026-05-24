@@ -1,5 +1,5 @@
 // src/components/TournamentManagement.js
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { LEAGUES_API_ENDPOINT } from '../apiConfig';
 import { useAuth } from '../contexts/AuthContext';
 import TournamentCreation from './TournamentCreation';

@@ -225,7 +225,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
           </div>
           <div className="tournament-card-status-group">
             <span className="tournament-card-status">{hasManualDraftOdds ? 'Manual active' : 'Live feed'}</span>
-            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">▾</span>
+            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">Γû╛</span>
           </div>
         </button>
         <div className="expand-content">
@@ -298,7 +298,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
           </div>
           <div className="tournament-card-status-group">
             <span className="tournament-card-status">{teams.length} teams</span>
-            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">▾</span>
+            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">Γû╛</span>
           </div>
         </button>
         <div className="expand-content">
@@ -319,103 +319,134 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
                   {[...teams]
                     .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
                     .map((team) => {
-              const filledPicks = (team.golferNames || []).filter(Boolean);
-              const canAdd = draftStatus.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
-              const searchText = addSearch[team.ownerUid] || '';
-              const suggestions = searchText.length >= 2
-                ? lockedOdds
-                    .map(p => p.name)
-                    .filter(n => n && n.toLowerCase().includes(searchText.toLowerCase()) && !filledPicks.includes(n))
-                    .slice(0, 8)
-                : [];
-              return (
-                <div key={team.ownerUid || team.name} className="team-card">
-                  <div className="team-card-header">
-                    <h3 style={{ margin: '0', color: 'white' }}>
-                      {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}
-                    </h3>
-                    <span style={{ fontSize: '0.8em', color: '#aaa' }}>
-                      {filledPicks.length} / 4 picks
-                    </span>
-                  </div>
+                      const filledPicks = (team.golferNames || []).filter(Boolean);
+                      const canAdd = draftStatus.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
+                      const searchText = addSearch[team.ownerUid] || "";
+                      const suggestions = searchText.length >= 2
+                        ? lockedOdds
+                            .map((p) => p.name)
+                            .filter((n) => n && n.toLowerCase().includes(searchText.toLowerCase()) && !filledPicks.includes(n))
+                            .slice(0, 8)
+                        : [];
 
-                  <ul className="team-golfer-list">
-                    {filledPicks.length === 0 && (
-                      <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>
-                        No golfers picked yet.
-                      </li>
-                    )}
-                    {(team.golferNames || []).filter(Boolean).map((golfer) => (
-                      <li key={golfer} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-                        <span>{golfer}</span>
-                        {draftStatus.IsDraftLocked && (
-                          <button
-                            onClick={() => handleAdminRemove(team.ownerUid, golfer)}
-                            disabled={!!editLoading[`${team.ownerUid}-remove-${golfer}`]}
-                            style={{
-                              background: 'none', border: 'none', color: '#e57373',
-                              cursor: 'pointer', fontSize: '1rem', padding: '0 4px', lineHeight: 1,
-                            }}
-                            title="Remove golfer"
-                          >
-                            ×
-                          </button>
-                        )}
-                      </li>
-                    ))}
-                  </ul>
+                      return (
+                        <div key={team.ownerUid || team.name} className="team-card">
+                          <div className="team-card-header">
+                            <h3 style={{ margin: "0", color: "white" }}>
+                              {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ""}{team.name}
+                            </h3>
+                            <span style={{ fontSize: "0.8em", color: "#aaa" }}>
+                              {filledPicks.length} / 4 picks
+                            </span>
+                          </div>
 
-                  {/* Admin add golfer */}
-                  {canAdd && (
-                    <div style={{ padding: '8px 12px', borderTop: '1px solid #555', position: 'relative' }}>
-                      <div style={{ display: 'flex', gap: '6px' }}>
-                        <input
-                          type="text"
-                          placeholder="Search golfer…"
-                          value={searchText}
-                          onChange={e => setAddSearch(prev => ({ ...prev, [team.ownerUid]: e.target.value }))}
-                          style={{
-                            flex: 1, padding: '5px 8px', borderRadius: '4px',
-                            border: '1px solid #555', background: '#2a2a2a', color: '#fff', fontSize: '0.85rem'
-                          }}
-                        />
-                        <button
-                          onClick={() => handleAdminAdd(team.ownerUid)}
-                          disabled={!searchText.trim() || !!editLoading[`${team.ownerUid}-add`]}
-                          style={{
-                            padding: '5px 12px', borderRadius: '4px', border: 'none',
-                            background: '#2d6a2d', color: '#fff', cursor: 'pointer', fontSize: '0.85rem'
-                          }}
-                        >
-                          {editLoading[`${team.ownerUid}-add`] ? '…' : 'Add'}
-                        </button>
-                      </div>
-                      {suggestions.length > 0 && (
-                        <ul style={{
-                          position: 'absolute', left: '12px', right: '12px', top: '100%',
-                          background: '#333', border: '1px solid #555', borderRadius: '4px',
-                          margin: 0, padding: 0, listStyle: 'none', zIndex: 100, maxHeight: '180px', overflowY: 'auto'
-                        }}>
-                          {suggestions.map(name => (
-                            <li
-                              key={name}
-                              onClick={() => {
-                                setAddSearch(prev => ({ ...prev, [team.ownerUid]: name }));
-                              }}
-                              style={{
-                                padding: '7px 12px', cursor: 'pointer', fontSize: '0.85rem',
-                                color: '#eee', borderBottom: '1px solid #444'
-                              }}
-                              onMouseEnter={e => e.currentTarget.style.background = '#444'}
-                              onMouseLeave={e => e.currentTarget.style.background = ''}
-                            >
-                              {name}
-                            </li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                  )}
+                          <ul className="team-golfer-list">
+                            {filledPicks.length === 0 && (
+                              <li style={{ padding: "8px 15px", fontStyle: "italic", color: "#ccc", backgroundColor: "#4A4A4A" }}>
+                                No golfers picked yet.
+                              </li>
+                            )}
+                            {(team.golferNames || []).filter(Boolean).map((golfer) => (
+                              <li key={golfer} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <span>{golfer}</span>
+                                {draftStatus.IsDraftLocked && (
+                                  <button
+                                    onClick={() => handleAdminRemove(team.ownerUid, golfer)}
+                                    disabled={!!editLoading[`${team.ownerUid}-remove-${golfer}`]}
+                                    style={{
+                                      background: "none",
+                                      border: "none",
+                                      color: "#e57373",
+                                      cursor: "pointer",
+                                      fontSize: "1rem",
+                                      padding: "0 4px",
+                                      lineHeight: 1,
+                                    }}
+                                    title="Remove golfer"
+                                  >
+                                    x
+                                  </button>
+                                )}
+                              </li>
+                            ))}
+                          </ul>
+
+                          {canAdd && (
+                            <div style={{ padding: "8px 12px", borderTop: "1px solid #555", position: "relative" }}>
+                              <div style={{ display: "flex", gap: "6px" }}>
+                                <input
+                                  type="text"
+                                  placeholder="Search golfer..."
+                                  value={searchText}
+                                  onChange={(e) => setAddSearch(prev => ({ ...prev, [team.ownerUid]: e.target.value }))}
+                                  style={{
+                                    flex: 1,
+                                    padding: "5px 8px",
+                                    borderRadius: "4px",
+                                    border: "1px solid #555",
+                                    background: "#2a2a2a",
+                                    color: "#fff",
+                                    fontSize: "0.85rem"
+                                  }}
+                                />
+                                <button
+                                  onClick={() => handleAdminAdd(team.ownerUid)}
+                                  disabled={!searchText.trim() || !!editLoading[`${team.ownerUid}-add`]}
+                                  style={{
+                                    padding: "5px 12px",
+                                    borderRadius: "4px",
+                                    border: "none",
+                                    background: "#2d6a2d",
+                                    color: "#fff",
+                                    cursor: "pointer",
+                                    fontSize: "0.85rem"
+                                  }}
+                                >
+                                  {editLoading[`${team.ownerUid}-add`] ? "..." : "Add"}
+                                </button>
+                              </div>
+                              {suggestions.length > 0 && (
+                                <ul style={{
+                                  position: "absolute",
+                                  left: "12px",
+                                  right: "12px",
+                                  top: "100%",
+                                  background: "#333",
+                                  border: "1px solid #555",
+                                  borderRadius: "4px",
+                                  margin: 0,
+                                  padding: 0,
+                                  listStyle: "none",
+                                  zIndex: 100,
+                                  maxHeight: "180px",
+                                  overflowY: "auto"
+                                }}>
+                                  {suggestions.map((name) => (
+                                    <li
+                                      key={name}
+                                      onClick={() => {
+                                        setAddSearch(prev => ({ ...prev, [team.ownerUid]: name }));
+                                      }}
+                                      style={{
+                                        padding: "7px 12px",
+                                        cursor: "pointer",
+                                        fontSize: "0.85rem",
+                                        color: "#eee",
+                                        borderBottom: "1px solid #444"
+                                      }}
+                                      onMouseEnter={e => e.currentTarget.style.background = "#444"}
+                                      onMouseLeave={e => e.currentTarget.style.background = ""}
+                                    >
+                                      {name}
+                                    </li>
+                                  ))}
+                                </ul>
+                              )}
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                 </div>
               )}
             </div>
