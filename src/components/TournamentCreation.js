@@ -23,6 +23,23 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
   }, [year]);
 
   useEffect(() => {
+    if (seasonConfig.length === 0) {
+      setSelectedConfigEntry(null);
+      return;
+    }
+
+    if (!selectedConfigEntry) {
+      setSelectedConfigEntry(seasonConfig[0]);
+      return;
+    }
+
+    const stillExists = seasonConfig.some((t) => t.tournId === selectedConfigEntry.tournId);
+    if (!stillExists) {
+      setSelectedConfigEntry(seasonConfig[0]);
+    }
+  }, [seasonConfig, selectedConfigEntry]);
+
+  useEffect(() => {
     const handleClickOutside = (event) => {
       if (seasonConfigRef.current && !seasonConfigRef.current.contains(event.target)) {
         setShowSeasonConfigMenu(false);
@@ -68,13 +85,13 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
 
   return (
     <div className="tournament-creation">
-      <h3>Create Tournament</h3>
+      
 
       <div className="tournament-form">
         {/* Quick Create from Season Config */}
         {seasonConfig.length > 0 && (
           <div className="form-group tournament-dropdown-group">
-            <label>SELECT AVAILABLE TOURNAMENT</label>
+            <label>SELECT TOURNAMENT</label>
             <div className="tournament-dropdown-row">
               <div className="tournament-dropdown-card" ref={seasonConfigRef}>
                 <button
@@ -84,10 +101,10 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
                   aria-expanded={showSeasonConfigMenu}
                 >
                   <div>
-                    <p className="tournament-dropdown-title">{selectedConfigEntry?.name || 'Select a pre-configured tournament'}</p>
+                    <p className="tournament-dropdown-title">{selectedConfigEntry?.name || ''}</p>
                     <p className="tournament-dropdown-meta">
                       {selectedConfigEntry?.startDate ? `${selectedConfigEntry.startDate.slice(0, 10)} · ` : ''}
-                      {selectedConfigEntry ? `ID: ${selectedConfigEntry.tournId}` : 'Season schedule preset'}
+                      {selectedConfigEntry ? `ID: ${selectedConfigEntry.tournId}` : ''}
                     </p>
                   </div>
                   <span className="tournament-dropdown-arrow" aria-hidden="true">▾</span>
