@@ -813,6 +813,30 @@ function App() {
           {/* Navigation Section */}
           <nav className="modern-nav">
             <button
+              className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={() => {
+                setShowAnnualYearPicker(false);
+                handleShowLeaderboardClick();
+              }}
+              disabled={!selectedTournamentId}
+            >
+              Leaderboard
+            </button>
+            <button
+              className={`nav-link ${!selectedTournamentId ? 'disabled' : ''}`}
+              onClick={() => {
+                if (!selectedTournamentId) return;
+                setShowSetup(false);
+                setShowAnnualChampionship(false);
+                setShowAnnualYearPicker(false);
+                setShowTournamentScores(true);
+                setShowUserSettings(false);
+              }}
+              disabled={!selectedTournamentId}
+            >
+              Scores
+            </button>
+            <button
               className="nav-link"
               onClick={() => {
                 setShowSetup(false);

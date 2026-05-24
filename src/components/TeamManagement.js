@@ -1,36 +1,27 @@
 // src/components/TeamManagement.js
-import React, { useState, useEffect, useCallback, useMemo } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 import { useAuth } from '../contexts/AuthContext';
-import '../App.css'; // Importing the CSS file
+import '../App.css';
 
-const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated, hideHeader = false }) => {
+const DEFAULT_DRAFT_STATUS = {
+  IsDraftStarted: false,
+  IsDraftLocked: false,
+  IsDraftComplete: false,
+};
+
+const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftStarted, hideHeader = false }) => {
   const { getIdToken } = useAuth();
-  const [isMobile, setIsMobile] = useState(false);
-  const [teams, setTeams] = useState([]);
-  const [isClearingManualOdds, setIsClearingManualOdds] = useState(false);
-  const [lockedOdds, setLockedOdds] = useState([]);
-  // Per-team "add golfer" state: { [ownerUid]: searchText }
+
+  const [leagueTournaments, setLeagueTournaments] = useState([]);
+  const [loadingTournaments, setLoadingTournaments] = useState(false);
+  const [draftStatusByTournament, setDraftStatusByTournament] = useState({});
+  const [teamsByTournament, setTeamsByTournament] = useState({});
+  const [lockedOddsByTournament, setLockedOddsByTournament] = useState({});
+  const [expandedByTournament, setExpandedByTournament] = useState({});
   const [addSearch, setAddSearch] = useState({});
   const [editLoading, setEditLoading] = useState({});
-  const [showDraftOdds, setShowDraftOdds] = useState(true);
-  const [showDraftBoard, setShowDraftBoard] = useState(true);
-  const [tournamentContext, setTournamentContext] = useState({
-    name: '',
-    venue: '',
-    startDate: '',
-    endDate: '',
-    leagueId: '',
-  });
-  const [isLeagueMismatch, setIsLeagueMismatch] = useState(false);
-
-  // --- Draft Status State ---
-  const [draftStatus, setDraftStatus] = useState({
-    IsDraftStarted: false,
-    IsDraftLocked: false,
-    IsDraftComplete: false
-  });
-  const [isDraftActionLoading, setIsDraftActionLoading] = useState(false);
+  const [draftActionLoading, setDraftActionLoading] = useState({});
 
   const formatDate = useCallback((value) => {
     if (!value) return '';
@@ -39,489 +30,443 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
     return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
   }, []);
 
-  const tournamentDateRange = useMemo(() => {
-    const start = formatDate(tournamentContext.startDate);
-    const end = formatDate(tournamentContext.endDate);
-    if (!start && !end) return '';
-    if (start && end) return `${start}-${end}`;
-    return start || end;
-  }, [formatDate, tournamentContext.endDate, tournamentContext.startDate]);
-
-  // Check for mobile on mount and resize
-  useEffect(() => {
-    const checkMobile = () => {
-      setIsMobile(window.innerWidth <= 768);
-    };
-    
-    checkMobile();
-    window.addEventListener('resize', checkMobile);
-    
-    return () => window.removeEventListener('resize', checkMobile);
+  const getTournamentName = useCallback((tournament) => {
+    return tournament?.name || tournament?.Name || 'Tournament';
   }, []);
 
-  // Load enrolled teams: use league members when draft is not yet locked,
-  // fall back to tournament's stored teams (with draft order + picks) once locked.
-  const loadTeams = useCallback(async () => {
-    if (!tournamentId) {
-      setTeams([]);
-      setLockedOdds([]);
-      setTournamentContext({ name: '', venue: '', startDate: '', endDate: '', leagueId: '' });
-      setIsLeagueMismatch(false);
+  const getTournamentVenue = useCallback((tournament) => {
+    return tournament?.venue || tournament?.Venue || tournament?.Courses?.[0]?.Name || '';
+  }, []);
+
+  const getTournamentDateRange = useCallback((tournament) => {
+    const startRaw = tournament?.startDate || tournament?.StartDate || tournament?.date?.start || '';
+    const endRaw = tournament?.endDate || tournament?.EndDate || tournament?.date?.end || '';
+    const start = formatDate(startRaw);
+    const end = formatDate(endRaw);
+    if (start && end) return `${start}-${end}`;
+    return start || end;
+  }, [formatDate]);
+
+  const getDraftStatusLabel = useCallback((status) => {
+    if (status.IsDraftComplete) return 'Draft Complete';
+    if (status.IsDraftStarted) return 'Draft Active';
+    if (status.IsDraftLocked) return 'Odds Locked';
+    return 'Draft Pending';
+  }, []);
+
+  const fetchDraftStatusForTournament = useCallback(async (tournamentId) => {
+    try {
+      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/draft_status`);
+      if (!res.ok) throw new Error('Failed draft status fetch');
+      const status = await res.json();
+      setDraftStatusByTournament((prev) => ({ ...prev, [tournamentId]: status }));
+      return status;
+    } catch {
+      setDraftStatusByTournament((prev) => ({ ...prev, [tournamentId]: DEFAULT_DRAFT_STATUS }));
+      return DEFAULT_DRAFT_STATUS;
+    }
+  }, []);
+
+  const loadTeamsForTournament = useCallback(async (tournamentId) => {
+    try {
+      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
+      if (!res.ok) throw new Error('Failed tournament fetch');
+      const tournament = await res.json();
+      setTeamsByTournament((prev) => ({ ...prev, [tournamentId]: tournament.teams || [] }));
+      setLockedOddsByTournament((prev) => ({ ...prev, [tournamentId]: tournament.DraftLockedOdds || [] }));
+    } catch {
+      setTeamsByTournament((prev) => ({ ...prev, [tournamentId]: [] }));
+      setLockedOddsByTournament((prev) => ({ ...prev, [tournamentId]: [] }));
+    }
+  }, []);
+
+  const loadLeagueTournaments = useCallback(async () => {
+    if (!leagueId) {
+      setLeagueTournaments([]);
+      setDraftStatusByTournament({});
+      setTeamsByTournament({});
+      setLockedOddsByTournament({});
+      setExpandedByTournament({});
       return;
     }
+
+    setLoadingTournaments(true);
     try {
-      // Fetch tournament doc to check lock status and grab post-lock teams
-      const tRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
-      if (!tRes.ok) throw new Error(`HTTP error! status: ${tRes.status}`);
-      const tournamentData = await tRes.json();
-      const resolvedTournamentLeagueId = tournamentData.leagueId || tournamentData.leagueID || tournamentData.LeagueId || tournamentData.league_id || '';
-      setTournamentContext({
-        name: tournamentData.name || tournamentData.Name || 'Tournament',
-        venue: tournamentData.venue || tournamentData.Venue || tournamentData.Courses?.[0]?.Name || '',
-        startDate: tournamentData.startDate || tournamentData.StartDate || '',
-        endDate: tournamentData.endDate || tournamentData.EndDate || '',
-        leagueId: resolvedTournamentLeagueId,
+      const url = `${BACKEND_BASE_URL}/tournaments?leagueId=${encodeURIComponent(leagueId)}`;
+      const res = await fetch(url);
+      if (!res.ok) throw new Error('Failed tournaments fetch');
+
+      const tournaments = await res.json();
+      const normalized = Array.isArray(tournaments) ? tournaments : [];
+      const sorted = [...normalized].sort((a, b) => {
+        const aDate = new Date(a.startDate || a.StartDate || 0).getTime();
+        const bDate = new Date(b.startDate || b.StartDate || 0).getTime();
+        return Number.isNaN(aDate) || Number.isNaN(bDate) ? 0 : bDate - aDate;
       });
 
-      if (leagueId && resolvedTournamentLeagueId && String(resolvedTournamentLeagueId) !== String(leagueId)) {
-        setTeams([]);
-        setLockedOdds([]);
-        setIsLeagueMismatch(true);
-        return;
-      }
+      setLeagueTournaments(sorted);
 
-      setIsLeagueMismatch(false);
-      const isLocked = !!(tournamentData.DraftLockedOdds && tournamentData.DraftLockedOdds.length > 0);
-      setLockedOdds(tournamentData.DraftLockedOdds || []);
-
-      if (!isLocked && leagueId) {
-        // Pre-lock: show current league members
-        const token = await getIdToken();
-        const mRes = await fetch(`${BACKEND_BASE_URL}/leagues/${leagueId}/members`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!mRes.ok) throw new Error(`Failed to fetch league members: ${mRes.status}`);
-        const members = await mRes.json();
-        setTeams(members.map(m => ({
-          name: m.displayName || m.email,
-          ownerUid: m.uid,
-          ownerEmail: m.email,
-          golferNames: [],
-          draftOrder: null,
-        })));
-      } else {
-        // Post-lock: use tournament teams which have draft order + picks
-        setTeams(tournamentData.teams || []);
-      }
-    } catch (error) {
-      console.error('Error loading teams:', error);
-      setTeams([]);
-      setIsLeagueMismatch(false);
+      await Promise.all(
+        sorted.map((t) => fetchDraftStatusForTournament(t.id))
+      );
+    } catch {
+      setLeagueTournaments([]);
+      setDraftStatusByTournament({});
+    } finally {
+      setLoadingTournaments(false);
     }
-  }, [tournamentId, leagueId, getIdToken]);
+  }, [fetchDraftStatusForTournament, leagueId]);
 
   useEffect(() => {
-    loadTeams();
-  }, [loadTeams]);
+    loadLeagueTournaments();
+  }, [loadLeagueTournaments]);
 
-  // --- Fetch Draft Status ---
-  const fetchDraftStatus = useCallback(async () => {
-    if (!tournamentId) {
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
-      return;
+  const toggleTournamentExpand = async (tournamentId) => {
+    const shouldOpen = !expandedByTournament[tournamentId];
+    setExpandedByTournament((prev) => ({ ...prev, [tournamentId]: shouldOpen }));
+
+    if (shouldOpen) {
+      await loadTeamsForTournament(tournamentId);
+      await fetchDraftStatusForTournament(tournamentId);
     }
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/draft_status`);
-      if (!response.ok) throw new Error('Failed to fetch draft status');
-      const status = await response.json();
-      setDraftStatus(status);
-    } catch (error) {
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
-    }
-  }, [tournamentId]);
+  };
 
-  useEffect(() => {
-    fetchDraftStatus();
-  }, [fetchDraftStatus, tournamentId]);
+  const refreshTournamentData = useCallback(async (tournamentId) => {
+    await Promise.all([
+      fetchDraftStatusForTournament(tournamentId),
+      loadTeamsForTournament(tournamentId),
+    ]);
+  }, [fetchDraftStatusForTournament, loadTeamsForTournament]);
 
-  // --- Unified Draft Action Handler ---
-  const handleDraftAction = async () => {
-    if (!tournamentId || isLeagueMismatch) return;
-    setIsDraftActionLoading(true);
+  const handleDraftAction = async (tournamentId) => {
+    const status = draftStatusByTournament[tournamentId] || DEFAULT_DRAFT_STATUS;
     let endpoint = '';
     let confirmMsg = '';
     let successMsg = '';
-    if (!draftStatus.IsDraftLocked) {
+
+    if (!status.IsDraftLocked) {
       endpoint = `/tournaments/${tournamentId}/lock_draft_odds`;
-      confirmMsg = 'Are you sure you want to lock the draft odds? This will snapshot the current odds for the draft tiers.';
-      successMsg = 'Draft odds locked! Tiers are now visible on the leaderboard.';
-    } else if (!draftStatus.IsDraftStarted) {
+      confirmMsg = 'Are you sure you want to lock the draft odds?';
+      successMsg = 'Draft odds locked.';
+    } else if (!status.IsDraftStarted) {
       endpoint = `/tournaments/${tournamentId}/start_draft_flag`;
-      confirmMsg = 'Are you sure you want to start the draft? Make sure draft order is set for all teams.';
-      successMsg = 'Draft started! Draft order is now visible.';
-    } else if (!draftStatus.IsDraftComplete) {
+      confirmMsg = 'Are you sure you want to start the draft?';
+      successMsg = 'Draft started.';
+    } else if (!status.IsDraftComplete) {
       endpoint = `/tournaments/${tournamentId}/complete_draft`;
       confirmMsg = 'Are you sure you want to complete the draft?';
-      successMsg = 'Draft marked complete!';
+      successMsg = 'Draft completed.';
     } else {
-      setIsDraftActionLoading(false);
       return;
     }
-    if (!window.confirm(confirmMsg)) {
-      setIsDraftActionLoading(false);
-      return;
-    }
+
+    if (!window.confirm(confirmMsg)) return;
+
+    setDraftActionLoading((prev) => ({ ...prev, [tournamentId]: true }));
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
+      const res = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
       });
-      if (!response.ok) throw new Error('Draft action failed');
-      alert(successMsg);
-      fetchDraftStatus();
+      if (!res.ok) throw new Error('Draft action failed');
+
+      await refreshTournamentData(tournamentId);
       if (onDraftStarted) onDraftStarted();
+      if (onTeamsSaved) onTeamsSaved();
+      if (onTournamentCreated) onTournamentCreated();
+      alert(successMsg);
     } catch (error) {
       alert(`Draft action failed: ${error.message}`);
     } finally {
-      setIsDraftActionLoading(false);
+      setDraftActionLoading((prev) => ({ ...prev, [tournamentId]: false }));
     }
   };
 
-  // --- Clear Manual Odds Handler ---
-  const handleClearManualOdds = async () => {
-    if (!tournamentId || isLeagueMismatch) return;
-    setIsClearingManualOdds(true);
-    try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/clear_manual_odds`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
-      });
-      if (!response.ok) throw new Error('Failed to clear manual odds');
-      alert('Manual odds cleared! Now using live odds.');
-      if (onManualOddsUpdated) onManualOddsUpdated();
-    } catch (error) {
-      alert(`Failed to clear manual odds: ${error.message}`);
-    } finally {
-      setIsClearingManualOdds(false);
-    }
-  };
-
-  // --- Admin: remove a golfer from a team ---
-  const handleAdminRemove = async (ownerUid, playerName) => {
+  const handleAdminRemove = async (tournamentId, ownerUid, playerName) => {
     if (!window.confirm(`Remove ${playerName} from this team?`)) return;
-    const key = `${ownerUid}-remove-${playerName}`;
-    setEditLoading(prev => ({ ...prev, [key]: true }));
+
+    const key = `${tournamentId}:${ownerUid}:remove:${playerName}`;
+    setEditLoading((prev) => ({ ...prev, [key]: true }));
+
     try {
       const token = await getIdToken();
       const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/admin_edit_pick`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ action: 'remove', ownerUid, playerName }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to remove golfer');
-      await loadTeams();
+
+      await loadTeamsForTournament(tournamentId);
     } catch (err) {
       alert(`Error: ${err.message}`);
     } finally {
-      setEditLoading(prev => ({ ...prev, [key]: false }));
+      setEditLoading((prev) => ({ ...prev, [key]: false }));
     }
   };
 
-  // --- Admin: add a golfer to a team ---
-  const handleAdminAdd = async (ownerUid) => {
-    const playerName = (addSearch[ownerUid] || '').trim();
+  const handleAdminAdd = async (tournamentId, ownerUid) => {
+    const searchKey = `${tournamentId}:${ownerUid}`;
+    const playerName = (addSearch[searchKey] || '').trim();
     if (!playerName) return;
-    const key = `${ownerUid}-add`;
-    setEditLoading(prev => ({ ...prev, [key]: true }));
+
+    const key = `${tournamentId}:${ownerUid}:add`;
+    setEditLoading((prev) => ({ ...prev, [key]: true }));
+
     try {
       const token = await getIdToken();
       const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/admin_edit_pick`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ action: 'add', ownerUid, playerName }),
       });
+
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to add golfer');
-      setAddSearch(prev => ({ ...prev, [ownerUid]: '' }));
-      await loadTeams();
+
+      setAddSearch((prev) => ({ ...prev, [searchKey]: '' }));
+      await loadTeamsForTournament(tournamentId);
     } catch (err) {
       alert(`Error: ${err.message}`);
     } finally {
-      setEditLoading(prev => ({ ...prev, [key]: false }));
+      setEditLoading((prev) => ({ ...prev, [key]: false }));
     }
   };
+
+  if (!leagueId) {
+    return (
+      <div className="team-management-container">
+        <p className="form-help">Select a league to manage tournament drafts.</p>
+      </div>
+    );
+  }
 
   return (
     <div className="team-management-container">
       {!hideHeader && (
-        <h1 className="team-management-title" style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
+        <h1 className="team-management-title" style={{ textAlign: 'center' }}>Draft Management</h1>
       )}
 
-      {tournamentId && (
-        <div className="tournament-management-card" style={{ marginBottom: '12px' }}>
-          <div className="tournament-card-body" style={{ gap: '6px' }}>
-            <p className="tournament-card-kicker">Selected Tournament</p>
-            <h2 className="tournament-card-title" style={{ margin: 0 }}>
-              {tournamentContext.name || 'Tournament'}
-            </h2>
-            <p className="tournament-card-meta" style={{ margin: 0 }}>
-              {[tournamentContext.venue, tournamentDateRange].filter(Boolean).join(' • ') || 'Tournament details unavailable'}
-            </p>
-          </div>
+      {loadingTournaments && <p className="form-help">Loading tournaments for this league...</p>}
+
+      {!loadingTournaments && leagueTournaments.length === 0 && (
+        <p className="form-help">No tournaments found for this league yet.</p>
+      )}
+
+      {!loadingTournaments && leagueTournaments.length > 0 && (
+        <div className="tournament-management-stack">
+          {leagueTournaments.map((tournament) => {
+            const tournamentId = tournament.id;
+            const status = draftStatusByTournament[tournamentId] || DEFAULT_DRAFT_STATUS;
+            const teams = teamsByTournament[tournamentId] || [];
+            const lockedOdds = lockedOddsByTournament[tournamentId] || [];
+            const isExpanded = !!expandedByTournament[tournamentId];
+            const draftLabel = getDraftStatusLabel(status);
+
+            return (
+              <div key={tournamentId} className={`tournament-card draft-board-card ${isExpanded ? 'expanded' : ''}`}>
+                <button
+                  className="tournament-card-summary"
+                  onClick={() => toggleTournamentExpand(tournamentId)}
+                  type="button"
+                >
+                  <div className="tournament-card-summary-left">
+                    <div>
+                      <h2 className="tournament-card-title">{getTournamentName(tournament)}</h2>
+                      <p className="tournament-card-meta">
+                        {[getTournamentVenue(tournament), getTournamentDateRange(tournament)].filter(Boolean).join(' • ') || 'Date and location unavailable'}
+                      </p>
+                      <p className="tournament-card-kicker" style={{ marginTop: '10px' }}>{draftLabel}</p>
+                    </div>
+                  </div>
+                  <span className={`league-v2-chevron${isExpanded ? ' expanded' : ''}`} aria-hidden="true">▾</span>
+                </button>
+
+                {isExpanded && (
+                  <div className="expand-content">
+                    <div className="overflow-hidden bg-surface-container-low">
+                      <div className="tournament-card-body">
+                        {!status.IsDraftComplete && (
+                          <button
+                            onClick={() => handleDraftAction(tournamentId)}
+                            disabled={!!draftActionLoading[tournamentId]}
+                            className="draft-action-btn"
+                          >
+                            {draftActionLoading[tournamentId]
+                              ? 'Processing...'
+                              : !status.IsDraftLocked
+                                ? 'Lock Draft Odds'
+                                : !status.IsDraftStarted
+                                  ? 'Start Draft'
+                                  : 'Complete Draft'}
+                          </button>
+                        )}
+
+                        {status.IsDraftComplete && (
+                          <p className="draft-status-line draft-status-complete">Draft is complete.</p>
+                        )}
+
+                        <h2 className="team-management-section-title" style={{ textAlign: 'center' }}>Enrolled Teams</h2>
+                        {teams.length === 0 ? (
+                          <p style={{ textAlign: 'center', color: '#aaa' }}>
+                            No teams yet. Teams are created from enrolled league members when you lock draft odds.
+                          </p>
+                        ) : (
+                          <div className="teams-flex-container">
+                            {[...teams]
+                              .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
+                              .map((team) => {
+                                const ownerUid = team.ownerUid || team.uid || team.owner_id || team.owner;
+                                const filledPicks = (team.golferNames || []).filter(Boolean);
+                                const canAdd = status.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
+                                const searchKey = `${tournamentId}:${ownerUid}`;
+                                const searchText = addSearch[searchKey] || '';
+                                const suggestions = searchText.length >= 2
+                                  ? lockedOdds
+                                      .map((p) => p.name)
+                                      .filter((n) => n && n.toLowerCase().includes(searchText.toLowerCase()) && !filledPicks.includes(n))
+                                      .slice(0, 8)
+                                  : [];
+
+                                return (
+                                  <div key={`${tournamentId}:${ownerUid || team.name}`} className="team-card">
+                                    <div className="team-card-header">
+                                      <h3 style={{ margin: '0', color: 'white' }}>
+                                        {status.IsDraftStarted ? `${team.draftOrder}. ` : ''}{team.name}
+                                      </h3>
+                                      <span style={{ fontSize: '0.8em', color: '#aaa' }}>{filledPicks.length} / 4 picks</span>
+                                    </div>
+
+                                    <ul className="team-golfer-list">
+                                      {filledPicks.length === 0 && (
+                                        <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>
+                                          No golfers picked yet.
+                                        </li>
+                                      )}
+                                      {filledPicks.map((golfer) => {
+                                        const removeKey = `${tournamentId}:${ownerUid}:remove:${golfer}`;
+                                        return (
+                                          <li key={golfer} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                                            <span>{golfer}</span>
+                                            {status.IsDraftLocked && ownerUid && (
+                                              <button
+                                                onClick={() => handleAdminRemove(tournamentId, ownerUid, golfer)}
+                                                disabled={!!editLoading[removeKey]}
+                                                style={{
+                                                  background: 'none',
+                                                  border: 'none',
+                                                  color: '#e57373',
+                                                  cursor: 'pointer',
+                                                  fontSize: '1rem',
+                                                  padding: '0 4px',
+                                                  lineHeight: 1,
+                                                }}
+                                                title="Remove golfer"
+                                              >
+                                                x
+                                              </button>
+                                            )}
+                                          </li>
+                                        );
+                                      })}
+                                    </ul>
+
+                                    {canAdd && ownerUid && (
+                                      <div style={{ padding: '8px 12px', borderTop: '1px solid #555', position: 'relative' }}>
+                                        <div style={{ display: 'flex', gap: '6px' }}>
+                                          <input
+                                            type="text"
+                                            placeholder="Search golfer..."
+                                            value={searchText}
+                                            onChange={(e) => setAddSearch((prev) => ({ ...prev, [searchKey]: e.target.value }))}
+                                            style={{
+                                              flex: 1,
+                                              padding: '5px 8px',
+                                              borderRadius: '4px',
+                                              border: '1px solid #555',
+                                              background: '#2a2a2a',
+                                              color: '#fff',
+                                              fontSize: '0.85rem',
+                                            }}
+                                          />
+                                          <button
+                                            onClick={() => handleAdminAdd(tournamentId, ownerUid)}
+                                            disabled={!searchText.trim() || !!editLoading[`${tournamentId}:${ownerUid}:add`]}
+                                            style={{
+                                              padding: '5px 12px',
+                                              borderRadius: '4px',
+                                              border: 'none',
+                                              background: '#2d6a2d',
+                                              color: '#fff',
+                                              cursor: 'pointer',
+                                              fontSize: '0.85rem',
+                                            }}
+                                          >
+                                            {editLoading[`${tournamentId}:${ownerUid}:add`] ? '...' : 'Add'}
+                                          </button>
+                                        </div>
+
+                                        {suggestions.length > 0 && (
+                                          <ul
+                                            style={{
+                                              position: 'absolute',
+                                              left: '12px',
+                                              right: '12px',
+                                              top: '100%',
+                                              background: '#333',
+                                              border: '1px solid #555',
+                                              borderRadius: '4px',
+                                              margin: 0,
+                                              padding: 0,
+                                              listStyle: 'none',
+                                              zIndex: 100,
+                                              maxHeight: '180px',
+                                              overflowY: 'auto',
+                                            }}
+                                          >
+                                            {suggestions.map((name) => (
+                                              <li
+                                                key={name}
+                                                onClick={() => setAddSearch((prev) => ({ ...prev, [searchKey]: name }))}
+                                                style={{
+                                                  padding: '7px 12px',
+                                                  cursor: 'pointer',
+                                                  fontSize: '0.85rem',
+                                                  color: '#eee',
+                                                  borderBottom: '1px solid #444',
+                                                }}
+                                                onMouseEnter={(e) => { e.currentTarget.style.background = '#444'; }}
+                                                onMouseLeave={(e) => { e.currentTarget.style.background = ''; }}
+                                              >
+                                                {name}
+                                              </li>
+                                            ))}
+                                          </ul>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                );
+                              })}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
         </div>
       )}
-
-      {isLeagueMismatch && (
-        <p className="form-error" style={{ marginBottom: '12px' }}>
-          This tournament is outside the active league context. Switch leagues or select a tournament from the current league.
-        </p>
-      )}
-
-      <div className={`tournament-card draft-odds-card ${showDraftOdds ? 'expanded' : ''}`}>
-        <button className="tournament-card-summary" onClick={() => setShowDraftOdds(prev => !prev)} type="button">
-          <div className="tournament-card-summary-left">
-            <div>
-              <p className="tournament-card-kicker">Draft Odds</p>
-              <h2 className="tournament-card-title">Draft Odds</h2>
-              <p className="tournament-card-meta">{tournamentContext.name ? `Actions for ${tournamentContext.name}` : 'Lock odds, start the draft, or clear manual odds.'}</p>
-            </div>
-          </div>
-          <div className="tournament-card-status-group">
-            <span className="tournament-card-status">{hasManualDraftOdds ? 'Manual active' : 'Live feed'}</span>
-            <span className={`league-v2-chevron${showDraftOdds ? ' expanded' : ''}`} aria-hidden="true">▾</span>
-          </div>
-        </button>
-        {showDraftOdds && (
-          <div className="expand-content">
-            <div className="overflow-hidden bg-surface-container-low">
-              <div className="tournament-card-body space-y-xl">
-              <div className="draft-status-copy">
-                {hasManualDraftOdds ? (
-                  <p className="draft-status-line draft-status-manual">
-                    Manual Draft Odds are currently ACTIVE.
-                  </p>
-                ) : (
-                  <p className="draft-status-line draft-status-live">
-                    Using live odds feed.
-                  </p>
-                )}
-                {hasManualDraftOdds && !draftStatus.IsDraftLocked && (
-                  <button
-                    onClick={handleClearManualOdds}
-                    disabled={isClearingManualOdds || !tournamentId}
-                    className="draft-clear-btn"
-                  >
-                    {isClearingManualOdds ? 'Clearing...' : 'Clear Manual Odds'}
-                  </button>
-                )}
-                {draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted && (
-                  <p className="draft-status-line draft-status-ready">
-                    Odds locked! Set draft order for all teams below, then start the draft.
-                  </p>
-                )}
-                {draftStatus.IsDraftStarted && (
-                  <p className="draft-status-line draft-status-active">
-                    Draft is in progress. Members are making their picks.
-                  </p>
-                )}
-              </div>
-
-              {!draftStatus.IsDraftComplete && (
-                <button
-                  onClick={handleDraftAction}
-                  disabled={isDraftActionLoading || !tournamentId || isLeagueMismatch}
-                  className="draft-action-btn"
-                >
-                  {isDraftActionLoading
-                    ? 'Processing...'
-                    : !draftStatus.IsDraftLocked
-                      ? 'Lock Draft Odds'
-                      : !draftStatus.IsDraftStarted
-                        ? 'Start Draft'
-                        : 'Complete Draft'}
-                </button>
-              )}
-              {draftStatus.IsDraftComplete && (
-                <p className="draft-status-line draft-status-complete">
-                  Draft is complete!
-                </p>
-              )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
-      <div className={`tournament-card draft-board-card ${showDraftBoard ? 'expanded' : ''}`}>
-        <button className="tournament-card-summary" onClick={() => setShowDraftBoard(prev => !prev)} type="button">
-          <div className="tournament-card-summary-left">
-            <div>
-              <p className="tournament-card-kicker">Draft Board</p>
-              <h2 className="tournament-card-title">Draft Board</h2>
-              <p className="tournament-card-meta">{tournamentContext.name ? `Manage teams for ${tournamentContext.name}` : 'Expand teams to manage golfers and draft order.'}</p>
-            </div>
-          </div>
-          <div className="tournament-card-status-group">
-            <span className="tournament-card-status">{teams.length} teams</span>
-            <span className={`league-v2-chevron${showDraftBoard ? ' expanded' : ''}`} aria-hidden="true">▾</span>
-          </div>
-        </button>
-        {showDraftBoard && (
-          <div className="expand-content">
-            <div className="overflow-hidden bg-surface-container-low">
-              <div className="tournament-card-body">
-              <h2 className="team-management-section-title" style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
-              {teams.length === 0 ? (
-                <p style={{
-                  textAlign: 'center',
-                  fontSize: isMobile ? '1em' : '1.1em',
-                  padding: isMobile ? '10px' : '0',
-                  color: '#aaa'
-                }}>
-                  No teams yet. Teams are created from enrolled league members when you lock draft odds.
-                </p>
-              ) : (
-                <div className="teams-flex-container">
-                  {[...teams]
-                    .sort((a, b) => (a.draftOrder ?? 999) - (b.draftOrder ?? 999))
-                    .map((team) => {
-                      const filledPicks = (team.golferNames || []).filter(Boolean);
-                      const canAdd = draftStatus.IsDraftLocked && filledPicks.length < 4 && lockedOdds.length > 0;
-                      const searchText = addSearch[team.ownerUid] || "";
-                      const suggestions = searchText.length >= 2
-                        ? lockedOdds
-                            .map((p) => p.name)
-                            .filter((n) => n && n.toLowerCase().includes(searchText.toLowerCase()) && !filledPicks.includes(n))
-                            .slice(0, 8)
-                        : [];
-
-                      return (
-                        <div key={team.ownerUid || team.name} className="team-card">
-                          <div className="team-card-header">
-                            <h3 style={{ margin: "0", color: "white" }}>
-                              {draftStatus.IsDraftStarted ? `${team.draftOrder}. ` : ""}{team.name}
-                            </h3>
-                            <span style={{ fontSize: "0.8em", color: "#aaa" }}>
-                              {filledPicks.length} / 4 picks
-                            </span>
-                          </div>
-
-                          <ul className="team-golfer-list">
-                            {filledPicks.length === 0 && (
-                              <li style={{ padding: "8px 15px", fontStyle: "italic", color: "#ccc", backgroundColor: "#4A4A4A" }}>
-                                No golfers picked yet.
-                              </li>
-                            )}
-                            {(team.golferNames || []).filter(Boolean).map((golfer) => (
-                              <li key={golfer} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <span>{golfer}</span>
-                                {draftStatus.IsDraftLocked && (
-                                  <button
-                                    onClick={() => handleAdminRemove(team.ownerUid, golfer)}
-                                    disabled={!!editLoading[`${team.ownerUid}-remove-${golfer}`]}
-                                    style={{
-                                      background: "none",
-                                      border: "none",
-                                      color: "#e57373",
-                                      cursor: "pointer",
-                                      fontSize: "1rem",
-                                      padding: "0 4px",
-                                      lineHeight: 1,
-                                    }}
-                                    title="Remove golfer"
-                                  >
-                                    x
-                                  </button>
-                                )}
-                              </li>
-                            ))}
-                          </ul>
-
-                          {canAdd && (
-                            <div style={{ padding: "8px 12px", borderTop: "1px solid #555", position: "relative" }}>
-                              <div style={{ display: "flex", gap: "6px" }}>
-                                <input
-                                  type="text"
-                                  placeholder="Search golfer..."
-                                  value={searchText}
-                                  onChange={(e) => setAddSearch(prev => ({ ...prev, [team.ownerUid]: e.target.value }))}
-                                  style={{
-                                    flex: 1,
-                                    padding: "5px 8px",
-                                    borderRadius: "4px",
-                                    border: "1px solid #555",
-                                    background: "#2a2a2a",
-                                    color: "#fff",
-                                    fontSize: "0.85rem"
-                                  }}
-                                />
-                                <button
-                                  onClick={() => handleAdminAdd(team.ownerUid)}
-                                  disabled={!searchText.trim() || !!editLoading[`${team.ownerUid}-add`]}
-                                  style={{
-                                    padding: "5px 12px",
-                                    borderRadius: "4px",
-                                    border: "none",
-                                    background: "#2d6a2d",
-                                    color: "#fff",
-                                    cursor: "pointer",
-                                    fontSize: "0.85rem"
-                                  }}
-                                >
-                                  {editLoading[`${team.ownerUid}-add`] ? "..." : "Add"}
-                                </button>
-                              </div>
-                              {suggestions.length > 0 && (
-                                <ul style={{
-                                  position: "absolute",
-                                  left: "12px",
-                                  right: "12px",
-                                  top: "100%",
-                                  background: "#333",
-                                  border: "1px solid #555",
-                                  borderRadius: "4px",
-                                  margin: 0,
-                                  padding: 0,
-                                  listStyle: "none",
-                                  zIndex: 100,
-                                  maxHeight: "180px",
-                                  overflowY: "auto"
-                                }}>
-                                  {suggestions.map((name) => (
-                                    <li
-                                      key={name}
-                                      onClick={() => {
-                                        setAddSearch(prev => ({ ...prev, [team.ownerUid]: name }));
-                                      }}
-                                      style={{
-                                        padding: "7px 12px",
-                                        cursor: "pointer",
-                                        fontSize: "0.85rem",
-                                        color: "#eee",
-                                        borderBottom: "1px solid #444"
-                                      }}
-                                      onMouseEnter={e => e.currentTarget.style.background = "#444"}
-                                      onMouseLeave={e => e.currentTarget.style.background = ""}
-                                    >
-                                      {name}
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                </div>
-              )}
-              </div>
-            </div>
-          </div>
-        )}
-      </div>
-
     </div>
   );
 };
