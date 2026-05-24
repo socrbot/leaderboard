@@ -15,11 +15,7 @@ const LandingPage = ({ onSignIn, signingIn }) => {
           <div className="landing-hero-gradient" />
 
           <div className="landing-hero-content">
-            <div className="landing-brand-chip">ALUMNI CUP</div>
             <h1 className="landing-hero-title">The Alumni Cup</h1>
-            <p className="landing-hero-subtitle">
-              Live scoring, draft-day strategy, and season standings in one place.
-            </p>
 
             <button
               className="landing-google-btn"
