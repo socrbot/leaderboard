@@ -4,7 +4,7 @@ import { BACKEND_BASE_URL } from '../apiConfig';
 import { useAuth } from '../contexts/AuthContext';
 import '../App.css'; // Importing the CSS file
 
-const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated }) => {
+const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSaved, tournamentOddsId, isDraftStarted, hasManualDraftOdds, onDraftStarted, onManualOddsUpdated, hideHeader = false }) => {
   const { getIdToken } = useAuth();
   const [isMobile, setIsMobile] = useState(false);
   const [teams, setTeams] = useState([]);
@@ -208,20 +208,22 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
 
   return (
     <div className="team-management-container">
-      <h1 style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
+      {!hideHeader && (
+        <h1 className="team-management-title" style={{ fontSize: isMobile ? '1.5em' : '2em', textAlign: 'center' }}>Draft Management</h1>
+      )}
 
       {/* Draft Actions Section */}
       <div className="draft-actions-card">
-        <h2 style={{marginTop: '0', marginBottom: '20px'}}>Draft Actions</h2>
+        <h2 className="draft-actions-title">Draft Actions</h2>
 
         {/* Manual Odds Status and Clear Button */}
-        <div style={{marginBottom: '15px'}}>
+        <div className="draft-status-copy">
           {hasManualDraftOdds ? (
-            <p style={{ color: '#FFD700', marginBottom: '10px' }}>
+            <p className="draft-status-line draft-status-manual">
               Manual Draft Odds are currently ACTIVE.
             </p>
           ) : (
-            <p style={{ color: '#ADD8E6', marginBottom: '10px' }}>
+            <p className="draft-status-line draft-status-live">
               Using live odds feed.
             </p>
           )}
@@ -235,12 +237,12 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
             </button>
           )}
           {draftStatus.IsDraftLocked && !draftStatus.IsDraftStarted && (
-            <p style={{ color: '#90EE90', marginTop: '10px' }}>
+            <p className="draft-status-line draft-status-ready">
               Odds locked! Set draft order for all teams below, then start the draft.
             </p>
           )}
           {draftStatus.IsDraftStarted && (
-            <p style={{ color: '#90EE90', marginTop: '10px' }}>
+            <p className="draft-status-line draft-status-active">
               Draft is in progress. Members are making their picks.
             </p>
           )}
@@ -263,7 +265,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
           </button>
         )}
         {draftStatus.IsDraftComplete && (
-          <p style={{ color: '#32CD32', marginTop: '10px' }}>
+          <p className="draft-status-line draft-status-complete">
             Draft is complete!
           </p>
         )}
@@ -271,7 +273,7 @@ const TeamManagement = ({ tournamentId, leagueId, onTournamentCreated, onTeamsSa
 
 
       {/* Enrolled Teams — read-only during/after draft lock */}
-      <h2 style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
+      <h2 className="team-management-section-title" style={{ fontSize: isMobile ? '1.3em' : '1.5em', textAlign: 'center' }}>Enrolled Teams</h2>
       {teams.length === 0 ? (
         <p style={{
           textAlign: 'center',

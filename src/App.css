@@ -239,6 +239,10 @@ body {
   display: none; /* shown only on mobile via media query */
 }
 
+.setup-mobile-exit-bar {
+  display: none;
+}
+
 @media (max-width: 768px) {
   /* Hide desktop nav, show bottom nav */
   .modern-nav {
@@ -1133,6 +1137,36 @@ select:focus {
     display: none;
   }
 
+  .setup-mobile-exit-bar {
+    display: flex;
+    gap: 0.5rem;
+    justify-content: center;
+    align-items: center;
+    padding: 0.5rem 0.75rem 0.65rem;
+    background: rgba(20, 61, 20, 0.92);
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+  }
+
+  .setup-mobile-exit-btn {
+    flex: 1;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #ffffff;
+    font-family: inherit;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    padding: 0.65rem 0.5rem;
+    text-transform: uppercase;
+    cursor: pointer;
+  }
+
+  .setup-mobile-exit-btn:active {
+    transform: scale(0.98);
+  }
+
   /* Second bottom bar for setup — sits above the primary bottom nav */
   .setup-bottom-nav {
     bottom: 52px; /* height of primary bottom nav */
@@ -1142,7 +1176,7 @@ select:focus {
 
   /* Extra padding when setup bottom nav is showing */
   .App.setup-active {
-    padding-bottom: 108px;
+    padding-bottom: 156px;
   }
 }
 

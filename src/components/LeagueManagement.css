@@ -207,7 +207,7 @@
   flex-shrink: 0;
 }
 
-.league-v2-icon-btn {
+.league-v2-remove-text-btn {
   border: none;
   background: transparent;
   color: #ffb4ab;
@@ -218,15 +218,9 @@
   justify-content: center;
 }
 
-.league-v2-icon-btn:disabled {
+.league-v2-remove-text-btn:disabled {
   opacity: 0.6;
   cursor: not-allowed;
-}
-
-.league-v2-remove-btn {
-  font-size: 1rem;
-  line-height: 1;
-  font-weight: 700;
 }
 
 .league-v2-card-actions {

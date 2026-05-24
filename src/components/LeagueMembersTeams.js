@@ -103,7 +103,7 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
                     <button
                       onClick={() => handleRemove(m.uid, m.displayName)}
                       disabled={removing === m.uid}
-                      className="league-v2-icon-btn"
+                      className="league-v2-remove-text-btn"
                       aria-label="Remove user"
                     >
                       {removing === m.uid ? 'Removing...' : 'x'}

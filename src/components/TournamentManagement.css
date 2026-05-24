@@ -1,0 +1,293 @@
+.tournament-management-shell {
+  max-width: 960px;
+  margin: 0 auto;
+  padding: 16px 12px 28px;
+  color: #e5e2e1;
+  font-family: 'Hanken Grotesk', sans-serif;
+}
+
+.tournament-management-hero {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding: 18px 20px;
+  margin-bottom: 16px;
+  background: linear-gradient(180deg, rgba(42, 42, 42, 0.92), rgba(27, 27, 28, 0.96));
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.tournament-management-kicker,
+.tournament-management-label,
+.tournament-management-draft-label {
+  margin: 0;
+  color: #aeb5aa;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.tournament-management-title {
+  margin: 6px 0 8px;
+  color: #a4d39a;
+  font-size: 2rem;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+}
+
+.tournament-management-subtitle {
+  margin: 0;
+  max-width: 48rem;
+  color: #c2c9bc;
+  font-size: 0.92rem;
+  line-height: 1.55;
+}
+
+.tournament-management-hero-chip {
+  display: inline-flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 12px 14px;
+  min-width: 180px;
+  background: rgba(20, 61, 20, 0.42);
+  border: 1px solid rgba(164, 211, 154, 0.22);
+  border-radius: 12px;
+  color: #f0f4eb;
+}
+
+.tournament-management-hero-chip-label,
+.tournament-management-section-chip,
+.tournament-management-context-status,
+.tournament-management-draft-badge {
+  color: #bfefb5;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.tournament-management-panel {
+  margin-bottom: 16px;
+}
+
+.tournament-management-context-card,
+.tournament-management-card {
+  background: rgba(27, 27, 28, 0.98);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 12px;
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.tournament-management-context-card {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 16px;
+  padding: 16px 18px;
+}
+
+.tournament-management-context-title {
+  margin: 0;
+  color: #f0f4eb;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.tournament-management-context-meta {
+  margin: 4px 0 0;
+  color: #c2c9bc;
+  font-size: 0.88rem;
+}
+
+.tournament-management-context-status {
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: rgba(20, 61, 20, 0.52);
+  border: 1px solid rgba(164, 211, 154, 0.2);
+  white-space: nowrap;
+}
+
+.tournament-management-section-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 10px;
+}
+
+.tournament-management-section-title {
+  margin: 0;
+  color: #f0f4eb;
+  font-size: 1.15rem;
+  font-weight: 700;
+}
+
+.tournament-management-section-chip {
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+.tournament-management-card {
+  padding: 18px;
+}
+
+.tournament-management-draft-card {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+}
+
+.tournament-management-draft-summary {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+  padding-bottom: 16px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.06);
+}
+
+.tournament-management-draft-title {
+  margin: 6px 0 4px;
+  color: #f0f4eb;
+  font-size: 1.1rem;
+  font-weight: 700;
+}
+
+.tournament-management-draft-meta {
+  margin: 0;
+  color: #c2c9bc;
+  font-size: 0.88rem;
+}
+
+.tournament-management-draft-badge {
+  padding: 8px 10px;
+  border-radius: 10px;
+  background: rgba(20, 61, 20, 0.38);
+  border: 1px solid rgba(164, 211, 154, 0.18);
+  white-space: nowrap;
+}
+
+.tournament-management-shell .tournament-creation {
+  display: grid;
+  gap: 12px;
+}
+
+.tournament-management-shell .tournament-creation h3 {
+  margin: 0;
+  color: #a4d39a;
+  font-size: 1.25rem;
+  line-height: 1.2;
+}
+
+.tournament-management-shell .tournament-creation .subtitle {
+  margin: 0;
+  color: #c2c9bc;
+  font-size: 0.92rem;
+}
+
+.tournament-management-shell .tournament-form {
+  display: grid;
+  gap: 16px;
+}
+
+.tournament-management-shell .form-group label {
+  color: #aeb5aa;
+}
+
+.tournament-management-shell .form-input,
+.tournament-management-shell .form-group input[type="text"],
+.tournament-management-shell .form-group input[type="number"],
+.tournament-management-shell .form-group select {
+  background: #202020;
+  border-color: #42493f;
+  color: #e5e2e1;
+}
+
+.tournament-management-shell .btn-primary {
+  background: #143d14;
+}
+
+.tournament-management-shell .btn-secondary {
+  background: #232424;
+  border-color: rgba(255, 255, 255, 0.11);
+  color: #d8ddd3;
+}
+
+.tournament-management-shell .team-management-container {
+  max-width: none;
+  margin: 0;
+}
+
+.tournament-management-shell .team-management-title {
+  margin: 0 0 6px;
+  color: #f0f4eb;
+  letter-spacing: -0.01em;
+}
+
+.tournament-management-shell .draft-actions-card,
+.tournament-management-shell .team-card {
+  background: #1a1a1a;
+  border-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 14px 30px rgba(0, 0, 0, 0.18);
+}
+
+.tournament-management-shell .draft-actions-title,
+.tournament-management-shell .team-management-section-title {
+  margin: 0 0 12px;
+  color: #a4d39a;
+  font-size: 1.05rem;
+  font-weight: 700;
+}
+
+.tournament-management-shell .draft-status-copy {
+  display: grid;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.tournament-management-shell .draft-status-line {
+  margin: 0;
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.tournament-management-shell .draft-status-manual { color: #f9bd22; }
+.tournament-management-shell .draft-status-live { color: #ADD8E6; }
+.tournament-management-shell .draft-status-ready { color: #90EE90; }
+.tournament-management-shell .draft-status-active { color: #90EE90; }
+.tournament-management-shell .draft-status-complete { color: #32cd32; }
+
+.tournament-management-shell .teams-flex-container {
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+}
+
+.tournament-management-shell .team-card {
+  border-radius: 12px;
+}
+
+.tournament-management-shell .team-card-header {
+  border-bottom-color: rgba(255, 255, 255, 0.08);
+}
+
+@media (max-width: 768px) {
+  .tournament-management-shell {
+    padding: 12px 12px 24px;
+  }
+
+  .tournament-management-hero,
+  .tournament-management-context-card,
+  .tournament-management-draft-summary {
+    flex-direction: column;
+  }
+
+  .tournament-management-hero-chip,
+  .tournament-management-context-status,
+  .tournament-management-draft-badge {
+    width: 100%;
+  }
+}

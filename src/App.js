@@ -408,6 +408,13 @@ function App() {
     setLeaderboardRefreshKey(prev => prev + 1);
   };
 
+  const handleShowScoresClick = () => {
+    setShowSetup(false);
+    setShowAnnualChampionship(false);
+    setShowTournamentScores(true);
+    setShowUserSettings(false);
+  };
+
   // Pass leaderboardRefreshKey as the refreshDependency to useGolfLeaderboard
   const {
     rawData,
@@ -869,7 +876,7 @@ function App() {
           )}
         </div>
       </header>
-      {/* Status bar: context-aware — Annual, Setup, or Tournament Details */}
+      {/* Status bar: context-aware — Annual, Profile, or Tournament Details */}
       {showAnnualChampionship ? (
         <div className="status-bar">
           <p className="status-section-title">Annual Championship</p>
@@ -900,65 +907,24 @@ function App() {
             )}
           </div>
         </div>
-      ) : showSetup ? (
+      ) : showSetup || showUserSettings ? (
         <>
           <div className="status-bar">
-            {setupActiveTab === 'my-profile' ? (
-              <p className="status-section-title">My Profile</p>
-            ) : (
-              <>
-                <p className="status-section-title">Setup</p>
-                <div className="tournament-picker" ref={pickerRef}>
-                  <button
-                    className="picker-trigger"
-                    onClick={() => setShowTournamentPicker(p => !p)}
-                    aria-expanded={showTournamentPicker}
-                  >
-                    <span className="status-line-name">
-                      {(selectedTournamentId
-                        ? (tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name || tournaments.find(t => t.id === selectedTournamentId)?.name)
-                        : 'No tournament selected') || 'No tournament selected'}
-                    </span>
-                    <span className="picker-chevron">{showTournamentPicker ? '▴' : '▾'}</span>
-                  </button>
-                  {showTournamentPicker && (
-                    <div className="picker-dropdown">
-                      {tournamentsByYear.map(([year, ts]) => (
-                        <div key={year} className="picker-year-group">
-                          <p className="picker-year-label">{year}</p>
-                          {ts.map(t => (
-                            <button
-                              key={t.id}
-                              className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
-                              onClick={() => {
-                                setSelectedTournamentId(t.id);
-                                setLeaderboardRefreshKey(prev => prev + 1);
-                                setShowTournamentPicker(false);
-                              }}
-                            >
-                              {t.name}
-                            </button>
-                          ))}
-                        </div>
-                      ))}
-                    </div>
-                  )}
-                </div>
-                {tournamentInfo?.StartDate && (
-                  <p className="status-line">
-                    <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
-                  </p>
-                )}
-                {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
-                  <p className="status-line">
-                    <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
-                  </p>
-                )}
-              </>
-            )}
+            <p className="status-section-title">Profile</p>
           </div>
+          {showSetup && (
+            <div className="setup-mobile-exit-bar">
+              <button className="setup-mobile-exit-btn" onClick={handleShowLeaderboardClick}>
+                Leaderboard
+              </button>
+              <button className="setup-mobile-exit-btn" onClick={handleShowScoresClick}>
+                Scores
+              </button>
+            </div>
+          )}
           {/* Setup tab bar — desktop only; mobile uses second bottom bar */}
-          <div className="setup-nav-bar">
+          {showSetup && (
+            <div className="setup-nav-bar">
             <button
               className={`setup-nav-link ${setupActiveTab === 'league-management' ? 'active' : ''}`}
               onClick={() => setSetupActiveTab('league-management')}
@@ -977,7 +943,8 @@ function App() {
             >
               My Profile
             </button>
-          </div>
+            </div>
+          )}
         </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
@@ -1324,11 +1291,8 @@ function App() {
           className={`bottom-nav-link ${showTournamentScores ? 'active' : ''} ${!selectedTournamentId ? 'disabled' : ''}`}
           onClick={() => {
             if (!selectedTournamentId) return;
-            setShowSetup(false);
-            setShowAnnualChampionship(false);
+            handleShowScoresClick();
             setShowAnnualYearPicker(false);
-            setShowTournamentScores(true);
-            setShowUserSettings(false);
           }}
           disabled={!selectedTournamentId}
         >

@@ -246,7 +246,7 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
 
                           <div className="league-v2-member-actions">
                             <button
-                              className="league-v2-icon-btn league-v2-remove-btn"
+                              className="league-v2-remove-text-btn"
                               onClick={() => handleRemoveMember(league.leagueId, member.uid, member.displayName)}
                               disabled={saving}
                               aria-label="Remove user"
