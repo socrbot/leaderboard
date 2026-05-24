@@ -226,10 +226,10 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
             {userProfile?.leagues?.length > 0 ? userProfile.leagues.map(l => (
               <article key={l.leagueId} className="user-settings-league-card">
                 <div className="user-settings-league-head">
-                  <div>
-                    <h4 className="user-settings-league-name">{l.name || l.leagueId}</h4>
-                    <p className="user-settings-league-sub">Annual Championship Participant</p>
-                  </div>
+                  <h4 className="user-settings-league-name">{l.name || l.leagueId}</h4>
+                </div>
+                <div className="user-settings-league-annual-row">
+                  <p className="user-settings-league-sub">Annual Championship Participant</p>
                   <span className="user-settings-toggle-wrap user-settings-toggle-wrap-compact">
                     <input
                       id={`annual-opt-in-${l.leagueId}`}
@@ -245,10 +245,7 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
                     <span className="user-settings-toggle-track" />
                   </span>
                 </div>
-                <div className="user-settings-league-meta-row">
-                  <p className="user-settings-league-meta">{l.teamName ? `Team: ${l.teamName}` : 'No team name selected'}</p>
-                  {l.leagueId === activeLeagueId && <span className="user-settings-active-badge">Active</span>}
-                </div>
+                <p className="user-settings-league-meta">{l.teamName ? `Team: ${l.teamName}` : 'No team name selected'}</p>
               </article>
             )) : (
               <p className="user-settings-hint">No leagues yet. Join with an invite code below.</p>
@@ -319,6 +316,11 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
               Sign Out
             </button>
           )}
+        </section>
+
+        <section className="user-settings-panel user-settings-actions-panel">
+          <h3 className="user-settings-section-label">League Actions</h3>
+          <p className="user-settings-hint">Manage your leagues, members, and invite code from the sections above.</p>
         </section>
 
         {error && <p className="user-settings-error-text">{error}</p>}

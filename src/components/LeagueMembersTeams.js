@@ -2,12 +2,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { LEAGUES_API_ENDPOINT } from '../apiConfig';
-import '../App.css';
+import './LeagueManagement.css';
 
 export default function LeagueMembersTeams({ activeLeagueId }) {
   const { getIdToken } = useAuth();
   const [members, setMembers] = useState([]);
   const [leagueName, setLeagueName] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
   const [loading, setLoading] = useState(true);
   const [removing, setRemoving] = useState(null); // uid being removed
 
@@ -25,6 +26,7 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
       if (leagueRes.ok) {
         const d = await leagueRes.json();
         setLeagueName(d.name || '');
+        setInviteCode(d.inviteCode || '');
       }
     } catch {}
     setLoading(false);
@@ -56,67 +58,65 @@ export default function LeagueMembersTeams({ activeLeagueId }) {
 
   if (!activeLeagueId) {
     return (
-      <div className="team-management">
-        <p className="subtitle">No league selected. Select a league from the League tab first.</p>
+      <div className="league-v2-shell">
+        <p className="league-v2-empty">No league selected. Select a league from the League tab first.</p>
       </div>
     );
   }
 
   return (
-    <div className="team-management">
-      <h2>Members — {leagueName || 'League'}</h2>
-      <p className="subtitle">
-        Each member who joined is a team. Share your invite code from the League tab to add players.
-      </p>
+    <div className="league-v2-shell">
+      <div className="league-v2-header">
+        <h2 className="league-v2-title">Members — {leagueName || 'League'}</h2>
+        <p className="league-v2-subtitle">Each member who joined is a team. Share your invite code to add players.</p>
+      </div>
 
-      {loading ? (
-        <p>Loading members...</p>
-      ) : members.length === 0 ? (
-        <div className="no-teams-message">
-          <p>No members yet. Share your invite code so players can join.</p>
+      <section className="league-v2-card league-v2-members-card">
+        <div className="league-v2-summary league-v2-members-summary">
+          <div className="league-v2-summary-left">
+            <span className="material-symbols-outlined league-v2-icon" aria-hidden="true">golf_course</span>
+            <div>
+              <h3 className="league-v2-card-title">{leagueName || 'League'}</h3>
+              <p className="league-v2-card-subtitle">{members.length} Members • {inviteCode || 'No Code'}</p>
+            </div>
+          </div>
         </div>
-      ) : (
-        <table className="teams-table">
-          <thead>
-            <tr>
-              <th>#</th>
-              <th>Display Name</th>
-              <th>Team Name</th>
-              <th>Email</th>
-              <th>Joined</th>
-              <th></th>
-            </tr>
-          </thead>
-          <tbody>
-            {members.map((m, i) => (
-              <tr key={m.uid}>
-                <td>{i + 1}</td>
-                <td>{m.displayName || <em style={{ color: '#888' }}>—</em>}</td>
-                <td>{m.teamName || <em style={{ color: '#888' }}>—</em>}</td>
-                <td>{m.email}</td>
-                <td>{m.joinedAt ? new Date(m.joinedAt).toLocaleDateString() : '—'}</td>
-                <td>
-                  <button
-                    onClick={() => handleRemove(m.uid, m.displayName)}
-                    disabled={removing === m.uid}
-                    style={{
-                      background: 'transparent',
-                      border: '1px solid #c0392b',
-                      color: '#c0392b',
-                      borderRadius: '4px',
-                      padding: '2px 10px',
-                      cursor: 'pointer',
-                      fontSize: '0.8rem',
-                    }}
-                  >
-                    {removing === m.uid ? '…' : 'Remove'}
-                  </button>
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      )}
+
+        <div className="league-v2-body">
+          <p className="league-v2-body-label">Participating Users</p>
+          {loading ? (
+            <p className="league-v2-empty">Loading users...</p>
+          ) : members.length === 0 ? (
+            <p className="league-v2-empty">No users yet. Share your invite code so players can join.</p>
+          ) : (
+            <ul className="league-v2-member-list">
+              {members.map((m) => (
+                <li key={m.uid} className="league-v2-member-row">
+                  <div className="league-v2-member-main">
+                    <div className="league-v2-avatar">{(m.displayName || m.email || m.uid || 'U').split(' ').slice(0, 2).map(part => part[0]?.toUpperCase()).join('')}</div>
+                    <div>
+                      <p className="league-v2-member-name">{m.displayName || m.email || m.uid}</p>
+                      <p className="league-v2-member-team">{m.teamName || 'No team assigned'}</p>
+                    </div>
+                  </div>
+
+                  <div className="league-v2-member-actions">
+                    <button
+                      onClick={() => handleRemove(m.uid, m.displayName)}
+                      disabled={removing === m.uid}
+                      className="league-v2-icon-btn"
+                      aria-label="Remove user"
+                    >
+                      <span className="material-symbols-outlined">{removing === m.uid ? 'hourglass_top' : 'person_remove'}</span>
+                    </button>
+                    <span className="material-symbols-outlined league-v2-muted" aria-hidden="true">mail</span>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          )}
+        </div>
+      </section>
     </div>
   );
 }

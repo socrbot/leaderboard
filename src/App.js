@@ -993,12 +993,6 @@ function App() {
             >
               My Profile
             </button>
-            <button
-              className="setup-nav-link setup-nav-signout"
-              onClick={() => { setShowSetup(false); signOut(); }}
-            >
-              Sign Out
-            </button>
           </div>
         </>
       ) : selectedTournamentId ? (
@@ -1413,12 +1407,6 @@ function App() {
             onClick={() => setSetupActiveTab('my-profile')}
           >
             Profile
-          </button>
-          <button
-            className="bottom-nav-link"
-            onClick={() => { setShowSetup(false); signOut(); }}
-          >
-            Sign Out
           </button>
         </nav>
       )}

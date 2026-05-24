@@ -171,9 +171,8 @@
 
 .user-settings-league-head {
   display: flex;
-  align-items: flex-start;
-  justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  justify-content: flex-start;
 }
 
 .user-settings-league-name {
@@ -185,37 +184,25 @@
 }
 
 .user-settings-league-sub {
-  margin: 3px 0 0;
+  margin: 0;
   color: #9ba198;
   font-size: 0.68rem;
   letter-spacing: 0.02em;
 }
 
-.user-settings-league-meta {
-  margin: 0;
-  color: #73d97a;
-  font-size: 0.7rem;
-  font-weight: 600;
-}
-
-.user-settings-league-meta-row {
-  margin-top: 6px;
+.user-settings-league-annual-row {
+  margin-top: 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 8px;
 }
 
-.user-settings-active-badge {
-  border: 1px solid rgba(164, 211, 154, 0.6);
-  color: #bfefb5;
-  background: rgba(164, 211, 154, 0.12);
-  border-radius: 99px;
-  font-size: 0.62rem;
-  font-weight: 700;
-  letter-spacing: 0.05em;
-  text-transform: uppercase;
-  padding: 2px 7px;
+.user-settings-league-meta {
+  margin: 6px 0 0;
+  color: #73d97a;
+  font-size: 0.7rem;
+  font-weight: 600;
 }
 
 .user-settings-hint {
