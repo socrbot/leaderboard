@@ -1324,12 +1324,11 @@ function App() {
                                   className="golfer-row"
                                   style={{ opacity: golfer.isDrafted ? 1 : 0.4 }}
                                 >
-                                  <td className="golfer-name-cell">
+                                  <td className="golfer-name-cell" colSpan={2}>
                                     <span className="golfer-name-with-photo">
                                       <span className="golfer-name-text">{golfer.name}</span>
                                     </span>
                                   </td>
-                                  <td></td>
                                   <td>-</td>
                                   <td>-</td>
                                   <td>-</td>
@@ -1357,7 +1356,26 @@ function App() {
                     <table className="leaderboard-table">
                     <thead>
                       <tr>
-                        <th>TEAM / GOLFER</th>
+                        <th
+                          className="sortable-header team-golfer-header"
+                          onClick={() => {
+                            const allKeys = sortedLeaderboardData.map((t, i) => t.teamName || t.team || `Unknown Team`);
+                            const allExpanded = allKeys.length > 0 && allKeys.every(k => expandedTeams[k]);
+                            if (allExpanded) {
+                              setExpandedTeams({});
+                            } else {
+                              const next = {};
+                              allKeys.forEach(k => { next[k] = true; });
+                              setExpandedTeams(next);
+                            }
+                          }}
+                          title="Expand/collapse all teams"
+                        >
+                          <span className="team-expand-icon">
+                            {sortedLeaderboardData.length > 0 && sortedLeaderboardData.every(t => expandedTeams[t.teamName || t.team || 'Unknown Team']) ? '▾' : '▸'}
+                          </span>
+                          TEAM / GOLFER
+                        </th>
                         <th onClick={() => handleHeaderClick('total')} className="sortable-header">
                           TOTAL{renderSortArrow('total')}
                         </th>
@@ -1401,7 +1419,7 @@ function App() {
                             const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
                             return (
                               <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>
-                                <td className="golfer-name-cell">
+                                <td className="golfer-name-cell" colSpan={2}>
                                   <span className="golfer-name-with-photo">
                                     <span className="golfer-name-text">{golfer.name}</span>
                                   </span>
@@ -1414,7 +1432,6 @@ function App() {
                                         : golfer.status && <span className="golfer-status-label">{golfer.status}</span>
                                   }
                                 </td>
-                                <td></td>
                                 <td>{formatScoreForDisplay(golfer.r1?.score)}</td>
                                 <td>{formatScoreForDisplay(golfer.r2?.score)}</td>
                                 <td>{formatScoreForDisplay(golfer.r3?.score)}</td>

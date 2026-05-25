@@ -832,23 +832,19 @@ select:focus {
   .leaderboard-table {
     min-width: 100%;
     font-size: 0.78rem;
+    table-layout: fixed;
   }
 
-  /* Name col: fixed minimum so full golfer name fits on one line.
-     Container `.leaderboard-container` scrolls horizontally if needed. */
-  .leaderboard-table {
-    min-width: 0;
-  }
-
+  /* Team rows use cols 1+2 for name+TOTAL. Golfer rows colSpan the name across
+     cols 1+2 (no per-golfer total) so the full name fits without scrolling. */
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    min-width: 170px;
-    width: auto;
+    width: 30%;
   }
 
   .leaderboard-table th:nth-child(2),
   .leaderboard-table td:nth-child(2) {
-    width: 15%;
+    width: 14%;
   }
 
   .leaderboard-table th:nth-child(3),
@@ -859,7 +855,7 @@ select:focus {
   .leaderboard-table td:nth-child(5),
   .leaderboard-table th:nth-child(6),
   .leaderboard-table td:nth-child(6) {
-    width: 11.25%;
+    width: 14%;
   }
 
   .leaderboard-table thead th,
@@ -1059,8 +1055,7 @@ select:focus {
   /* Tighter column distribution for very small screens */
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    min-width: 150px;
-    width: auto;
+    width: 28%;
   }
   
   .leaderboard-table th:nth-child(2),
