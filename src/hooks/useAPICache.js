@@ -4,6 +4,20 @@ import { useState, useEffect, useRef } from 'react';
 const cache = new Map();
 const pendingRequests = new Map();
 
+// 5 minute default TTL — caller-side stale check; no setTimeout-per-entry, so we
+// avoid an unbounded number of pending timers on long-lived pages.
+const DEFAULT_TTL_MS = 5 * 60 * 1000;
+
+function readFreshCache(key) {
+  const entry = cache.get(key);
+  if (!entry) return undefined;
+  if (entry.expiresAt && entry.expiresAt < Date.now()) {
+    cache.delete(key);
+    return undefined;
+  }
+  return entry.value;
+}
+
 export const useAPICache = (url, dependencies = []) => {
   const [data, setData] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -15,9 +29,10 @@ export const useAPICache = (url, dependencies = []) => {
 
     const cacheKey = url + JSON.stringify(dependencies);
     
-    // Return cached data immediately
-    if (cache.has(cacheKey)) {
-      setData(cache.get(cacheKey));
+    // Return cached data immediately (if still fresh)
+    const cached = readFreshCache(cacheKey);
+    if (cached !== undefined) {
+      setData(cached);
       setLoading(false);
       return;
     }
@@ -58,10 +73,9 @@ export const useAPICache = (url, dependencies = []) => {
 
         const result = await response.json();
         
-        // Cache the result with TTL (5 minutes)
-        cache.set(cacheKey, result);
-        setTimeout(() => cache.delete(cacheKey), 5 * 60 * 1000);
-        
+        // Cache the result with TTL — checked lazily on read, no timers.
+        cache.set(cacheKey, { value: result, expiresAt: Date.now() + DEFAULT_TTL_MS });
+
         pendingRequests.delete(cacheKey);
         return result;
       } catch (error) {

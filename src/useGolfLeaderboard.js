@@ -1,4 +1,4 @@
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef } from 'react';
 import { BACKEND_BASE_URL, LEADERBOARD_API_ENDPOINT } from './apiConfig';
 import {
     LIFECYCLE_STATES,
@@ -7,6 +7,32 @@ import {
     isLifecycleFinished,
     logV2Anomaly,
 } from './leaderboardLifecycle';
+import { retryFetchJson } from './utils/retryFetch';
+import { useVisibilityAwareInterval } from './hooks/useVisibilityAwareInterval';
+import { devLog, devError } from './utils/devLog';
+
+// Poll cadence while a tournament is live. Server already caches aggressively;
+// 90s gives a near-live feel without hammering Cloud Run.
+const LIVE_POLL_MS = 90 * 1000;
+const LAST_GOOD_KEY = (tournamentId) => `leaderboard:lastGood:${tournamentId}`;
+
+function readLastGood(tournamentId) {
+    if (!tournamentId) return null;
+    try {
+        const raw = window.sessionStorage.getItem(LAST_GOOD_KEY(tournamentId));
+        return raw ? JSON.parse(raw) : null;
+    } catch (_e) { return null; }
+}
+
+function writeLastGood(tournamentId, payload) {
+    if (!tournamentId) return;
+    try {
+        window.sessionStorage.setItem(
+            LAST_GOOD_KEY(tournamentId),
+            JSON.stringify({ ts: Date.now(), payload }),
+        );
+    } catch (_e) { /* ignore quota errors */ }
+}
 
 export const useGolfLeaderboard = (
     tournamentId,
@@ -15,6 +41,8 @@ export const useGolfLeaderboard = (
     const [rawData, setRawData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [stale, setStale] = useState(false);              // true when rawData is from last-good cache
+    const [staleSince, setStaleSince] = useState(null);     // epoch ms when last fresh data was captured
     const [teamAssignments, setTeamAssignments] = useState([]);
     const [isTournamentInProgress, setIsTournamentInProgress] = useState(false);
     const [isTournamentOver, setIsTournamentOver] = useState(false);
@@ -31,33 +59,40 @@ export const useGolfLeaderboard = (
         par: 71
     });
 
+    // Refs so polling callback always sees latest fetcher / round without re-creating the interval.
+    const fetchLeaderboardRef = useRef(null);
+    const currentRoundRef = useRef(null);
+
     // Fetch tournament details and metadata
     useEffect(() => {
-        const fetchTournamentDetails = async () => {
-            if (!tournamentId) {
-                setTeamAssignments([]);
-                setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
-                setIsTournamentInProgress(false);
-                setIsTournamentOver(false);
-                setLifecycleState(LIFECYCLE_STATES.CREATED);
-                setTournamentOddsId('');
-                setIsDraftStarted(false);
-                setHasManualDraftOdds(false);
-                setTournamentInfo(null);
-                setLoading(false);
-                return;
-            }
+        if (!tournamentId) {
+            setTeamAssignments([]);
+            setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
+            setIsTournamentInProgress(false);
+            setIsTournamentOver(false);
+            setLifecycleState(LIFECYCLE_STATES.CREATED);
+            setTournamentOddsId('');
+            setIsDraftStarted(false);
+            setHasManualDraftOdds(false);
+            setTournamentInfo(null);
+            setLoading(false);
+            return undefined;
+        }
 
-            setError(null);
-            setLoading(true);
+        const ac = new AbortController();
+        setError(null);
+        setLoading(true);
 
+        (async () => {
             try {
-                console.log('🏌️ useGolfLeaderboard: Fetching tournament details for', tournamentId);
-                const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
-                if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
-                const tournamentData = await response.json();
+                devLog('🏌️ useGolfLeaderboard: Fetching tournament details for', tournamentId);
+                const tournamentData = await retryFetchJson(
+                    `${BACKEND_BASE_URL}/tournaments/${tournamentId}`,
+                    { signal: ac.signal },
+                );
+                if (ac.signal.aborted) return;
 
-                console.log('📋 Tournament data received:', tournamentData);
+                devLog('📋 Tournament data received:', tournamentData);
 
                 setTeamAssignments(tournamentData.teams || []);
                 setTournamentSpecifics({
@@ -84,13 +119,14 @@ export const useGolfLeaderboard = (
                 setIsDraftStarted(tournamentData.IsDraftStarted || false);
                 setHasManualDraftOdds(tournamentData.hasManualDraftOdds || false);
                 setTournamentInfo(tournamentData.Tournament || null);
+                currentRoundRef.current = tournamentData?.Tournament?.CurrentRound || null;
 
                 if (!tournamentData.teams || tournamentData.teams.length === 0) {
                     setLoading(false);
                 }
-
             } catch (e) {
-                console.error('💥 Error fetching tournament details:', e);
+                if (e.name === 'AbortError') return;
+                devError('💥 Error fetching tournament details:', e);
                 setError(`Failed to load tournament details: ${e.message}`);
                 setTeamAssignments([]);
                 setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
@@ -103,53 +139,50 @@ export const useGolfLeaderboard = (
                 setTournamentInfo(null);
                 setLoading(false);
             }
-        };
+        })();
 
-        fetchTournamentDetails();
+        return () => ac.abort();
     }, [tournamentId, refreshDependency]);
 
     // Fetch leaderboard data with team calculations from backend
     useEffect(() => {
-        // Fetch leaderboard when we have required tournament context.
-        // Backend handles live/in-progress/completed/not-started states.
-        if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId || 
-            !tournamentSpecifics.orgId || !tournamentSpecifics.year || 
+        if (!tournamentId || teamAssignments.length === 0 || !tournamentSpecifics.tournId ||
+            !tournamentSpecifics.orgId || !tournamentSpecifics.year ||
             tournamentSpecifics.par === undefined || tournamentSpecifics.par === null) {
             setRawData([]);
             setLoading(false);
-            return;
+            fetchLeaderboardRef.current = null;
+            return undefined;
         }
 
+        const ac = new AbortController();
+
         const fetchLeaderboardData = async (isInitialLoad = true) => {
-            // Only show loading spinner on initial load, not on auto-refresh
-            if (isInitialLoad) {
-                setLoading(true);
-            }
+            if (ac.signal.aborted) return;
+            if (isInitialLoad) setLoading(true);
             setError(null);
             try {
-                console.log('🏌️ useGolfLeaderboard: Fetching leaderboard with team calculations...');
-                
-                // Call backend endpoint with calculateTeams=true to get team scores
-                const fetchUrl = `${LEADERBOARD_API_ENDPOINT}?calculateTeams=true&tournId=${tournamentSpecifics.tournId}&orgId=${tournamentSpecifics.orgId}&year=${tournamentSpecifics.year}&tournamentId=${tournamentId}`;
-                
-                console.log('🌐 Leaderboard API URL:', fetchUrl);
-                
-                const response = await fetch(fetchUrl);
-                if (!response.ok) {
-                    const errorBody = await response.json().catch(() => ({}));
-                    throw new Error(`HTTP error! status: ${response.status} - ${errorBody.error || errorBody.message || response.statusText}`);
+                const params = new URLSearchParams({
+                    calculateTeams: 'true',
+                    tournId: tournamentSpecifics.tournId,
+                    orgId: tournamentSpecifics.orgId,
+                    year: tournamentSpecifics.year,
+                    tournamentId,
+                });
+                if (isTournamentInProgress && currentRoundRef.current) {
+                    params.set('roundId', String(currentRoundRef.current));
                 }
-                
-                const result = await response.json();
-                console.log('📊 Backend team calculation result:', result);
-                
+                const fetchUrl = `${LEADERBOARD_API_ENDPOINT}?${params.toString()}`;
+                devLog('🌐 Leaderboard API URL:', fetchUrl);
+
+                const result = await retryFetchJson(fetchUrl, { signal: ac.signal });
+                if (ac.signal.aborted) return;
+                devLog('📊 Backend team calculation result:', result);
+
                 if (result.error) {
                     throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
                 }
 
-                // Backend is the single source of truth for team scores.
-                // If teamScores is missing, render placeholder rows from teamAssignments
-                // and emit an anomaly so the gap is observable. We DO NOT recompute scores client-side.
                 let calculatedTeamData = result.teamScores || result.teams || [];
                 if ((!calculatedTeamData || calculatedTeamData.length === 0) && teamAssignments.length > 0) {
                     logV2Anomaly('team_scores_missing', {
@@ -184,40 +217,52 @@ export const useGolfLeaderboard = (
                         };
                     });
                 }
-                console.log('🏆 Calculated team data:', calculatedTeamData);
-                console.log('🔍 First team structure:', calculatedTeamData[0]);
-                
-                setRawData(calculatedTeamData);
-                setLoading(false);
+                devLog('🏆 Calculated team data:', calculatedTeamData);
 
+                setRawData(calculatedTeamData);
+                setStale(false);
+                setStaleSince(Date.now());
+                writeLastGood(tournamentId, calculatedTeamData);
+                setLoading(false);
             } catch (e) {
-                console.error('💥 Error fetching leaderboard data:', e);
-                setError(e.message);
-                setRawData([]);
+                if (e.name === 'AbortError' || ac.signal.aborted) return;
+                devError('💥 Error fetching leaderboard data:', e);
+                const cached = readLastGood(tournamentId);
+                if (cached && Array.isArray(cached.payload) && cached.payload.length > 0) {
+                    setRawData(cached.payload);
+                    setStale(true);
+                    setStaleSince(cached.ts || null);
+                    setError(`Showing last-known data — refresh failed: ${e.message}`);
+                } else {
+                    setError(e.message);
+                    setRawData([]);
+                }
                 setLoading(false);
             }
         };
 
-        // Initial fetch
+        fetchLeaderboardRef.current = fetchLeaderboardData;
         fetchLeaderboardData(true);
 
-        // Set up auto-refresh polling only for live tournaments.
-        if (!isTournamentInProgress) {
-            return undefined;
-        }
-
-        const AUTO_REFRESH_INTERVAL = 30 * 60 * 1000; // 30 minutes in milliseconds
-        const pollInterval = setInterval(() => {
-            console.log('🔄 Auto-refreshing leaderboard data...');
-            fetchLeaderboardData(false); // Don't show loading spinner on auto-refresh
-        }, AUTO_REFRESH_INTERVAL);
-
-        // Cleanup: Clear interval when component unmounts or dependencies change
         return () => {
-            console.log('🛑 Clearing leaderboard auto-refresh interval');
-            clearInterval(pollInterval);
+            ac.abort();
+            fetchLeaderboardRef.current = null;
         };
-    }, [tournamentId, teamAssignments, tournamentSpecifics, isTournamentInProgress, isDraftStarted, refreshDependency]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [tournamentId, teamAssignments, tournamentSpecifics, refreshDependency]);
+
+    // Visibility-aware polling for live tournaments. Pauses when the tab is hidden.
+    useVisibilityAwareInterval(
+        () => {
+            const fn = fetchLeaderboardRef.current;
+            if (fn) {
+                devLog('🔄 Auto-refreshing leaderboard data...');
+                fn(false);
+            }
+        },
+        LIVE_POLL_MS,
+        isTournamentInProgress,
+    );
 
     // Create golfer-to-team mapping
     const selectedTeamGolfersMap = useMemo(() => {
@@ -235,7 +280,7 @@ export const useGolfLeaderboard = (
     // Team colors for UI display
     const teamColors = useMemo(() => ({
         "Team A": "#FFCDD2",
-        "Team B": "#B2DFDB", 
+        "Team B": "#B2DFDB",
         "Team C": "#C8E6C9",
         "Team D": "#FFECB3",
         "Team E": "#E1BEE7",
@@ -247,6 +292,8 @@ export const useGolfLeaderboard = (
         rawData,
         loading,
         error,
+        stale,
+        staleSince,
         isTournamentInProgress,
         isTournamentOver,
         lifecycleState,

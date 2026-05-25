@@ -11,64 +11,42 @@ import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
+import { devLog, devError } from './utils/devLog';
 
 function App() {
-  // Memoized helper function to format scores for display
-  const formatScoreForDisplay = useMemo(() => {
-    const cache = new Map();
-    
-    return (scoreObj) => {
-      const cacheKey = JSON.stringify(scoreObj);
-      if (cache.has(cacheKey)) {
-        return cache.get(cacheKey);
+  // Pure score formatter. Cheap enough that an internal cache is more overhead than savings
+  // (the previous JSON.stringify key dominated CPU). Kept stable via useCallback so memoized
+  // children that consume it as a prop don't churn.
+  const formatScoreForDisplay = useCallback((scoreObj) => {
+    // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
+    if (scoreObj && scoreObj.notStarted) return '-';
+    if (scoreObj && typeof scoreObj === 'object' && Object.prototype.hasOwnProperty.call(scoreObj, 'score')) {
+      if (
+        scoreObj.score === null ||
+        scoreObj.score === undefined ||
+        scoreObj.score === '' ||
+        Number.isNaN(scoreObj.score)
+      ) {
+        return '-';
       }
-
-      let result;
-      
-      // Show "-" for not started rounds (null, undefined, empty, or explicit notStarted)
-      if (scoreObj && scoreObj.notStarted) {
-        result = '-';
-      } else if (scoreObj && typeof scoreObj === 'object' && scoreObj.hasOwnProperty('score')) {
-        if (
-          scoreObj.score === null ||
-          scoreObj.score === undefined ||
-          scoreObj.score === '' ||
-          Number.isNaN(scoreObj.score)
-        ) {
-          result = '-';
-        } else if (scoreObj.isLive) {
-          if (scoreObj.score === 0) {
-            result = <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
-          } else {
-            result = (
-              <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
-                {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
-              </span>
-            );
-          }
-        } else {
-          if (scoreObj.score === 0) {
-            result = 'E';
-          } else {
-            result = scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
-          }
+      if (scoreObj.isLive) {
+        if (scoreObj.score === 0) {
+          return <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>E</span>;
         }
-      } else {
-        // Fallback for numbers (totals etc)
-        if (scoreObj === null || scoreObj === undefined || scoreObj === '') {
-          result = '-';
-        } else if (scoreObj === 0) {
-          result = 'E';
-        } else if (scoreObj > 0) {
-          result = `+${scoreObj}`;
-        } else {
-          result = scoreObj.toString();
-        }
+        return (
+          <span style={{ fontWeight: 'bold', color: '#1565c0', fontVariantNumeric: 'tabular-nums' }}>
+            {scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score}
+          </span>
+        );
       }
-
-      cache.set(cacheKey, result);
-      return result;
-    };
+      if (scoreObj.score === 0) return 'E';
+      return scoreObj.score > 0 ? `+${scoreObj.score}` : scoreObj.score.toString();
+    }
+    // Fallback for numbers (totals etc)
+    if (scoreObj === null || scoreObj === undefined || scoreObj === '') return '-';
+    if (scoreObj === 0) return 'E';
+    if (scoreObj > 0) return `+${scoreObj}`;
+    return scoreObj.toString();
   }, []);
 
   const { user, userData, signOut, signInWithGoogle, getIdToken } = useAuth();
@@ -135,20 +113,26 @@ function App() {
 
         const normalized = Array.from(mergedMap.values());
         setManagedLeagues(normalized);
-
-        if (!activeLeagueId && normalized.length > 0) {
-          setActiveLeagueId(normalized[0].leagueId);
-        }
-        if (activeLeagueId && normalized.length > 0 && !normalized.some((league) => league.leagueId === activeLeagueId)) {
-          setActiveLeagueId(normalized[0].leagueId);
-        }
       } catch {
         setManagedLeagues([]);
       }
     };
 
     loadLeagues();
-  }, [user, getIdToken, activeLeagueId]);
+  }, [user, getIdToken]);
+
+  // Reconcile activeLeagueId when the managed list changes (kept separate so loadLeagues
+  // doesn't re-run every time the user switches leagues).
+  useEffect(() => {
+    if (managedLeagues.length === 0) return;
+    if (!activeLeagueId) {
+      setActiveLeagueId(managedLeagues[0].leagueId);
+      return;
+    }
+    if (!managedLeagues.some((l) => l.leagueId === activeLeagueId)) {
+      setActiveLeagueId(managedLeagues[0].leagueId);
+    }
+  }, [managedLeagues, activeLeagueId]);
   // Fetch league name whenever activeLeagueId changes
   useEffect(() => {
     if (!activeLeagueId) { setActiveLeagueName(null); return; }
@@ -234,55 +218,52 @@ function App() {
   });
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
 
-  // Helper function to find a tournament ready for draft board display
+  // Helper function to find a tournament ready for draft board display.
+  // Parallel requests — was previously sequential await in a for-loop (O(n) wall-clock).
   const findDraftReadyTournament = async (tournaments) => {
-    for (const tournament of tournaments) {
+    const results = await Promise.all(tournaments.map(async (tournament) => {
       try {
         const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
-        if (statusResponse.ok) {
-          const status = await statusResponse.json();
-          // Look for tournament with draft started but not complete (for draft board)
-          if (status.IsDraftStarted && !status.IsDraftComplete) {
-            return tournament.id;
-          }
-        }
-      } catch (error) {
-        console.log(`Could not check draft status for tournament ${tournament.id}`);
+        if (!statusResponse.ok) return null;
+        const status = await statusResponse.json();
+        if (status.IsDraftStarted && !status.IsDraftComplete) return tournament.id;
+        return null;
+      } catch (_e) {
+        devLog(`Could not check draft status for tournament ${tournament.id}`);
+        return null;
       }
-    }
-    return null;
+    }));
+    return results.find((id) => !!id) || null;
   };
   
-// Function to preload tournament data for faster switching
+// Function to preload tournament data for faster switching.
+  // Parallelized — previously sequential awaits multiplied per-tournament latency.
   const preloadTournamentData = useCallback(async (tournaments) => {
-    const preloadedData = {};
-    
-    for (const tournament of tournaments) {
+    const entries = await Promise.all(tournaments.map(async (tournament) => {
       try {
-        // Check if tournament has completed draft
         const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
-        if (statusResponse.ok) {
-          const status = await statusResponse.json();
-          if (status.IsDraftComplete) {
-            // Preload leaderboard data for completed tournaments
-            const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
-            if (leaderboardResponse.ok) {
-              const leaderboardData = await leaderboardResponse.json();
-              preloadedData[tournament.id] = {
-                rawData: leaderboardData.teamScores || leaderboardData.teams || leaderboardData,
-                loading: false,
-                error: null,
-                lastUpdated: Date.now()
-              };
-              console.log(`Preloaded data for tournament: ${tournament.name}`);
-            }
-          }
-        }
+        if (!statusResponse.ok) return null;
+        const status = await statusResponse.json();
+        if (!status.IsDraftComplete) return null;
+        const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
+        if (!leaderboardResponse.ok) return null;
+        const leaderboardData = await leaderboardResponse.json();
+        devLog(`Preloaded data for tournament: ${tournament.name}`);
+        return [tournament.id, {
+          rawData: leaderboardData.teamScores || leaderboardData.teams || leaderboardData,
+          loading: false,
+          error: null,
+          lastUpdated: Date.now(),
+        }];
       } catch (error) {
-        console.log(`Could not preload data for tournament ${tournament.id}:`, error);
+        devLog(`Could not preload data for tournament ${tournament.id}:`, error);
+        return null;
       }
+    }));
+    const preloadedData = {};
+    for (const entry of entries) {
+      if (entry) preloadedData[entry[0]] = entry[1];
     }
-    
     setPreloadedTournamentData(preloadedData);
   }, []);
 
@@ -645,7 +626,20 @@ function App() {
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
       setDraftStatus(prev => {
-        if (JSON.stringify(prev) === JSON.stringify(status)) return prev;
+        // Cheap shallow compare on the scalar fields that actually drive UI.
+        // JSON.stringify on the full object (incl. teams + draftPicks arrays) was hot.
+        const same =
+          prev.IsDraftStarted === status.IsDraftStarted &&
+          prev.IsDraftLocked === status.IsDraftLocked &&
+          prev.IsDraftComplete === status.IsDraftComplete &&
+          prev.currentPickTeam === status.currentPickTeam &&
+          prev.currentRound === status.currentRound &&
+          prev.currentTier === status.currentTier &&
+          prev.numTeams === status.numTeams &&
+          (prev.draftPicks?.length || 0) === (status.draftPicks?.length || 0) &&
+          (prev.teams?.length || 0) === (status.teams?.length || 0) &&
+          (prev.DraftLockedOdds?.length || 0) === (status.DraftLockedOdds?.length || 0);
+        if (same) return prev;
         // Draft just completed — refresh leaderboard data to pick up golferNames
         if (!prev.IsDraftComplete && status.IsDraftComplete) {
           setLeaderboardRefreshKey(k => k + 1);
@@ -653,7 +647,7 @@ function App() {
         return status;
       });
     } catch (error) {
-      console.error('Error fetching draft status:', error);
+      devError('Error fetching draft status:', error);
       setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false,
         numTeams: 0, draftPicks: [], teams: [], currentPickTeam: null, currentRound: null,
         currentTier: null, DraftLockedOdds: [] });
@@ -848,7 +842,28 @@ function App() {
     return <LandingPage onSignIn={handleLandingSignIn} signingIn={signingIn} />;
   }
 
-  if (loadingTournaments) return <div>Loading tournaments...</div>;
+  if (loadingTournaments) {
+    // Show the full app shell with a lightweight skeleton instead of a blocking white page.
+    // The header/nav renders immediately so the page feels responsive while tournaments load.
+    return (
+      <div className="App app-loading-skeleton">
+        <header className="modern-header">
+          <div className="header-container">
+            <div className="brand-section">
+              <div className="logo-container">
+                <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
+              </div>
+              <div className="brand-text">
+                <h1 className="app-title">Alumni Golf Tournament</h1>
+                <p className="app-subtitle">{activeLeagueName || ''}</p>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="main-content" aria-busy="true" />
+      </div>
+    );
+  }
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
 
   // Gate: signed-in non-admin user who hasn't joined the league yet
@@ -1067,8 +1082,12 @@ function App() {
                         key={t.id}
                         className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
                         onClick={() => {
-                          setSelectedTournamentId(t.id);
-                          setLeaderboardRefreshKey(prev => prev + 1);
+                          // Bumping refreshKey on the same tournament forces a full refetch loop
+                          // and unnecessary teardown. Only bump when actually switching.
+                          if (t.id !== selectedTournamentId) {
+                            setSelectedTournamentId(t.id);
+                            setLeaderboardRefreshKey(prev => prev + 1);
+                          }
                           setShowTournamentPicker(false);
                         }}
                       >
@@ -1259,14 +1278,15 @@ function App() {
                         const teamName = team.teamName || team.team || 'Unknown Team';
                         const teamTotal = team.totalScore !== undefined ? team.totalScore : team.total;
                         const golfers = team.players || team.golfers || [];
+                        const expandKey = teamName;
                         return (
                         <React.Fragment key={`team-${teamName}-${index}`}>
                           <tr
-                            className={`team-row${expandedTeams[index] ? ' team-row-expanded' : ''}`}
-                            onClick={() => setExpandedTeams(prev => ({ ...prev, [index]: !prev[index] }))}
+                            className={`team-row${expandedTeams[expandKey] ? ' team-row-expanded' : ''}`}
+                            onClick={() => setExpandedTeams(prev => ({ ...prev, [expandKey]: !prev[expandKey] }))}
                           >
                             <td className="team-name-cell">
-                              <span className="team-expand-icon">{expandedTeams[index] ? '▾' : '▸'}</span>
+                              <span className="team-expand-icon">{expandedTeams[expandKey] ? '▾' : '▸'}</span>
                               {teamName}
                             </td>
                             <td className="total-cell">{formatScoreForDisplay(teamTotal)}</td>
@@ -1275,7 +1295,7 @@ function App() {
                             <td>{formatScoreForDisplay(team.roundDetails?.r3?.score || team.r3)}</td>
                             <td>{formatScoreForDisplay(team.roundDetails?.r4?.score || team.r4)}</td>
                           </tr>
-                          {expandedTeams[index] && golfers.map((golfer, golferIndex) => {
+                          {expandedTeams[expandKey] && golfers.map((golfer, golferIndex) => {
                             const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
                             return (
                               <tr key={`golfer-${teamName}-${golferIndex}`} className={`golfer-row${isCut ? ' golfer-row-cut' : ''} ${golferIndex % 2 === 0 ? 'golfer-band-a' : 'golfer-band-b'}`}>

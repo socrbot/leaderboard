@@ -2,6 +2,7 @@ import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithRedirect,
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -45,7 +46,24 @@ export function AuthProvider({ children }) {
 
   const signInWithGoogle = async () => {
     const provider = new GoogleAuthProvider();
-    await signInWithPopup(auth, provider);
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      // Popup blockers, third-party cookie restrictions, or duplicate popup requests
+      // all cause signInWithPopup to fail. Fall back to a redirect so sign-in still works
+      // on iOS Safari / locked-down browsers.
+      const fallbackCodes = new Set([
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment',
+      ]);
+      if (e && fallbackCodes.has(e.code)) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw e;
+    }
   };
 
   const signOut = async () => {
