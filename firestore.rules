@@ -21,20 +21,24 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Legacy public collections (existing leaderboard data — keep public for now)
+    // Backend-mediated collections. All reads/writes go through the Flask API
+    // (which enforces Firebase Auth + per-league membership/admin checks).
+    // The browser does NOT use the client SDK to read these — anything that
+    // looks like it might is a bug. Deny direct client access.
     match /tournaments/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if false;
     }
 
     match /global_teams/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if false;
     }
 
     match /tournament_scores/{document=**} {
-      allow read: if true;
-      allow write: if isAdmin();
+      allow read, write: if false;
+    }
+
+    match /leagues/{document=**} {
+      allow read, write: if false;
     }
   }
 }
