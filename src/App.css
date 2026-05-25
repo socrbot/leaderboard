@@ -853,7 +853,7 @@ select:focus {
   /* ── Leaderboard table — mobile ── */
   .leaderboard-table {
     min-width: 100%;
-    font-size: 0.78rem;
+    font-size: 0.8rem;
     table-layout: fixed;
   }
 
@@ -861,12 +861,12 @@ select:focus {
      cols 1+2 (no per-golfer total) so the full name fits without scrolling. */
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    width: 30%;
+    width: 36%;
   }
 
   .leaderboard-table th:nth-child(2),
   .leaderboard-table td:nth-child(2) {
-    width: 14%;
+    width: 12%;
   }
 
   .leaderboard-table th:nth-child(3),
@@ -877,12 +877,18 @@ select:focus {
   .leaderboard-table td:nth-child(5),
   .leaderboard-table th:nth-child(6),
   .leaderboard-table td:nth-child(6) {
-    width: 14%;
+    width: 13%;
   }
 
-  .leaderboard-table thead th,
+  .leaderboard-table thead th {
+    padding: 8px 2px;
+    font-size: 0.68rem;
+    letter-spacing: 0.04em;
+    white-space: nowrap;
+  }
+
   .leaderboard-table td {
-    padding: 8px 4px;
+    padding: 8px 2px;
     white-space: nowrap;
   }
 
@@ -1077,7 +1083,7 @@ select:focus {
   /* Tighter column distribution for very small screens */
   .leaderboard-table th:nth-child(1),
   .leaderboard-table td:nth-child(1) {
-    width: 28%;
+    width: 34%;
   }
   
   .leaderboard-table th:nth-child(2),

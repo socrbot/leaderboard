@@ -50,6 +50,22 @@ function App() {
     return scoreObj.toString();
   }, []);
 
+  // Returns a colour for a score: green for negative (under par), red for positive
+  // (over par), undefined for 0/E/missing. Mirrors the scores-table logic.
+  const getScoreColor = useCallback((scoreObj) => {
+    let raw;
+    if (scoreObj && typeof scoreObj === 'object') {
+      if (scoreObj.notStarted) return undefined;
+      raw = scoreObj.score;
+    } else {
+      raw = scoreObj;
+    }
+    if (raw === null || raw === undefined || raw === '' || raw === '-' || raw === 'E') return undefined;
+    const num = typeof raw === 'string' ? parseFloat(raw.replace('+', '')) : raw;
+    if (Number.isNaN(num) || num === 0) return undefined;
+    return num < 0 ? '#4ade80' : '#f87171';
+  }, []);
+
   const { user, userData, signOut, signInWithGoogle, getIdToken, hadAuthSession } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
   // Super-admin override (developer only — assigned manually in Firestore users/{uid}.role).
@@ -1409,11 +1425,11 @@ function App() {
                               <span className="team-expand-icon">{expandedTeams[expandKey] ? '▾' : '▸'}</span>
                               {teamName}
                             </td>
-                            <td className="total-cell">{formatScoreForDisplay(teamTotal)}</td>
-                            <td>{formatScoreForDisplay(team.roundDetails?.r1?.score || team.r1)}</td>
-                            <td>{formatScoreForDisplay(team.roundDetails?.r2?.score || team.r2)}</td>
-                            <td>{formatScoreForDisplay(team.roundDetails?.r3?.score || team.r3)}</td>
-                            <td>{formatScoreForDisplay(team.roundDetails?.r4?.score || team.r4)}</td>
+                            <td className="total-cell" style={{ color: getScoreColor(teamTotal) }}>{formatScoreForDisplay(teamTotal)}</td>
+                            <td style={{ color: getScoreColor(team.roundDetails?.r1?.score || team.r1) }}>{formatScoreForDisplay(team.roundDetails?.r1?.score || team.r1)}</td>
+                            <td style={{ color: getScoreColor(team.roundDetails?.r2?.score || team.r2) }}>{formatScoreForDisplay(team.roundDetails?.r2?.score || team.r2)}</td>
+                            <td style={{ color: getScoreColor(team.roundDetails?.r3?.score || team.r3) }}>{formatScoreForDisplay(team.roundDetails?.r3?.score || team.r3)}</td>
+                            <td style={{ color: getScoreColor(team.roundDetails?.r4?.score || team.r4) }}>{formatScoreForDisplay(team.roundDetails?.r4?.score || team.r4)}</td>
                           </tr>
                           {expandedTeams[expandKey] && golfers.map((golfer, golferIndex) => {
                             const isCut = golfer.status && golfer.status.toUpperCase() === 'CUT';
@@ -1432,10 +1448,10 @@ function App() {
                                         : golfer.status && <span className="golfer-status-label">{golfer.status}</span>
                                   }
                                 </td>
-                                <td>{formatScoreForDisplay(golfer.r1?.score)}</td>
-                                <td>{formatScoreForDisplay(golfer.r2?.score)}</td>
-                                <td>{formatScoreForDisplay(golfer.r3?.score)}</td>
-                                <td>{formatScoreForDisplay(golfer.r4?.score)}</td>
+                                <td style={{ color: getScoreColor(golfer.r1?.score) }}>{formatScoreForDisplay(golfer.r1?.score)}</td>
+                                <td style={{ color: getScoreColor(golfer.r2?.score) }}>{formatScoreForDisplay(golfer.r2?.score)}</td>
+                                <td style={{ color: getScoreColor(golfer.r3?.score) }}>{formatScoreForDisplay(golfer.r3?.score)}</td>
+                                <td style={{ color: getScoreColor(golfer.r4?.score) }}>{formatScoreForDisplay(golfer.r4?.score)}</td>
                               </tr>
                             );
                           })}
