@@ -168,4 +168,4 @@ const AnnualChampionship = ({ selectedYear, leagueId }) => {
   );
 };
 
-export default AnnualChampionship;
+export default React.memo(AnnualChampionship);

@@ -188,4 +188,4 @@ function TournamentScores({ tournamentId, tournamentName }) {
   );
 }
 
-export default TournamentScores;
+export default React.memo(TournamentScores);

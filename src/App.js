@@ -179,6 +179,22 @@ function App() {
   const [showTournamentPicker, setShowTournamentPicker] = useState(false);
   const pickerRef = useRef(null);
   const initialViewAppliedForUserRef = useRef(null);
+  // Tournaments we've already warmed the HTTP cache for (avoid hammering the
+  // backend if the user mouses across items repeatedly).
+  const prefetchedTournamentsRef = useRef(new Set());
+
+  // Fire-and-forget GET to warm the browser HTTP cache for a tournament's
+  // leaderboard payload. Safe to call on hover — backend returns `Cache-Control`
+  // headers, so a subsequent click loads instantly from the disk cache.
+  const prefetchTournamentLeaderboard = useCallback((tournamentId) => {
+    if (!tournamentId) return;
+    if (prefetchedTournamentsRef.current.has(tournamentId)) return;
+    prefetchedTournamentsRef.current.add(tournamentId);
+    fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/leaderboard`).catch(() => {
+      // Allow a future hover to retry by clearing the dedupe marker.
+      prefetchedTournamentsRef.current.delete(tournamentId);
+    });
+  }, []);
 
   // Sorting state
   const [sortColumn, setSortColumn] = useState('total');
@@ -1081,6 +1097,8 @@ function App() {
                       <button
                         key={t.id}
                         className={`picker-item${t.id === selectedTournamentId ? ' active' : ''}`}
+                        onMouseEnter={() => prefetchTournamentLeaderboard(t.id)}
+                        onFocus={() => prefetchTournamentLeaderboard(t.id)}
                         onClick={() => {
                           // Bumping refreshKey on the same tournament forces a full refetch loop
                           // and unnecessary teardown. Only bump when actually switching.

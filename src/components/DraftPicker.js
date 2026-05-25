@@ -283,5 +283,5 @@ const DraftPicker = ({
   );
 };
 
-export default DraftPicker;
+export default React.memo(DraftPicker);
 

@@ -420,4 +420,4 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
   );
 };
 
-export default DraftBoard;
+export default React.memo(DraftBoard);
