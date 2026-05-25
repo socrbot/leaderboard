@@ -1,6 +1,7 @@
 // src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { authFetch } from '../authFetch';
 import { useAuth } from '../contexts/AuthContext';
 import '../App.css';
 
@@ -73,7 +74,7 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
 
   const fetchDraftStatusForTournament = useCallback(async (tournamentId) => {
     try {
-      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/draft_status`);
+      const res = await authFetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/draft_status`);
       if (!res.ok) throw new Error('Failed draft status fetch');
       const status = await res.json();
       setDraftStatusByTournament((prev) => ({ ...prev, [tournamentId]: status }));
@@ -86,7 +87,7 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
 
   const loadTeamsForTournament = useCallback(async (tournamentId) => {
     try {
-      const res = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
+      const res = await authFetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}`);
       if (!res.ok) throw new Error('Failed tournament fetch');
       const tournament = await res.json();
       setTeamsByTournament((prev) => ({ ...prev, [tournamentId]: tournament.teams || [] }));
@@ -119,7 +120,7 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
       const enriched = await Promise.all(
         normalized.map(async (tournament) => {
           try {
-            const detailRes = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournament.id}`);
+            const detailRes = await authFetch(`${BACKEND_BASE_URL}/tournaments/${tournament.id}`);
             if (!detailRes.ok) return tournament;
             const detail = await detailRes.json();
 

@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useMemo } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { authFetch } from '../authFetch';
 
 function TournamentScores({ tournamentId, tournamentName }) {
   const [leaderboardRows, setLeaderboardRows] = useState([]);
@@ -18,7 +19,7 @@ function TournamentScores({ tournamentId, tournamentName }) {
       setLoading(true);
       setError(null);
       try {
-        const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/player_scores`);
+        const response = await authFetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/player_scores`);
         if (!response.ok) throw new Error(`HTTP error! status: ${response.status}`);
         const data = await response.json();
         setLeaderboardRows(data.leaderboardRows || []);

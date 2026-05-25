@@ -5,6 +5,7 @@
 // underlying preview odds automatically every 7 days.
 import React, { useEffect, useState, useCallback } from 'react';
 import { TOURNAMENTS_API_ENDPOINT } from '../apiConfig';
+import { authFetch } from '../authFetch';
 
 const formatUpdatedAt = (iso) => {
   if (!iso) return 'Not yet available';
@@ -38,7 +39,7 @@ const PreviewDraftBoard = ({ tournamentId, tournamentName }) => {
     setLoading(true);
     setError(null);
     try {
-      const res = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/preview_odds`);
+      const res = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/preview_odds`);
       if (!res.ok) throw new Error(`Request failed (${res.status})`);
       const data = await res.json();
       setOdds(Array.isArray(data.odds) ? data.odds : []);

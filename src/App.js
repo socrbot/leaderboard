@@ -11,6 +11,7 @@ import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
+import { authFetch } from './authFetch';
 import { devLog, devError } from './utils/devLog';
 
 function App() {
@@ -206,7 +207,7 @@ function App() {
     if (!tournamentId) return;
     if (prefetchedTournamentsRef.current.has(tournamentId)) return;
     prefetchedTournamentsRef.current.add(tournamentId);
-    fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/leaderboard`).catch(() => {
+    authFetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/leaderboard`).catch(() => {
       // Allow a future hover to retry by clearing the dedupe marker.
       prefetchedTournamentsRef.current.delete(tournamentId);
     });
@@ -255,7 +256,7 @@ function App() {
   const findDraftReadyTournament = async (tournaments) => {
     const results = await Promise.all(tournaments.map(async (tournament) => {
       try {
-        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
+        const statusResponse = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
         if (!statusResponse.ok) return null;
         const status = await statusResponse.json();
         if (status.IsDraftStarted && !status.IsDraftComplete) return tournament.id;
@@ -273,11 +274,11 @@ function App() {
   const preloadTournamentData = useCallback(async (tournaments) => {
     const entries = await Promise.all(tournaments.map(async (tournament) => {
       try {
-        const statusResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
+        const statusResponse = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/draft_status`);
         if (!statusResponse.ok) return null;
         const status = await statusResponse.json();
         if (!status.IsDraftComplete) return null;
-        const leaderboardResponse = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
+        const leaderboardResponse = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${tournament.id}/leaderboard`);
         if (!leaderboardResponse.ok) return null;
         const leaderboardData = await leaderboardResponse.json();
         devLog(`Preloaded data for tournament: ${tournament.name}`);
@@ -306,7 +307,7 @@ function App() {
         const params = new URLSearchParams();
         if (activeLeagueId) params.set('leagueId', activeLeagueId);
         const url = `${TOURNAMENTS_API_ENDPOINT}${params.toString() ? `?${params}` : ''}`;
-        const res = await fetch(url);
+        const res = await authFetch(url);
         if (res.ok) setAllTournaments(await res.json());
       } catch {}
     };
@@ -393,7 +394,7 @@ function App() {
         if (selectedYear) params.set('year', selectedYear);
         if (activeLeagueId) params.set('leagueId', activeLeagueId);
         const url = `${TOURNAMENTS_API_ENDPOINT}${params.toString() ? `?${params}` : ''}`;
-        const response = await fetch(url);
+        const response = await authFetch(url);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
@@ -498,7 +499,7 @@ function App() {
       return;
     }
     try {
-      const response = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`);
+      const response = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}`);
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
@@ -654,7 +655,7 @@ function App() {
       return;
     }
     try {
-      const draftRes = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
+      const draftRes = await authFetch(`${TOURNAMENTS_API_ENDPOINT}/${selectedTournamentId}/draft_status`);
       if (!draftRes.ok) throw new Error('Failed to fetch draft status');
       const status = await draftRes.json();
       setDraftStatus(prev => {

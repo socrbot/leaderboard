@@ -1,6 +1,7 @@
 // retryFetch — small wrapper around fetch() with exponential backoff + jitter.
 // Use for idempotent GETs only; do not use for POST/PUT/DELETE without an
 // idempotency key. Honors an external AbortSignal so callers can cancel.
+import { authFetch } from '../authFetch';
 
 const DEFAULT_OPTS = {
     retries: 3,
@@ -45,7 +46,7 @@ export async function retryFetch(url, init = {}, opts = {}) {
         }
 
         try {
-            const res = await fetch(url, { ...init, signal: ac.signal });
+            const res = await authFetch(url, { ...init, signal: ac.signal });
             clearTimeout(timer);
             if (externalSignal) externalSignal.removeEventListener('abort', onExternalAbort);
 

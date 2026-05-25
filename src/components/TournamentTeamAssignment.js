@@ -1,6 +1,7 @@
 // src/components/TournamentTeamAssignment.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { authFetch } from '../authFetch';
 import { useAuth } from '../contexts/AuthContext';
 import '../App.css';
 
@@ -31,7 +32,7 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
     
     setIsLoading(true);
     try {
-      const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/team_assignments`);
+      const response = await authFetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/team_assignments`);
       if (!response.ok) {
         throw new Error(`Failed to fetch team assignments: ${response.status}`);
       }
