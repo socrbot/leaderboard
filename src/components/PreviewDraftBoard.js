@@ -74,20 +74,20 @@ const PreviewDraftBoard = ({ tournamentId, tournamentName }) => {
         </div>
       ) : (
         <div className="leaderboard-container" style={{ maxWidth: '720px', margin: '0 auto' }}>
-          <table className="leaderboard-table">
+          <table className="leaderboard-table odds-list-table">
             <thead>
               <tr>
-                <th style={{ width: '60px' }}>#</th>
-                <th>Player</th>
-                <th style={{ width: '120px', textAlign: 'right' }}>Odds</th>
+                <th className="odds-rank-col">#</th>
+                <th className="odds-player-col">Player</th>
+                <th className="odds-value-col">Odds</th>
               </tr>
             </thead>
             <tbody>
               {odds.map((p, idx) => (
                 <tr key={`${p.name}-${idx}`}>
-                  <td>{idx + 1}</td>
-                  <td>{p.name}</td>
-                  <td style={{ textAlign: 'right' }}>{formatOdds(p.averageOdds)}</td>
+                  <td className="odds-rank-col">{idx + 1}</td>
+                  <td className="odds-player-col">{p.name}</td>
+                  <td className="odds-value-col">{formatOdds(p.averageOdds)}</td>
                 </tr>
               ))}
             </tbody>

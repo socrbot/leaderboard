@@ -617,6 +617,28 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
   color: #fff;
 }
 
+/* ── Standalone odds list table (uses .leaderboard-table styling) ── */
+.leaderboard-table.odds-list-table {
+  table-layout: fixed;
+}
+
+.leaderboard-table.odds-list-table .odds-rank-col {
+  width: 44px;
+}
+
+.leaderboard-table.odds-list-table .odds-player-col {
+  width: auto;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.leaderboard-table.odds-list-table .odds-value-col {
+  width: 70px;
+  text-align: right;
+}
+
 /* ── Body cells ── */
 .leaderboard-table td {
   padding: 12px;
