@@ -1,9 +1,11 @@
 // src/components/TournamentCreation.js
 import React, { useEffect, useRef, useState } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 import '../App.css';
 
 const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
+  const { getIdToken } = useAuth();
   const currentYear = new Date().getFullYear().toString();
 
   const [year] = useState(currentYear);
@@ -54,9 +56,13 @@ const TournamentCreation = ({ onTournamentCreated, activeLeagueId }) => {
     if (!selectedConfigEntry) return;
     setIsQuickCreating(true);
     try {
+      const token = await getIdToken();
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({
           name: selectedConfigEntry.name,
           orgId: '1',

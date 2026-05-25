@@ -225,9 +225,13 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
 
     setDraftActionLoading((prev) => ({ ...prev, [tournamentId]: true }));
     try {
+      const token = await getIdToken();
       const res = await fetch(`${BACKEND_BASE_URL}${endpoint}`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
       });
       if (!res.ok) throw new Error('Draft action failed');
 

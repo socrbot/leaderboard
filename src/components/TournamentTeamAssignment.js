@@ -1,9 +1,11 @@
 // src/components/TournamentTeamAssignment.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 import '../App.css';
 
 const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
+  const { getIdToken } = useAuth();
   const [globalTeams, setGlobalTeams] = useState([]);
   const [assignedTeamIds, setAssignedTeamIds] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -70,9 +72,13 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
         globalTeamId: teamId
       }));
 
+      const token = await getIdToken();
       const response = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/team_assignments`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ teamAssignments })
       });
 
@@ -93,7 +99,10 @@ const TournamentTeamAssignment = ({ tournamentId, onTeamsSaved }) => {
 
       const legacyResponse = await fetch(`${BACKEND_BASE_URL}/tournaments/${tournamentId}/teams`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
         body: JSON.stringify({ teams: legacyTeams })
       });
 

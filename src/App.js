@@ -51,11 +51,17 @@ function App() {
 
   const { user, userData, signOut, signInWithGoogle, getIdToken, hadAuthSession } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
-  const isAdmin = userData?.role === 'admin';
-  // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
+  // Super-admin override (developer only — assigned manually in Firestore users/{uid}.role).
+  const isSuperAdmin = userData?.role === 'admin';
+  // Active league: starts from user's first leagueId; users can switch via the league picker.
   const [activeLeagueId, setActiveLeagueId] = useState(null);
   const [activeLeagueName, setActiveLeagueName] = useState(null);
   const [managedLeagues, setManagedLeagues] = useState([]);
+  // Leagues the user owns (created). Drives admin UI gating per league.
+  const [ownedLeagueIds, setOwnedLeagueIds] = useState(() => new Set());
+  // Bumped to force re-fetch of leagues (e.g. after Create League).
+  const [leaguesRefreshKey, setLeaguesRefreshKey] = useState(0);
+  const refreshLeagues = useCallback(() => setLeaguesRefreshKey((k) => k + 1), []);
   // Tracks whether the membership-validated league list has been fetched at least once.
   // Used to gate the "no leagues" view so we don't flash it while leagues are still loading.
   const [managedLeaguesLoaded, setManagedLeaguesLoaded] = useState(false);
@@ -66,6 +72,7 @@ function App() {
     const loadLeagues = async () => {
       if (!user) {
         setManagedLeagues([]);
+        setOwnedLeagueIds(new Set());
         setManagedLeaguesLoaded(false);
         return;
       }
@@ -112,15 +119,17 @@ function App() {
 
         const normalized = Array.from(mergedMap.values());
         setManagedLeagues(normalized);
+        setOwnedLeagueIds(new Set(adminLeagues.map((l) => l.leagueId).filter(Boolean)));
       } catch {
         setManagedLeagues([]);
+        setOwnedLeagueIds(new Set());
       } finally {
         setManagedLeaguesLoaded(true);
       }
     };
 
     loadLeagues();
-  }, [user, getIdToken]);
+  }, [user, getIdToken, leaguesRefreshKey]);
 
   // Reconcile activeLeagueId against the membership-validated managedLeagues list.
   // activeLeagueId is ONLY ever set from this validated set — we never trust
@@ -157,6 +166,10 @@ function App() {
   }, [showLeagueMenu]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
+  // Ownership-derived flags. Super-admin (developer) always sees admin UI.
+  const isLeagueOwner = isSuperAdmin || ownedLeagueIds.size > 0;
+  const isActiveLeagueAdmin = isSuperAdmin || (!!activeLeagueId && ownedLeagueIds.has(activeLeagueId));
+
   const [showSetup, setShowSetup] = useState(false);
   const [showUserSettings, setShowUserSettings] = useState(false);
 
@@ -166,7 +179,7 @@ function App() {
       setPendingSetup(false);
       setShowSetup(false);
     }
-  }, [isAdmin, pendingSetup, user, userData]);
+  }, [isLeagueOwner, pendingSetup, user, userData]);
   const [showAnnualChampionship, setShowAnnualChampionship] = useState(false);
   const [showTournamentScores, setShowTournamentScores] = useState(false);
   const [setupActiveTab, setSetupActiveTab] = useState('league-management');
@@ -911,7 +924,7 @@ function App() {
     !(Array.isArray(userData.leagueIds) && userData.leagueIds.length > 0);
   // Server-validated fallback: if /user/profile and /leagues/mine both returned empty.
   const hasNoValidatedLeagues =
-    !!userData && !isAdmin && managedLeaguesLoaded && managedLeagues.length === 0;
+    !!userData && !isSuperAdmin && managedLeaguesLoaded && managedLeagues.length === 0;
 
   if (hasNoMembershipsHint || hasNoValidatedLeagues) {
     return (
@@ -929,7 +942,7 @@ function App() {
           </div>
         </header>
         <div className="main-content">
-          <UserSettings activeLeagueId={null} onSignOut={signOut} />
+          <UserSettings activeLeagueId={null} onSignOut={signOut} onLeagueCreated={refreshLeagues} />
         </div>
       </div>
     );
@@ -1028,11 +1041,11 @@ function App() {
           {/* User avatar — always visible; opens My Settings */}
           {user && (
             <button
-              className={`user-avatar-btn${(isAdmin ? showSetup : showUserSettings) ? ' active' : ''}`}
+              className={`user-avatar-btn${(isLeagueOwner ? showSetup : showUserSettings) ? ' active' : ''}`}
               onClick={() => {
                 setShowAnnualChampionship(false);
                 setShowTournamentScores(false);
-                if (isAdmin) {
+                if (isLeagueOwner) {
                   setShowUserSettings(false);
                   setShowSetup(true);
                 } else {
@@ -1041,7 +1054,7 @@ function App() {
                 }
               }}
               title={`Signed in as ${user.email}`}
-              aria-label={isAdmin ? 'Admin Setup' : 'My Settings'}
+              aria-label={isLeagueOwner ? 'Admin Setup' : 'My Settings'}
             >
               {user.photoURL ? (
                 <img src={user.photoURL} alt={user.displayName || 'Profile'} className="user-avatar-img" referrerPolicy="no-referrer" />
@@ -1218,7 +1231,7 @@ function App() {
 
       <div className="main-content">
         {showUserSettings ? (
-          <UserSettings activeLeagueId={activeLeagueId} onSignOut={() => { setShowUserSettings(false); signOut(); }} />
+          <UserSettings activeLeagueId={activeLeagueId} onSignOut={() => { setShowUserSettings(false); signOut(); }} onLeagueCreated={refreshLeagues} />
         ) : selectedTournamentId ? (
           showSetup ? (
             <Setup
@@ -1261,7 +1274,7 @@ function App() {
                 oddsId={tournamentOddsId}
                 hasManualDraftOdds={hasManualDraftOdds}
                 tournamentInfo={tournamentInfo}
-                isAdmin={isAdmin}
+                isAdmin={isActiveLeagueAdmin}
               />
             ) : shouldShowDraftBoard ? (
               <>

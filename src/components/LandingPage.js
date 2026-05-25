@@ -38,20 +38,20 @@ const LandingPage = ({ onSignIn, signingIn }) => {
           <FeatureCard
             tone="primary"
             badge="LIVE"
-            title="Leaderboard"
-            text="Instant score updates and clear team movement as rounds unfold."
+            title="Rivalry On. Scores Live."
+            text="Draft with friends and track every Major as the leaderboard shifts in real time."
           />
           <FeatureCard
             tone="secondary"
             badge="DRAFT"
-            title="Team Management"
-            text="Run draft flow, assign golfers, and manage rosters with less friction."
+            title="Every Major Moves the Race."
+            text="Each event adds to your season total, and the lowest score takes the crown."
           />
           <FeatureCard
             tone="tertiary"
             badge="SEASON"
-            title="Annual Standings"
-            text="Track cumulative performance across tournaments and crown the champion."
+            title="Fast Setup. Fierce Competition."
+            text="Start a league, invite your crew, draft in minutes, and let live scoring do the rest."
           />
         </section>
       </main>

@@ -5,7 +5,7 @@ import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import '../App.css';
 import './UserSettings.css';
 
-export default function UserSettings({ activeLeagueId, onSignOut }) {
+export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreated }) {
   const { user, getIdToken } = useAuth();
 
   const [leagueAnnualSettings, setLeagueAnnualSettings] = useState({});
@@ -19,6 +19,10 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
   const [joining, setJoining] = useState(false);
   const [joinError, setJoinError] = useState('');
   const [joinSuccess, setJoinSuccess] = useState('');
+  const [newLeagueName, setNewLeagueName] = useState('');
+  const [creatingLeague, setCreatingLeague] = useState(false);
+  const [createError, setCreateError] = useState('');
+  const [createSuccess, setCreateSuccess] = useState('');
   const [pushNotificationsEnabled, setPushNotificationsEnabled] = useState(true);
   const [emailUpdatesEnabled, setEmailUpdatesEnabled] = useState(false);
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
@@ -103,6 +107,36 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
       setJoinError('Network error. Please try again.');
     } finally {
       setJoining(false);
+    }
+  };
+
+  const handleCreateLeague = async (e) => {
+    e.preventDefault();
+    const name = newLeagueName.trim();
+    if (!name) { setCreateError('Please enter a league name.'); return; }
+    setCreatingLeague(true);
+    setCreateError('');
+    setCreateSuccess('');
+    try {
+      const token = await getIdToken();
+      const res = await fetch(LEAGUES_API_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ name }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setCreateError(data.error || 'Failed to create league.');
+      } else {
+        setCreateSuccess(`League "${data.name}" created.`);
+        setNewLeagueName('');
+        if (onLeagueCreated) onLeagueCreated();
+        load();
+      }
+    } catch {
+      setCreateError('Network error. Please try again.');
+    } finally {
+      setCreatingLeague(false);
     }
   };
 
@@ -277,6 +311,32 @@ export default function UserSettings({ activeLeagueId, onSignOut }) {
             </form>
             {joinError && <p className="user-settings-error-text">{joinError}</p>}
           </div>
+        </section>
+
+        <section className="user-settings-panel">
+          <h3 className="user-settings-section-label">Create a League</h3>
+          <p className="user-settings-hint">Start your own league and invite friends. You'll be the admin.</p>
+          <form onSubmit={handleCreateLeague} className="user-settings-join-form user-settings-join-form-inline">
+            <input
+              type="text"
+              placeholder="League name"
+              value={newLeagueName}
+              onChange={e => setNewLeagueName(e.target.value)}
+              maxLength={60}
+              disabled={creatingLeague}
+              className="user-settings-input"
+              autoComplete="off"
+            />
+            <button
+              type="submit"
+              disabled={creatingLeague || !newLeagueName.trim()}
+              className="user-settings-btn user-settings-btn-primary user-settings-join-submit"
+            >
+              {creatingLeague ? 'Creating...' : 'Create'}
+            </button>
+          </form>
+          {createSuccess && <p className="user-settings-success-text">{createSuccess}</p>}
+          {createError && <p className="user-settings-error-text">{createError}</p>}
         </section>
 
         <section className="user-settings-panel">
