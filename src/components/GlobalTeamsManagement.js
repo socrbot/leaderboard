@@ -1,12 +1,19 @@
 // src/components/GlobalTeamsManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import { useAuth } from '../contexts/AuthContext';
 import '../App.css';
 
 const GlobalTeamsManagement = ({ selectedYear }) => {
+  const { getIdToken } = useAuth();
   const [globalTeams, setGlobalTeams] = useState([]);
   const [newTeamName, setNewTeamName] = useState('');
   const [isCopying, setIsCopying] = useState(false);
+
+  const authHeaders = useCallback(async () => {
+    const token = await getIdToken();
+    return { 'Content-Type': 'application/json', Authorization: `Bearer ${token}` };
+  }, [getIdToken]);
 
   // Load global teams for the selected year
   const loadGlobalTeams = useCallback(async () => {
@@ -32,9 +39,10 @@ const GlobalTeamsManagement = ({ selectedYear }) => {
     if (!newTeamName.trim()) return;
 
     try {
+      const headers = await authHeaders();
       const response = await fetch(`${BACKEND_BASE_URL}/global_teams`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           name: newTeamName.trim(),
           year: selectedYear,
@@ -58,9 +66,10 @@ const GlobalTeamsManagement = ({ selectedYear }) => {
   // Update team
   const updateTeam = async (teamId, updateData) => {
     try {
+      const headers = await authHeaders();
       const response = await fetch(`${BACKEND_BASE_URL}/global_teams/${teamId}`, {
         method: 'PUT',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify(updateData)
       });
 
@@ -81,8 +90,10 @@ const GlobalTeamsManagement = ({ selectedYear }) => {
     if (!window.confirm('Are you sure you want to delete this team?')) return;
 
     try {
+      const headers = await authHeaders();
       const response = await fetch(`${BACKEND_BASE_URL}/global_teams/${teamId}`, {
-        method: 'DELETE'
+        method: 'DELETE',
+        headers
       });
 
       if (!response.ok) {
@@ -127,9 +138,10 @@ const GlobalTeamsManagement = ({ selectedYear }) => {
 
     setIsCopying(true);
     try {
+      const headers = await authHeaders();
       const response = await fetch(`${BACKEND_BASE_URL}/global_teams/copy_year`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+        headers,
         body: JSON.stringify({
           fromYear: previousYear,
           toYear: selectedYear

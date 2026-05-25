@@ -895,9 +895,10 @@ select:focus {
 
   .golfer-name-cell .golfer-name-text {
     display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
   }
 
   .golfer-name-with-photo {
@@ -1103,9 +1104,10 @@ select:focus {
 
   .golfer-name-cell .golfer-name-text {
     display: block;
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
+    white-space: normal;
+    overflow: visible;
+    text-overflow: clip;
+    word-break: break-word;
   }
 
   .golfer-name-cell .golfer-status-label,
