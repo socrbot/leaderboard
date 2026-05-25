@@ -1113,21 +1113,21 @@ function App() {
         </>
       ) : selectedTournamentId ? (
         <div className="status-bar">
-          <div className="status-league-block">
-            <p className="status-section-title">League</p>
-            <div className="tournament-picker" ref={leaguePickerRef}>
-              <button
-                className="picker-trigger"
-                onClick={() => setShowLeagueMenu(prev => !prev)}
-                aria-expanded={showLeagueMenu}
-              >
-                <span className="status-line-name">{activeLeagueName || 'Select league'}</span>
-                <span className="picker-chevron">{showLeagueMenu ? '▴' : '▾'}</span>
-              </button>
-              {showLeagueMenu && (
-                <div className="picker-dropdown">
-                  {managedLeagues.length > 0 ? (
-                    managedLeagues.map((league) => (
+          {managedLeagues.length > 1 && (
+            <div className="status-league-block">
+              <p className="status-section-title">League</p>
+              <div className="tournament-picker" ref={leaguePickerRef}>
+                <button
+                  className="picker-trigger"
+                  onClick={() => setShowLeagueMenu(prev => !prev)}
+                  aria-expanded={showLeagueMenu}
+                >
+                  <span className="status-line-name">{activeLeagueName || 'Select league'}</span>
+                  <span className="picker-chevron">{showLeagueMenu ? '▴' : '▾'}</span>
+                </button>
+                {showLeagueMenu && (
+                  <div className="picker-dropdown">
+                    {managedLeagues.map((league) => (
                       <button
                         key={league.leagueId}
                         type="button"
@@ -1140,14 +1140,12 @@ function App() {
                       >
                         {league.name}
                       </button>
-                    ))
-                  ) : (
-                    <div className="app-league-empty">No leagues available</div>
-                  )}
-                </div>
-              )}
+                    ))}
+                  </div>
+                )}
+              </div>
             </div>
-          </div>
+          )}
           <p className="status-section-title">Tournament Details</p>
           <div className="tournament-picker" ref={pickerRef}>
             <button
