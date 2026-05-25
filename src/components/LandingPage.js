@@ -10,12 +10,12 @@ const LandingPage = ({ onSignIn, signingIn }) => {
           <img
             className="landing-hero-image"
             src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4xAretQ8E1xkfPFGJdial2YT2fyjh07X5gLCGwJrEZsBZOHeeOVVQ40tuVXl4Jm6S3OPJIbc0tBsQ7LNneA39-udcw7nBDp7tMHOSRjPm7CuRKgF6GlRgFiX_YhpcMsEsKevd3qHdh5T558VXQVKlWhtG1d6uIzmiONSP5dQLfS5qiYqzH0xFOeT-ZG_3_qacUljcdmWS6wSPNiNdfzMxDC32t38IOxkGORINUp9RGR6xe-ce12TSDwaXIJIveP6QqQ3wKxRq1ow"
-            alt="Alumni Cup"
+            alt="The Sunday Cup"
           />
           <div className="landing-hero-gradient" />
 
           <div className="landing-hero-content">
-            <h1 className="landing-hero-title">The Alumni Cup</h1>
+            <h1 className="landing-hero-title">The Sunday Cup</h1>
 
             <button
               className="landing-google-btn"
@@ -58,7 +58,7 @@ const LandingPage = ({ onSignIn, signingIn }) => {
 
       <footer className="landing-footer">
         <div className="landing-footer-left">
-          <div className="landing-footer-brand">ALUMNI CUP</div>
+          <div className="landing-footer-brand">THE SUNDAY CUP</div>
           <p className="landing-footer-copy">Members only. Use your invited Google account.</p>
         </div>
 

@@ -1,8 +1,8 @@
 import type { CapacitorConfig } from '@capacitor/cli';
 
 const config: CapacitorConfig = {
-  appId: 'com.alumnigolf.leaderboard',
-  appName: 'Alumni Leaderboard',
+  appId: 'com.thesundaycup.app',
+  appName: 'The Sunday Cup',
   webDir: 'build',
   server: {
     androidScheme: 'https',

@@ -1,4 +1,4 @@
-package com.alumnigolf.leaderboard;
+package com.thesundaycup.app;
 
 import com.getcapacitor.BridgeActivity;
 

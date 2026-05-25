@@ -26,7 +26,7 @@ export default function LoginPage({ onClose }) {
         <div style={styles.header}>
           <span style={styles.logo}>⛳</span>
           <h2 style={styles.title}>Admin Sign In</h2>
-          <p style={styles.subtitle}>Alumni Golf Tournament</p>
+          <p style={styles.subtitle}>The Sunday Cup</p>
         </div>
 
         {localError && (

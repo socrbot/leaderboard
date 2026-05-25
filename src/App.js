@@ -904,7 +904,7 @@ function App() {
                   <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
                 </div>
                 <div className="brand-text">
-                  <h1 className="app-title">Alumni Golf Tournament</h1>
+                  <h1 className="app-title">The Sunday Cup</h1>
                   <p className="app-subtitle">{activeLeagueName || ''}</p>
                 </div>
               </div>
@@ -953,7 +953,7 @@ function App() {
                 <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
               </div>
               <div className="brand-text">
-                <h1 className="app-title">Alumni Golf Tournament</h1>
+                <h1 className="app-title">The Sunday Cup</h1>
               </div>
             </div>
           </div>
@@ -977,7 +977,7 @@ function App() {
                 <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
               </div>
               <div className="brand-text">
-                <h1 className="app-title">Alumni Golf Tournament</h1>
+                <h1 className="app-title">The Sunday Cup</h1>
                 <p className="app-subtitle">{activeLeagueName || ''}</p>
               </div>
             </div>
@@ -1001,7 +1001,7 @@ function App() {
               </div>
             </div>
             <div className="brand-text">
-              <h1 className="app-title">Alumni Golf Tournament</h1>
+              <h1 className="app-title">The Sunday Cup</h1>
               <p className="app-subtitle">{activeLeagueName || 'West Virginia'}</p>
             </div>
           </div>
