@@ -111,7 +111,7 @@ const TeamManagement = ({ leagueId, onTournamentCreated, onTeamsSaved, onDraftSt
     setLoadingTournaments(true);
     try {
       const url = `${BACKEND_BASE_URL}/tournaments?leagueId=${encodeURIComponent(leagueId)}`;
-      const res = await fetch(url);
+      const res = await authFetch(url);
       if (!res.ok) throw new Error('Failed tournaments fetch');
 
       const tournaments = await res.json();
