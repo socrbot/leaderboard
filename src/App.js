@@ -1395,8 +1395,6 @@ function App() {
                 <PreviewDraftBoard
                   tournamentId={selectedTournamentId}
                   tournamentName={tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name}
-                  isAdmin={isAdmin}
-                  onRefreshed={fetchDraftStatus}
                 />
               ) : (
                 <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>

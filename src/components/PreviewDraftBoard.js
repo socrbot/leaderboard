@@ -5,7 +5,6 @@
 // underlying preview odds automatically every 7 days.
 import React, { useEffect, useState, useCallback } from 'react';
 import { TOURNAMENTS_API_ENDPOINT } from '../apiConfig';
-import { useAuth } from '../contexts/AuthContext';
 
 const formatUpdatedAt = (iso) => {
   if (!iso) return 'Not yet available';
@@ -28,13 +27,11 @@ const formatOdds = (value) => {
   return num > 0 ? `+${Math.round(num)}` : `${Math.round(num)}`;
 };
 
-const PreviewDraftBoard = ({ tournamentId, tournamentName, isAdmin, onRefreshed }) => {
-  const { getIdToken } = useAuth();
+const PreviewDraftBoard = ({ tournamentId, tournamentName }) => {
   const [odds, setOdds] = useState([]);
   const [updatedAt, setUpdatedAt] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [refreshing, setRefreshing] = useState(false);
 
   const load = useCallback(async () => {
     if (!tournamentId) return;
@@ -55,57 +52,15 @@ const PreviewDraftBoard = ({ tournamentId, tournamentName, isAdmin, onRefreshed 
 
   useEffect(() => { load(); }, [load]);
 
-  const handleRefresh = async () => {
-    if (!tournamentId) return;
-    setRefreshing(true);
-    setError(null);
-    try {
-      const token = await getIdToken();
-      const res = await fetch(`${TOURNAMENTS_API_ENDPOINT}/${tournamentId}/refresh_preview_odds`, {
-        method: 'POST',
-        headers: token ? { Authorization: `Bearer ${token}` } : {},
-      });
-      if (!res.ok) {
-        const body = await res.json().catch(() => ({}));
-        throw new Error(body.error || `Refresh failed (${res.status})`);
-      }
-      await load();
-      if (onRefreshed) onRefreshed();
-    } catch (e) {
-      setError(e.message || 'Refresh failed');
-    } finally {
-      setRefreshing(false);
-    }
-  };
-
   return (
     <div style={{ padding: '20px', color: 'white' }}>
       <div style={{ textAlign: 'center', marginBottom: '20px' }}>
         <h2 style={{ margin: '0 0 8px', fontSize: '1.8rem' }}>
-          {tournamentName ? `${tournamentName} — Draft Board` : 'Draft Board'}
+          {tournamentName || ''}
         </h2>
         <p style={{ margin: 0, color: '#bbb', fontSize: '0.95rem' }}>
           Odds as of {formatUpdatedAt(updatedAt)}
         </p>
-        {isAdmin && (
-          <button
-            type="button"
-            onClick={handleRefresh}
-            disabled={refreshing}
-            style={{
-              marginTop: '12px',
-              padding: '6px 14px',
-              background: '#2c5282',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: refreshing ? 'wait' : 'pointer',
-              fontSize: '0.9rem',
-            }}
-          >
-            {refreshing ? 'Refreshing…' : 'Refresh odds now'}
-          </button>
-        )}
       </div>
 
       {loading ? (
