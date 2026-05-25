@@ -3,6 +3,7 @@ import './App.css';
 import { useGolfLeaderboard } from './useGolfLeaderboard';
 import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
+import PreviewDraftBoard from './components/PreviewDraftBoard';
 import DraftPicker from './components/DraftPicker';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
@@ -843,6 +844,17 @@ function App() {
     return draftStatus.IsDraftComplete;
   }, [draftStatus.IsDraftComplete]);
 
+  // Pre-lock-in preview: tournament selected, odds not yet locked, draft not
+  // started. Shows a flat list of current odds plus the captured-at timestamp.
+  const shouldShowPreviewBoard = useMemo(() => {
+    return (
+      !!selectedTournamentId
+      && !draftStatus.IsDraftLocked
+      && !draftStatus.IsDraftStarted
+      && !draftStatus.IsDraftComplete
+    );
+  }, [selectedTournamentId, draftStatus.IsDraftLocked, draftStatus.IsDraftStarted, draftStatus.IsDraftComplete]);
+
   // --- Main Render Logic ---
 
   // Auth is still resolving (Firebase onAuthStateChanged hasn't fired yet).
@@ -1379,9 +1391,18 @@ function App() {
                 </div>
               )
             ) : (
-              <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
-                <p>Lock the draft odds in Setup to view the draft tiers.</p>
-              </div>
+              shouldShowPreviewBoard ? (
+                <PreviewDraftBoard
+                  tournamentId={selectedTournamentId}
+                  tournamentName={tournamentInfo?.Name || allTournaments.find(t => t.id === selectedTournamentId)?.name}
+                  isAdmin={isAdmin}
+                  onRefreshed={fetchDraftStatus}
+                />
+              ) : (
+                <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
+                  <p>Select a tournament to view its draft board.</p>
+                </div>
+              )
             )}
           </main>
         )) : (
