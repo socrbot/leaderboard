@@ -8,7 +8,7 @@ import {
   onAuthStateChanged,
 } from 'firebase/auth';
 import { Capacitor } from '@capacitor/core';
-import { GoogleAuth } from '@capacitor-community/google-auth';
+import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { registerPush, unregisterPush } from '../notifications/registerPush';
