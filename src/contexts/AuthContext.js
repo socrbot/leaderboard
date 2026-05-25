@@ -8,6 +8,7 @@ import {
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
+import { registerPush, unregisterPush } from '../notifications/registerPush';
 
 const AuthContext = createContext(null);
 
@@ -52,6 +53,9 @@ export function AuthProvider({ children }) {
           await setDoc(userRef, newUser);
           setUserData(newUser);
         }
+        // Register for push (no-op on web). Fire-and-forget — must not block
+        // the auth flow if FCM is unavailable.
+        registerPush().catch(() => {});
       } else {
         writeAuthHint(false);
         setUser(null);
@@ -84,6 +88,9 @@ export function AuthProvider({ children }) {
   };
 
   const signOut = async () => {
+    // Best-effort: remove this device's FCM token before clearing auth so the
+    // backend can stop targeting it.
+    try { await unregisterPush(); } catch { /* ignore */ }
     await firebaseSignOut(auth);
   };
 

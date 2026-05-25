@@ -19,6 +19,13 @@ service cloud.firestore {
         (request.auth != null && request.auth.uid == userId &&
          !('role' in request.resource.data.diff(resource.data).affectedKeys()));
       allow delete: if isAdmin();
+
+      // Per-user FCM push tokens. Owned by the user; backend writes via Admin SDK
+      // (rules bypassed). The client SDK isn't used to register tokens — we go
+      // through POST /api/user/fcm_token — but allow self-access for parity.
+      match /fcmTokens/{token} {
+        allow read, write, delete: if request.auth != null && request.auth.uid == userId;
+      }
     }
 
     // Backend-mediated collections. All reads/writes go through the Flask API
