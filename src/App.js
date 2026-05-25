@@ -7,7 +7,6 @@ import PreviewDraftBoard from './components/PreviewDraftBoard';
 import DraftPicker from './components/DraftPicker';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
-import JoinLeague from './components/JoinLeague';
 import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
 import { useAuth } from './contexts/AuthContext';
@@ -57,18 +56,17 @@ function App() {
   const [activeLeagueId, setActiveLeagueId] = useState(null);
   const [activeLeagueName, setActiveLeagueName] = useState(null);
   const [managedLeagues, setManagedLeagues] = useState([]);
+  // Tracks whether the membership-validated league list has been fetched at least once.
+  // Used to gate the "no leagues" view so we don't flash it while leagues are still loading.
+  const [managedLeaguesLoaded, setManagedLeaguesLoaded] = useState(false);
   const [showLeagueMenu, setShowLeagueMenu] = useState(false);
   const leaguePickerRef = useRef(null);
-  useEffect(() => {
-    if (activeLeagueId === null && userData?.leagueIds?.[0]) {
-      setActiveLeagueId(userData.leagueIds[0]);
-    }
-  }, [userData, activeLeagueId]);
 
   useEffect(() => {
     const loadLeagues = async () => {
       if (!user) {
         setManagedLeagues([]);
+        setManagedLeaguesLoaded(false);
         return;
       }
       try {
@@ -116,32 +114,36 @@ function App() {
         setManagedLeagues(normalized);
       } catch {
         setManagedLeagues([]);
+      } finally {
+        setManagedLeaguesLoaded(true);
       }
     };
 
     loadLeagues();
   }, [user, getIdToken]);
 
-  // Reconcile activeLeagueId when the managed list changes (kept separate so loadLeagues
-  // doesn't re-run every time the user switches leagues).
+  // Reconcile activeLeagueId against the membership-validated managedLeagues list.
+  // activeLeagueId is ONLY ever set from this validated set — we never trust
+  // userData.leagueIds directly, so users cannot view leagues they aren't members of.
   useEffect(() => {
-    if (managedLeagues.length === 0) return;
-    if (!activeLeagueId) {
-      setActiveLeagueId(managedLeagues[0].leagueId);
+    if (!managedLeaguesLoaded) return;
+    if (managedLeagues.length === 0) {
+      if (activeLeagueId !== null) setActiveLeagueId(null);
       return;
     }
-    if (!managedLeagues.some((l) => l.leagueId === activeLeagueId)) {
+    if (!activeLeagueId || !managedLeagues.some((l) => l.leagueId === activeLeagueId)) {
       setActiveLeagueId(managedLeagues[0].leagueId);
     }
-  }, [managedLeagues, activeLeagueId]);
-  // Fetch league name whenever activeLeagueId changes
+  }, [managedLeagues, managedLeaguesLoaded, activeLeagueId]);
+
+  // Resolve the active league name from the validated managedLeagues list instead of
+  // hitting the public /api/leagues/<id> endpoint (which would leak names of leagues
+  // the user is not a member of).
   useEffect(() => {
     if (!activeLeagueId) { setActiveLeagueName(null); return; }
-    fetch(`${LEAGUES_API_ENDPOINT}/${activeLeagueId}`)
-      .then(r => r.ok ? r.json() : null)
-      .then(d => setActiveLeagueName(d?.name || null))
-      .catch(() => setActiveLeagueName(null));
-  }, [activeLeagueId]);
+    const entry = managedLeagues.find((l) => l.leagueId === activeLeagueId);
+    setActiveLeagueName(entry?.name || null);
+  }, [activeLeagueId, managedLeagues]);
 
   useEffect(() => {
     if (!showLeagueMenu) return;
@@ -922,9 +924,33 @@ function App() {
   }
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
 
-  // Gate: signed-in non-admin user who hasn't joined the league yet
-  if (user && userData && !isAdmin && !userData.inLeague) {
-    return <JoinLeague />;
+  // Gate: a signed-in non-admin user who isn't a member of any league is sent
+  // to the My Profile view (UserSettings) — they cannot access any league's data.
+  // We wait for the membership-validated list to load before deciding, so we don't
+  // flash this view while leagues are still being fetched.
+  const hasNoValidatedLeagues =
+    !!user && !!userData && !isAdmin && managedLeaguesLoaded && managedLeagues.length === 0;
+
+  if (hasNoValidatedLeagues) {
+    return (
+      <div className="App">
+        <header className="modern-header">
+          <div className="header-container">
+            <div className="brand-section">
+              <div className="logo-container">
+                <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
+              </div>
+              <div className="brand-text">
+                <h1 className="app-title">Alumni Golf Tournament</h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="main-content">
+          <UserSettings activeLeagueId={null} onSignOut={signOut} />
+        </div>
+      </div>
+    );
   }
 
   return (
