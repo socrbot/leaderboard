@@ -626,21 +626,98 @@ table:not(.annual-table):not(.leaderboard-table) tbody tr:hover {
   table-layout: fixed;
 }
 
+/* Column widths */
 .leaderboard-table.odds-list-table .odds-rank-col {
-  width: 44px;
+  width: 56px;
 }
 
 .leaderboard-table.odds-list-table .odds-player-col {
   width: auto;
+}
+
+.leaderboard-table.odds-list-table .odds-value-col {
+  width: 96px;
+}
+
+/* Header alignment + outer padding so columns line up with body */
+.leaderboard-table.odds-list-table thead th.odds-rank-col {
+  text-align: center;
+  padding-left: 20px;
+}
+
+.leaderboard-table.odds-list-table thead th.odds-player-col {
+  text-align: left;
+}
+
+.leaderboard-table.odds-list-table thead th.odds-value-col {
+  text-align: right;
+  padding-right: 20px;
+}
+
+/* Body cells */
+.leaderboard-table.odds-list-table tbody td {
+  padding: 12px 12px;
+  font-size: 0.95rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
+  vertical-align: middle;
+}
+
+.leaderboard-table.odds-list-table tbody tr:first-child td {
+  border-top: none;
+}
+
+.leaderboard-table.odds-list-table tbody td.odds-rank-col {
+  text-align: center;
+  padding-left: 20px;
+  color: #9aa39a;
+  font-weight: 600;
+}
+
+.leaderboard-table.odds-list-table tbody td.odds-player-col {
   text-align: left;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
+  font-weight: 600;
+  color: #e8e8e8;
 }
 
-.leaderboard-table.odds-list-table .odds-value-col {
-  width: 70px;
+.leaderboard-table.odds-list-table tbody td.odds-value-col {
   text-align: right;
+  padding-right: 20px;
+  font-weight: 700;
+  color: #4ade80;
+}
+
+.leaderboard-table.odds-list-table tbody tr:nth-child(even) td {
+  background-color: #1f1f1f;
+}
+
+.leaderboard-table.odds-list-table tbody tr:hover td {
+  background-color: rgba(0, 100, 0, 0.10);
+}
+
+@media (max-width: 480px) {
+  .leaderboard-table.odds-list-table .odds-rank-col {
+    width: 44px;
+  }
+  .leaderboard-table.odds-list-table .odds-value-col {
+    width: 80px;
+  }
+  .leaderboard-table.odds-list-table tbody td,
+  .leaderboard-table.odds-list-table thead th {
+    padding-left: 12px;
+    padding-right: 12px;
+    font-size: 0.9rem;
+  }
+  .leaderboard-table.odds-list-table tbody td.odds-rank-col,
+  .leaderboard-table.odds-list-table thead th.odds-rank-col {
+    padding-left: 14px;
+  }
+  .leaderboard-table.odds-list-table tbody td.odds-value-col,
+  .leaderboard-table.odds-list-table thead th.odds-value-col {
+    padding-right: 14px;
+  }
 }
 
 /* ── Body cells ── */
