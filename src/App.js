@@ -900,6 +900,41 @@ function App() {
     return <LandingPage onSignIn={handleLandingSignIn} signingIn={signingIn} />;
   }
 
+  // Early-membership gate: if the signed-in user's Firestore doc has no league
+  // memberships (and they're not an admin), route them straight to the My Profile
+  // view BEFORE rendering the leaderboard shell. This avoids the flash of the
+  // leaderboard for non-members. `userData` comes from Firestore users/{uid} and
+  // is the immediate signal — we don't wait for the server /user/profile round-trip.
+  const hasNoMembershipsHint =
+    !!userData &&
+    userData.role !== 'admin' &&
+    !(Array.isArray(userData.leagueIds) && userData.leagueIds.length > 0);
+  // Server-validated fallback: if /user/profile and /leagues/mine both returned empty.
+  const hasNoValidatedLeagues =
+    !!userData && !isAdmin && managedLeaguesLoaded && managedLeagues.length === 0;
+
+  if (hasNoMembershipsHint || hasNoValidatedLeagues) {
+    return (
+      <div className="App">
+        <header className="modern-header">
+          <div className="header-container">
+            <div className="brand-section">
+              <div className="logo-container">
+                <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
+              </div>
+              <div className="brand-text">
+                <h1 className="app-title">Alumni Golf Tournament</h1>
+              </div>
+            </div>
+          </div>
+        </header>
+        <div className="main-content">
+          <UserSettings activeLeagueId={null} onSignOut={signOut} />
+        </div>
+      </div>
+    );
+  }
+
   if (loadingTournaments) {
     // Show the full app shell with a lightweight skeleton instead of a blocking white page.
     // The header/nav renders immediately so the page feels responsive while tournaments load.
@@ -923,35 +958,6 @@ function App() {
     );
   }
   if (tournamentError) return <div style={{ color: 'red' }}>Error: {tournamentError}</div>;
-
-  // Gate: a signed-in non-admin user who isn't a member of any league is sent
-  // to the My Profile view (UserSettings) — they cannot access any league's data.
-  // We wait for the membership-validated list to load before deciding, so we don't
-  // flash this view while leagues are still being fetched.
-  const hasNoValidatedLeagues =
-    !!user && !!userData && !isAdmin && managedLeaguesLoaded && managedLeagues.length === 0;
-
-  if (hasNoValidatedLeagues) {
-    return (
-      <div className="App">
-        <header className="modern-header">
-          <div className="header-container">
-            <div className="brand-section">
-              <div className="logo-container">
-                <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
-              </div>
-              <div className="brand-text">
-                <h1 className="app-title">Alumni Golf Tournament</h1>
-              </div>
-            </div>
-          </div>
-        </header>
-        <div className="main-content">
-          <UserSettings activeLeagueId={null} onSignOut={signOut} />
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className={`App${showSetup ? ' setup-active' : ''}`}>
