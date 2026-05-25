@@ -11,6 +11,21 @@ import { auth, db } from '../firebaseConfig';
 
 const AuthContext = createContext(null);
 
+// localStorage hint used purely to predict the initial UI (landing vs app skeleton)
+// before Firebase's onAuthStateChanged resolves. It does NOT authorize anything;
+// the server still requires a valid ID token for protected endpoints.
+const AUTH_HINT_KEY = 'hadAuthSession';
+const readAuthHint = () => {
+  try { return typeof window !== 'undefined' && window.localStorage.getItem(AUTH_HINT_KEY) === '1'; } catch { return false; }
+};
+const writeAuthHint = (signedIn) => {
+  try {
+    if (typeof window === 'undefined') return;
+    if (signedIn) window.localStorage.setItem(AUTH_HINT_KEY, '1');
+    else window.localStorage.removeItem(AUTH_HINT_KEY);
+  } catch { /* storage may be disabled */ }
+};
+
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(undefined);     // undefined = still loading
   const [userData, setUserData] = useState(null);  // Firestore users/{uid} doc
@@ -18,6 +33,7 @@ export function AuthProvider({ children }) {
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, async (firebaseUser) => {
       if (firebaseUser) {
+        writeAuthHint(true);
         setUser(firebaseUser);
         const userRef = doc(db, 'users', firebaseUser.uid);
         const snap = await getDoc(userRef);
@@ -37,6 +53,7 @@ export function AuthProvider({ children }) {
           setUserData(newUser);
         }
       } else {
+        writeAuthHint(false);
         setUser(null);
         setUserData(null);
       }
@@ -85,7 +102,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken, refreshUserData }}>
+    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken, refreshUserData, hadAuthSession: readAuthHint() }}>
       {children}
     </AuthContext.Provider>
   );

@@ -49,7 +49,7 @@ function App() {
     return scoreObj.toString();
   }, []);
 
-  const { user, userData, signOut, signInWithGoogle, getIdToken } = useAuth();
+  const { user, userData, signOut, signInWithGoogle, getIdToken, hadAuthSession } = useAuth();
   const [signingIn, setSigningIn] = useState(false);
   const isAdmin = userData?.role === 'admin';
   // Active league: starts from user's first leagueId, admin can switch via LeagueManagement
@@ -844,6 +844,34 @@ function App() {
   }, [draftStatus.IsDraftComplete]);
 
   // --- Main Render Logic ---
+
+  // Auth is still resolving (Firebase onAuthStateChanged hasn't fired yet).
+  // If a previous session hint is present in localStorage, render a neutral app
+  // skeleton so returning users don't see the landing page flash. Otherwise
+  // render the landing page immediately for first-time visitors.
+  if (user === undefined) {
+    if (hadAuthSession) {
+      return (
+        <div className="App app-loading-skeleton">
+          <header className="modern-header">
+            <div className="header-container">
+              <div className="brand-section">
+                <div className="logo-container">
+                  <div className="wv-golf-logo"><span className="golf-icon">⛳</span></div>
+                </div>
+                <div className="brand-text">
+                  <h1 className="app-title">Alumni Golf Tournament</h1>
+                  <p className="app-subtitle">{activeLeagueName || ''}</p>
+                </div>
+              </div>
+            </div>
+          </header>
+          <div className="main-content" aria-busy="true" />
+        </div>
+      );
+    }
+    // No prior session: fall through to the landing page below.
+  }
 
   // Gate: unauthenticated users see the landing page
   if (!user) {
