@@ -1192,9 +1192,9 @@ function App() {
               <span className="status-line-label">Dates:</span> {formatDateRange(tournamentInfo.StartDate, tournamentInfo.EndDate)}
             </p>
           )}
-          {(tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
+          {(tournamentInfo?.CourseName || tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name) && (
             <p className="status-line">
-              <span className="status-line-label">Course:</span> {tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
+              <span className="status-line-label">Course:</span> {tournamentInfo?.CourseName || tournamentInfo?.Venue || tournamentInfo?.Courses?.[0]?.Name}
             </p>
           )}
           <p className={`status-line status-line-badge ${
