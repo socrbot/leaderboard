@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Alumni Leaderboard</string>
+    <string name="title_activity_main">Alumni Leaderboard</string>
+    <string name="package_name">com.alumnigolf.leaderboard</string>
+    <string name="custom_url_scheme">com.alumnigolf.leaderboard</string>
+</resources>
