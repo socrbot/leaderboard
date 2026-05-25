@@ -414,12 +414,34 @@ function App() {
     fetchTournaments();
   }, [refreshTrigger, selectedYear, activeLeagueId, preloadTournamentData]);
 
+  // Persist the last-selected tournament per league so league-switching no longer
+  // drops the user's current view. Reset draft/picker state only when the
+  // previously selected tournament does not belong to the new active league.
   useEffect(() => {
-    setSelectedTournamentId('');
-    setTeams([]);
-    setDraftPicks([]);
+    if (!activeLeagueId) return;
+    let restored = '';
+    try {
+      restored = window.localStorage.getItem(`leaderboard:lastTournament:${activeLeagueId}`) || '';
+    } catch (_e) { /* localStorage may be unavailable */ }
+
+    setSelectedTournamentId((current) => {
+      if (current && allTournaments.some((t) => t.id === current && (!t.leagueId || t.leagueId === activeLeagueId))) {
+        return current;
+      }
+      if (restored && allTournaments.some((t) => t.id === restored)) {
+        return restored;
+      }
+      return '';
+    });
     setShowTournamentPicker(false);
-  }, [activeLeagueId]);
+  }, [activeLeagueId, allTournaments]);
+
+  useEffect(() => {
+    if (!activeLeagueId || !selectedTournamentId) return;
+    try {
+      window.localStorage.setItem(`leaderboard:lastTournament:${activeLeagueId}`, selectedTournamentId);
+    } catch (_e) { /* ignore */ }
+  }, [activeLeagueId, selectedTournamentId]);
 
   useEffect(() => {
     if (!user) {

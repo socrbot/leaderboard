@@ -1,5 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { BACKEND_BASE_URL, LEADERBOARD_API_ENDPOINT } from './apiConfig';
+import {
+    LIFECYCLE_STATES,
+    deriveLifecycleState,
+    isLifecycleLive,
+    isLifecycleFinished,
+    logV2Anomaly,
+} from './leaderboardLifecycle';
 
 export const useGolfLeaderboard = (
     tournamentId,
@@ -11,6 +18,7 @@ export const useGolfLeaderboard = (
     const [teamAssignments, setTeamAssignments] = useState([]);
     const [isTournamentInProgress, setIsTournamentInProgress] = useState(false);
     const [isTournamentOver, setIsTournamentOver] = useState(false);
+    const [lifecycleState, setLifecycleState] = useState(LIFECYCLE_STATES.CREATED);
     const [tournamentOddsId, setTournamentOddsId] = useState('');
     const [isDraftStarted, setIsDraftStarted] = useState(false);
     const [hasManualDraftOdds, setHasManualDraftOdds] = useState(false);
@@ -31,6 +39,7 @@ export const useGolfLeaderboard = (
                 setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
                 setIsTournamentInProgress(false);
                 setIsTournamentOver(false);
+                setLifecycleState(LIFECYCLE_STATES.CREATED);
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
@@ -57,18 +66,18 @@ export const useGolfLeaderboard = (
                     year: tournamentData.year || '2025',
                     par: tournamentData.par || 71
                 });
-                const isInProgress = Boolean(
-                    tournamentData.IsInProgress ||
-                    tournamentData.isInProgress ||
-                    tournamentData.isActive
-                );
-                const isOver = Boolean(
-                    tournamentData.IsOver ||
-                    tournamentData.isOver ||
-                    tournamentData.isComplete ||
-                    tournamentData.isOfficiallyComplete
-                );
+                const derivedLifecycle = deriveLifecycleState(tournamentData);
+                const isInProgress = isLifecycleLive(derivedLifecycle);
+                const isOver = isLifecycleFinished(derivedLifecycle);
 
+                if (!tournamentData.lifecycleState) {
+                    logV2Anomaly('lifecycle_missing', {
+                        tournamentId,
+                        derivedLifecycle,
+                    });
+                }
+
+                setLifecycleState(derivedLifecycle);
                 setIsTournamentInProgress(isInProgress);
                 setIsTournamentOver(isOver);
                 setTournamentOddsId(tournamentData.oddsId || '');
@@ -87,6 +96,7 @@ export const useGolfLeaderboard = (
                 setTournamentSpecifics({ orgId: '1', tournId: '033', year: '2025', par: 71 });
                 setIsTournamentInProgress(false);
                 setIsTournamentOver(false);
+                setLifecycleState(LIFECYCLE_STATES.CREATED);
                 setTournamentOddsId('');
                 setIsDraftStarted(false);
                 setHasManualDraftOdds(false);
@@ -137,19 +147,20 @@ export const useGolfLeaderboard = (
                     throw new Error(`Backend Error: ${result.error} ${result.details || ''}`);
                 }
 
-                // Backend returns calculated team data directly in teamScores field.
-                // Some migrated tournaments can be marked complete but still have no stored scores.
-                // In that case, render a placeholder leaderboard from team assignments.
+                // Backend is the single source of truth for team scores.
+                // If teamScores is missing, render placeholder rows from teamAssignments
+                // and emit an anomaly so the gap is observable. We DO NOT recompute scores client-side.
                 let calculatedTeamData = result.teamScores || result.teams || [];
                 if ((!calculatedTeamData || calculatedTeamData.length === 0) && teamAssignments.length > 0) {
-                    calculatedTeamData = teamAssignments.map(team => ({
-                        team: team.name,
-                        total: null,
-                        r1: null,
-                        r2: null,
-                        r3: null,
-                        r4: null,
-                        golfers: (team.golferNames || []).map(golferName => ({
+                    logV2Anomaly('team_scores_missing', {
+                        tournamentId,
+                        teamAssignmentsCount: teamAssignments.length,
+                        hasLegacyRows: Array.isArray(result?.leaderboardData?.leaderboardRows)
+                            && result.leaderboardData.leaderboardRows.length > 0,
+                        dataFreshness: result?.dataFreshness,
+                    });
+                    calculatedTeamData = teamAssignments.map((team) => {
+                        const golfers = (team.golferNames || []).map((golferName) => ({
                             name: golferName,
                             status: '',
                             r1: { score: null, isLive: false },
@@ -157,9 +168,21 @@ export const useGolfLeaderboard = (
                             r3: { score: null, isLive: false },
                             r4: { score: null, isLive: false },
                             total: null,
-                            thru: ''
-                        }))
-                    }));
+                            thru: '',
+                        }));
+                        return {
+                            teamName: team.name,
+                            team: team.name,
+                            totalScore: null,
+                            total: null,
+                            r1: null,
+                            r2: null,
+                            r3: null,
+                            r4: null,
+                            players: golfers,
+                            golfers,
+                        };
+                    });
                 }
                 console.log('🏆 Calculated team data:', calculatedTeamData);
                 console.log('🔍 First team structure:', calculatedTeamData[0]);
@@ -226,6 +249,7 @@ export const useGolfLeaderboard = (
         error,
         isTournamentInProgress,
         isTournamentOver,
+        lifecycleState,
         tournamentOddsId,
         teamAssignments,
         selectedTeamGolfersMap,
