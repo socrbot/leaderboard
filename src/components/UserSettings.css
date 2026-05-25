@@ -298,9 +298,20 @@
 }
 
 .user-settings-join-form-inline {
-  grid-template-columns: minmax(0, 1fr) auto;
+  display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: 8px;
+}
+
+.user-settings-join-form-inline .user-settings-input {
+  flex: 1 1 160px;
+  max-width: 260px;
+  width: auto;
+}
+
+.user-settings-join-form-inline .user-settings-join-submit {
+  flex: 0 0 auto;
 }
 
 .user-settings-input {

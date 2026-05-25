@@ -260,7 +260,7 @@ export default function LeagueManagement({ activeLeagueId, onLeagueChange }) {
               onKeyDown={(e) => {
                 if (e.key === 'Enter') handleCreateLeague();
               }}
-              placeholder="Enter League Name"
+              placeholder="League name"
               maxLength={80}
             />
             <button className="league-v2-btn league-v2-btn-primary" onClick={handleCreateLeague} disabled={creating || !newLeagueName.trim()}>

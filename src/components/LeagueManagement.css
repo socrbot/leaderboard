@@ -285,16 +285,22 @@
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .league-v2-input {
-  flex: 1 1 180px;
+  flex: 1 1 160px;
+  max-width: 260px;
   border-radius: 8px;
   border: 1px solid #42493f;
   background: #202020;
   color: #e5e2e1;
   padding: 9px 11px;
   font-size: 0.86rem;
+}
+
+.league-v2-create-row .league-v2-btn {
+  flex: 0 0 auto;
 }
 
 .league-v2-input::placeholder {
