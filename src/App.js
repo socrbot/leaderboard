@@ -13,6 +13,7 @@ import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 import { authFetch } from './authFetch';
 import { devLog, devError } from './utils/devLog';
+import { onForegroundPush } from './notifications/registerPush';
 
 function App() {
   // Pure score formatter. Cheap enough that an internal cache is more overhead than savings
@@ -84,6 +85,7 @@ function App() {
   const [managedLeaguesLoaded, setManagedLeaguesLoaded] = useState(false);
   const [showLeagueMenu, setShowLeagueMenu] = useState(false);
   const leaguePickerRef = useRef(null);
+  const [foregroundPushBanner, setForegroundPushBanner] = useState(null);
 
   useEffect(() => {
     const loadLeagues = async () => {
@@ -181,6 +183,19 @@ function App() {
     document.addEventListener('mousedown', handleClickOutside);
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [showLeagueMenu]);
+
+  useEffect(() => {
+    const unsubscribe = onForegroundPush((payload) => {
+      const title = payload?.notification?.title || payload?.title || 'Draft update';
+      const body = payload?.notification?.body || payload?.body || '';
+      setForegroundPushBanner({ title, body });
+      window.setTimeout(() => {
+        setForegroundPushBanner(null);
+      }, 6000);
+    });
+
+    return unsubscribe;
+  }, []);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   // Ownership-derived flags. Super-admin (developer) always sees admin UI.
@@ -958,6 +973,21 @@ function App() {
             </div>
           </div>
         </header>
+
+        {foregroundPushBanner && (
+          <div style={{
+            margin: '12px 16px 0',
+            padding: '12px 14px',
+            borderRadius: '10px',
+            border: '1px solid #2f7a3f',
+            backgroundColor: '#102915',
+            color: '#d7f6df',
+          }}>
+            <div style={{ fontWeight: 700 }}>{foregroundPushBanner.title}</div>
+            {foregroundPushBanner.body ? <div style={{ marginTop: 4 }}>{foregroundPushBanner.body}</div> : null}
+          </div>
+        )}
+
         <div className="main-content">
           <UserSettings activeLeagueId={null} onSignOut={signOut} onLeagueCreated={refreshLeagues} />
         </div>

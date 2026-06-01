@@ -2,6 +2,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
+import { registerPush, unregisterPush } from '../notifications/registerPush';
 import '../App.css';
 import './UserSettings.css';
 
@@ -75,6 +76,10 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
         setTeamNameInput(incomingTeamName);
       }
 
+      const prefs = settingsData?.notificationPreferences || {};
+      setPushNotificationsEnabled(prefs.draftOnClock !== false);
+      setEmailUpdatesEnabled(prefs.emailUpdates === true);
+
     } catch {}
     setLoading(false);
   }, [getIdToken]);
@@ -145,7 +150,14 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
     setError('');
     try {
       const token = await getIdToken();
-      const payload = { leagueAnnualPreferences: leagueAnnualSettings };
+      const payload = {
+        leagueAnnualPreferences: leagueAnnualSettings,
+        notificationPreferences: {
+          draftOnClock: pushNotificationsEnabled,
+          draftReminder: pushNotificationsEnabled,
+          emailUpdates: emailUpdatesEnabled,
+        },
+      };
       const normalizedTeamName = teamNameInput.trim();
       if (normalizedTeamName) {
         payload.teamName = normalizedTeamName;
@@ -165,6 +177,12 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
       } else {
         if (normalizedTeamName) {
           setUserProfile(prev => prev ? ({ ...prev, teamName: normalizedTeamName }) : prev);
+        }
+        // Keep device token registration aligned to the saved preference.
+        if (pushNotificationsEnabled) {
+          registerPush().catch(() => {});
+        } else {
+          unregisterPush().catch(() => {});
         }
         setIsEditingTeamName(false);
         setSaved(true);

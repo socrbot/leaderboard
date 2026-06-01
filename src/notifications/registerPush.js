@@ -2,15 +2,46 @@
 //
 // On native (Capacitor Android/iOS) we use @capacitor-firebase/messaging to
 // request permission, retrieve the FCM token, and POST it to the backend.
-// On web we no-op for now — web push needs a service worker + VAPID key which
-// is a separate setup we'll add later if/when we want browser notifications.
+// On web we use Firebase web messaging with the app service worker.
 
 import { Capacitor } from '@capacitor/core';
 import { authFetch } from '../authFetch';
 import { BACKEND_BASE_URL } from '../apiConfig';
+import app from '../firebaseConfig';
+import { getMessaging, getToken as getWebToken, onMessage, deleteToken as deleteWebToken, isSupported } from 'firebase/messaging';
 
 let registeredToken = null;
 let listenersAttached = false;
+const TOKEN_STORAGE_KEY = 'fcmRegisteredToken';
+const FOREGROUND_EVENT_NAME = 'leaderboard:push-foreground';
+
+try {
+  if (!registeredToken && typeof window !== 'undefined' && window.localStorage) {
+    registeredToken = window.localStorage.getItem(TOKEN_STORAGE_KEY) || null;
+  }
+} catch {
+  // Ignore storage unavailability (private mode, disabled storage, etc).
+}
+
+function cacheRegisteredToken(token) {
+  registeredToken = token || null;
+  try {
+    if (typeof window === 'undefined' || !window.localStorage) return;
+    if (token) window.localStorage.setItem(TOKEN_STORAGE_KEY, token);
+    else window.localStorage.removeItem(TOKEN_STORAGE_KEY);
+  } catch {
+    // Non-fatal.
+  }
+}
+
+function emitForegroundNotification(payload) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent(FOREGROUND_EVENT_NAME, { detail: payload }));
+  } catch {
+    // Non-fatal.
+  }
+}
 
 async function postToken(token, platform) {
   try {
@@ -19,7 +50,7 @@ async function postToken(token, platform) {
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ token, platform }),
     });
-    registeredToken = token;
+    cacheRegisteredToken(token);
   } catch (err) {
     // Non-fatal: notifications just won't arrive on this device.
     // eslint-disable-next-line no-console
@@ -43,8 +74,46 @@ async function deleteToken(token) {
 
 export async function registerPush() {
   if (!Capacitor.isNativePlatform()) {
-    return; // Web no-op
+    try {
+      const supported = await isSupported();
+      if (!supported || typeof window === 'undefined' || typeof Notification === 'undefined') return;
+
+      const vapidKey = process.env.REACT_APP_FIREBASE_VAPID_KEY;
+      if (!vapidKey) {
+        // eslint-disable-next-line no-console
+        console.warn('Web push skipped: missing REACT_APP_FIREBASE_VAPID_KEY');
+        return;
+      }
+
+      if (!('serviceWorker' in navigator)) return;
+
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') return;
+
+      const registration = await navigator.serviceWorker.ready;
+      const messaging = getMessaging(app);
+      const token = await getWebToken(messaging, {
+        vapidKey,
+        serviceWorkerRegistration: registration,
+      });
+
+      if (token) {
+        await postToken(token, 'web');
+      }
+
+      if (!listenersAttached) {
+        listenersAttached = true;
+        onMessage(messaging, (payload) => {
+          emitForegroundNotification(payload);
+        });
+      }
+    } catch (err) {
+      // eslint-disable-next-line no-console
+      console.warn('registerPush (web) failed:', err);
+    }
+    return;
   }
+
   let FirebaseMessaging;
   try {
     ({ FirebaseMessaging } = await import('@capacitor-firebase/messaging'));
@@ -76,6 +145,7 @@ export async function registerPush() {
 
       // Foreground notifications — log for now; we can wire to a toast later.
       FirebaseMessaging.addListener('notificationReceived', (event) => {
+        emitForegroundNotification(event);
         // eslint-disable-next-line no-console
         console.log('Notification (foreground):', event);
       });
@@ -94,8 +164,37 @@ export async function registerPush() {
 }
 
 export async function unregisterPush() {
-  if (!Capacitor.isNativePlatform()) return;
+  if (!Capacitor.isNativePlatform()) {
+    const token = registeredToken;
+    cacheRegisteredToken(null);
+    if (token) {
+      await deleteToken(token);
+    }
+    try {
+      const supported = await isSupported();
+      if (!supported) return;
+      const messaging = getMessaging(app);
+      await deleteWebToken(messaging);
+    } catch {
+      // Non-fatal.
+    }
+    return;
+  }
+
   const token = registeredToken;
-  registeredToken = null;
+  cacheRegisteredToken(null);
   await deleteToken(token);
+}
+
+export function onForegroundPush(handler) {
+  if (typeof window === 'undefined' || typeof handler !== 'function') {
+    return () => {};
+  }
+
+  const listener = (event) => {
+    handler(event?.detail || null);
+  };
+
+  window.addEventListener(FOREGROUND_EVENT_NAME, listener);
+  return () => window.removeEventListener(FOREGROUND_EVENT_NAME, listener);
 }
