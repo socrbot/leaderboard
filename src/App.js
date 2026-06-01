@@ -225,15 +225,6 @@ function App() {
     return unsubscribe;
   }, []);
 
-  useEffect(() => {
-    if (Capacitor.isNativePlatform()) {
-      setShowPushDeniedHint(false);
-      return;
-    }
-    const denied = typeof Notification !== 'undefined' && Notification.permission === 'denied';
-    const activeDraft = draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
-    setShowPushDeniedHint(Boolean(denied && activeDraft && !showSetup && !showUserSettings));
-  }, [draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, showSetup, showUserSettings]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   // Ownership-derived flags. Super-admin (developer) always sees admin UI.
@@ -319,6 +310,16 @@ function App() {
     DraftLockedOdds: [],
   });
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      setShowPushDeniedHint(false);
+      return;
+    }
+    const denied = typeof Notification !== 'undefined' && Notification.permission === 'denied';
+    const activeDraft = draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
+    setShowPushDeniedHint(Boolean(denied && activeDraft && !showSetup && !showUserSettings));
+  }, [draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, showSetup, showUserSettings]);
 
   // Helper function to find a tournament ready for draft board display.
   // Parallel requests — was previously sequential await in a for-loop (O(n) wall-clock).
@@ -695,6 +696,15 @@ function App() {
       setDraftBoardLoading(true);
       setDraftBoardError(null);
       try {
+        // Primary source: the currently selected tournament's locked draft odds
+        // from /draft_status. This avoids cross-tournament ambiguity when
+        // multiple tournaments share the same oddsId.
+        const lockedOdds = Array.isArray(draftStatus?.DraftLockedOdds) ? draftStatus.DraftLockedOdds : [];
+        if (lockedOdds.length > 0) {
+          setDraftBoardPlayers(lockedOdds.slice(0, 44));
+          return;
+        }
+
         const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -712,7 +722,7 @@ function App() {
     };
 
     fetchPlayerOddsForDraftBoard();
-  }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
+  }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds, draftStatus?.DraftLockedOdds]);
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {

@@ -3,12 +3,9 @@ import {
   GoogleAuthProvider,
   signInWithPopup,
   signInWithRedirect,
-  signInWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
-import { Capacitor } from '@capacitor/core';
-import { GoogleAuth } from '@codetrix-studio/capacitor-google-auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { registerPush, unregisterPush } from '../notifications/registerPush';
@@ -69,31 +66,23 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    if (Capacitor.isNativePlatform && Capacitor.isNativePlatform()) {
-      // Native mobile: use the plugin
-      GoogleAuth.initialize();
-      const googleUser = await GoogleAuth.signIn();
-      const idToken = googleUser.authentication.idToken;
-      const credential = GoogleAuthProvider.credential(idToken);
-      await signInWithCredential(auth, credential);
-    } else {
-      // Web: use popup/redirect as before
-      const provider = new GoogleAuthProvider();
-      try {
-        await signInWithPopup(auth, provider);
-      } catch (e) {
-        const fallbackCodes = new Set([
-          'auth/popup-blocked',
-          'auth/popup-closed-by-user',
-          'auth/cancelled-popup-request',
-          'auth/operation-not-supported-in-this-environment',
-        ]);
-        if (e && fallbackCodes.has(e.code)) {
-          await signInWithRedirect(auth, provider);
-          return;
-        }
-        throw e;
+    // Web flow only. Native plugin auth path was removed to keep the V2 web
+    // deployment unblocked and avoid optional mobile dependency failures.
+    const provider = new GoogleAuthProvider();
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      const fallbackCodes = new Set([
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment',
+      ]);
+      if (e && fallbackCodes.has(e.code)) {
+        await signInWithRedirect(auth, provider);
+        return;
       }
+      throw e;
     }
   };
 
