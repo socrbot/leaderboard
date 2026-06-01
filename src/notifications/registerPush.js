@@ -14,6 +14,7 @@ let registeredToken = null;
 let listenersAttached = false;
 const TOKEN_STORAGE_KEY = 'fcmRegisteredToken';
 const FOREGROUND_EVENT_NAME = 'leaderboard:push-foreground';
+const ACTION_EVENT_NAME = 'leaderboard:push-action';
 
 try {
   if (!registeredToken && typeof window !== 'undefined' && window.localStorage) {
@@ -38,6 +39,15 @@ function emitForegroundNotification(payload) {
   try {
     if (typeof window === 'undefined') return;
     window.dispatchEvent(new CustomEvent(FOREGROUND_EVENT_NAME, { detail: payload }));
+  } catch {
+    // Non-fatal.
+  }
+}
+
+function emitPushAction(payload) {
+  try {
+    if (typeof window === 'undefined') return;
+    window.dispatchEvent(new CustomEvent(ACTION_EVENT_NAME, { detail: payload }));
   } catch {
     // Non-fatal.
   }
@@ -106,6 +116,15 @@ export async function registerPush() {
         onMessage(messaging, (payload) => {
           emitForegroundNotification(payload);
         });
+
+        if (navigator?.serviceWorker) {
+          navigator.serviceWorker.addEventListener('message', (event) => {
+            const message = event?.data;
+            if (message?.type === 'notification_click') {
+              emitPushAction(message?.payload || null);
+            }
+          });
+        }
       }
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -153,6 +172,7 @@ export async function registerPush() {
       // User tapped a notification — could be used to deep-link into the
       // tournament. Left as a hook; routing is currently top-level state.
       FirebaseMessaging.addListener('notificationActionPerformed', (event) => {
+        emitPushAction(event);
         // eslint-disable-next-line no-console
         console.log('Notification tapped:', event);
       });
@@ -197,4 +217,17 @@ export function onForegroundPush(handler) {
 
   window.addEventListener(FOREGROUND_EVENT_NAME, listener);
   return () => window.removeEventListener(FOREGROUND_EVENT_NAME, listener);
+}
+
+export function onPushAction(handler) {
+  if (typeof window === 'undefined' || typeof handler !== 'function') {
+    return () => {};
+  }
+
+  const listener = (event) => {
+    handler(event?.detail || null);
+  };
+
+  window.addEventListener(ACTION_EVENT_NAME, listener);
+  return () => window.removeEventListener(ACTION_EVENT_NAME, listener);
 }

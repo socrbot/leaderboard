@@ -89,3 +89,19 @@ self.addEventListener('fetch', event => {
       .catch(() => new Response('', { status: 404, statusText: 'Not Found' }))
   );
 });
+
+self.addEventListener('notificationclick', event => {
+  event.notification?.close();
+  const payload = event.notification?.data || {};
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
+      if (clientList && clientList.length > 0) {
+        const client = clientList[0];
+        client.postMessage({ type: 'notification_click', payload });
+        return client.focus();
+      }
+      return self.clients.openWindow('/');
+    })
+  );
+});

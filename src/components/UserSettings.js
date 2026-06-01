@@ -3,6 +3,7 @@ import React, { useState, useEffect, useCallback } from 'react';
 import { useAuth } from '../contexts/AuthContext';
 import { BACKEND_BASE_URL, LEAGUES_API_ENDPOINT } from '../apiConfig';
 import { registerPush, unregisterPush } from '../notifications/registerPush';
+import { Capacitor } from '@capacitor/core';
 import '../App.css';
 import './UserSettings.css';
 
@@ -209,6 +210,7 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
   const profileEmail = userProfile?.email || user?.email || '—';
   const globalTeamName = userProfile?.teamName || activeLeagueEntry?.teamName || 'No team name set';
   const shownTeamName = teamNameInput.trim() || globalTeamName;
+  const isWebPushDenied = !Capacitor.isNativePlatform() && typeof Notification !== 'undefined' && Notification.permission === 'denied';
   const initials = displayName
     .split(' ')
     .filter(Boolean)
@@ -372,6 +374,9 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
               <span className="user-settings-toggle-track" />
             </span>
           </label>
+          {isWebPushDenied && (
+            <p className="user-settings-hint">Browser notifications are blocked for this site. Enable notifications in browser site settings to receive on-clock alerts.</p>
+          )}
           <label className="user-settings-toggle-row" htmlFor="email-toggle">
             <span>Email updates</span>
             <span className="user-settings-toggle-wrap">

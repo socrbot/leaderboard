@@ -13,7 +13,8 @@ import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 import { authFetch } from './authFetch';
 import { devLog, devError } from './utils/devLog';
-import { onForegroundPush } from './notifications/registerPush';
+import { Capacitor } from '@capacitor/core';
+import { onForegroundPush, onPushAction } from './notifications/registerPush';
 
 function App() {
   // Pure score formatter. Cheap enough that an internal cache is more overhead than savings
@@ -86,6 +87,7 @@ function App() {
   const [showLeagueMenu, setShowLeagueMenu] = useState(false);
   const leaguePickerRef = useRef(null);
   const [foregroundPushBanner, setForegroundPushBanner] = useState(null);
+  const [showPushDeniedHint, setShowPushDeniedHint] = useState(false);
 
   useEffect(() => {
     const loadLeagues = async () => {
@@ -196,6 +198,42 @@ function App() {
 
     return unsubscribe;
   }, []);
+
+  useEffect(() => {
+    const resolveTournamentId = (payload) => {
+      if (!payload) return '';
+      return (
+        payload?.data?.tournamentId
+        || payload?.notification?.data?.tournamentId
+        || payload?.tournamentId
+        || ''
+      ).toString();
+    };
+
+    const unsubscribe = onPushAction((payload) => {
+      const tournamentId = resolveTournamentId(payload);
+      if (!tournamentId) return;
+
+      setSelectedTournamentId(tournamentId);
+      setShowSetup(false);
+      setShowAnnualChampionship(false);
+      setShowTournamentScores(false);
+      setShowUserSettings(false);
+      setLeaderboardRefreshKey(prev => prev + 1);
+    });
+
+    return unsubscribe;
+  }, []);
+
+  useEffect(() => {
+    if (Capacitor.isNativePlatform()) {
+      setShowPushDeniedHint(false);
+      return;
+    }
+    const denied = typeof Notification !== 'undefined' && Notification.permission === 'denied';
+    const activeDraft = draftStatus.IsDraftStarted && !draftStatus.IsDraftComplete;
+    setShowPushDeniedHint(Boolean(denied && activeDraft && !showSetup && !showUserSettings));
+  }, [draftStatus.IsDraftStarted, draftStatus.IsDraftComplete, showSetup, showUserSettings]);
   const [pendingSetup, setPendingSetup] = useState(false);
 
   // Ownership-derived flags. Super-admin (developer) always sees admin UI.
@@ -985,6 +1023,19 @@ function App() {
           }}>
             <div style={{ fontWeight: 700 }}>{foregroundPushBanner.title}</div>
             {foregroundPushBanner.body ? <div style={{ marginTop: 4 }}>{foregroundPushBanner.body}</div> : null}
+          </div>
+        )}
+
+        {showPushDeniedHint && (
+          <div style={{
+            margin: '12px 16px 0',
+            padding: '10px 14px',
+            borderRadius: '10px',
+            border: '1px solid #7d5f1d',
+            backgroundColor: '#2b2109',
+            color: '#f6e7be',
+          }}>
+            Browser push is blocked. Keep the draft screen open for live turn updates.
           </div>
         )}
 
