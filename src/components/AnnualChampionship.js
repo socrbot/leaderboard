@@ -7,13 +7,15 @@ const AnnualChampionship = ({ selectedYear }) => {
   const [error, setError] = useState(null);
 
   // Fetch annual championship data from backend
+  // includeInProgress=true will include current tournament team totals for in-progress tournaments
   useEffect(() => {
     const fetchAnnualChampionship = async () => {
       setLoading(true);
       setError(null);
       try {
         console.log(`🏆 Annual Championship: Fetching data for year ${selectedYear}...`);
-        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}`);
+        // Include in-progress tournaments to show current team totals
+        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}&includeInProgress=true`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch annual championship data: ${response.status}`);
@@ -139,7 +141,23 @@ const AnnualChampionship = ({ selectedYear }) => {
                   <th>TEAM</th>
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
-                      {tournament.name}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <span>{tournament.name}</span>
+                        {/* Show status badge for in-progress tournaments */}
+                        {tournament.isComplete === false && (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            padding: '2px 6px',
+                            backgroundColor: 'rgba(33, 150, 243, 0.2)',
+                            color: '#2196f3',
+                            borderRadius: '4px',
+                            fontWeight: 'normal',
+                            border: '1px solid rgba(33, 150, 243, 0.3)'
+                          }}>
+                            ● Live
+                          </span>
+                        )}
+                      </div>
                     </th>
                   ))}
                   <th className="total-column">TOTAL SCORE</th>
@@ -152,10 +170,18 @@ const AnnualChampionship = ({ selectedYear }) => {
                     <td className="team-name-cell">{team.teamName}</td>
                     {tournaments.map(tournament => {
                       const teamTournament = team.tournaments?.find(t => t.tournamentId === tournament.tournamentId);
+                      const isProvisional = tournament.isComplete === false;
                       return (
                         <td key={tournament.tournamentId} className="score-cell">
                           {teamTournament ? (
-                            <span title={`Position: ${teamTournament.position}`}>
+                            <span 
+                              title={`Position: ${teamTournament.position}${isProvisional ? ' (Provisional - Live Tournament)' : ''}`}
+                              style={{
+                                fontStyle: isProvisional ? 'italic' : 'normal',
+                                opacity: isProvisional ? 0.85 : 1,
+                                color: isProvisional ? '#2196f3' : 'inherit'
+                              }}
+                            >
                               {formatScore(teamTournament.score)}
                             </span>
                           ) : '-'}
@@ -173,7 +199,7 @@ const AnnualChampionship = ({ selectedYear }) => {
 
           <div className="annual-stats">
             <p>
-              <strong>{metadata.tournamentCount || tournaments.length}</strong> tournaments completed • 
+              <strong>{metadata.tournamentCount || tournaments.length}</strong> tournaments {metadata.inProgressCount > 0 ? `(${metadata.inProgressCount} live)` : 'completed'} • 
               <strong> {metadata.teamCount || standings.length}</strong> teams participating •
               <strong> {standings.reduce((total, team) => total + (team.tournaments?.length || 0), 0)}</strong> total team entries
             </p>
@@ -183,6 +209,21 @@ const AnnualChampionship = ({ selectedYear }) => {
                 <span> • Last updated: {new Date(metadata.calculatedAt).toLocaleString()}</span>
               )}
             </p>
+            {/* Show notice when in-progress tournaments are included */}
+            {tournaments.some(t => t.isComplete === false) && (
+              <p style={{ 
+                fontSize: '0.85rem', 
+                color: '#2196f3', 
+                marginTop: '10px',
+                padding: '8px 12px',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                borderRadius: '6px',
+                border: '1px solid rgba(33, 150, 243, 0.3)'
+              }}>
+                ℹ️ Includes provisional scores from live tournaments (shown in blue/italic). 
+                Scores will be finalized when tournaments complete.
+              </p>
+            )}
           </div>
         </>
       )}
