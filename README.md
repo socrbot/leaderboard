@@ -33,9 +33,18 @@ The annual championship uses **cumulative stroke scoring**:
 - **Example**: Team A scores +5, +8, +3 = +16 total | Team B scores +10, +2, +6 = +18 total → Team A wins
 
 ### Annual Championship Standings
-- Only **completed tournaments** with `participatesInAnnual: true` count toward the championship
+- Includes **both completed and in-progress tournaments** to show current standings
+- **Live tournaments** display provisional team scores with visual indicators (blue/italic text)
+- When tournaments complete, provisional scores are replaced with official final scores
+- Only tournaments with `participatesInAnnual: true` count toward the championship
 - Final standings are sorted by **lowest total score** (best in golf)
 - Each team's results show their tournament scores and cumulative total
+
+### Live Updates
+- In-progress tournaments show current team totals calculated in real-time
+- Tournament headers display a "● Live" badge for active tournaments
+- Provisional scores are shown in blue italic text with hover tooltips
+- An info notice at the bottom indicates when live data is included
 ## Getting Started
 
 1. **Clone the repo:**
