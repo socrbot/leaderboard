@@ -13,7 +13,11 @@ const AnnualChampionship = ({ selectedYear }) => {
       setError(null);
       try {
         console.log(`🏆 Annual Championship: Fetching data for year ${selectedYear}...`);
-        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}`);
+        const queryParams = new URLSearchParams({
+          year: selectedYear,
+          includeCurrent: 'true'
+        });
+        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?${queryParams.toString()}`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch annual championship data: ${response.status}`);
@@ -40,6 +44,21 @@ const AnnualChampionship = ({ selectedYear }) => {
     return score > 0 ? `+${score}` : score.toString();
   };
 
+  const isLiveTournament = (tournament = {}) => {
+    return tournament.isLive ||
+      tournament.isInProgress ||
+      tournament.status === 'live' ||
+      tournament.scoreStatus === 'live' ||
+      tournament.state === 'live';
+  };
+
+  const isLiveTeamScore = (teamTournament = {}, tournament = {}) => {
+    return teamTournament.isLive ||
+      teamTournament.isInProgress ||
+      teamTournament.scoreStatus === 'live' ||
+      isLiveTournament(tournament);
+  };
+
   if (loading) {
     return (
       <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
@@ -59,12 +78,27 @@ const AnnualChampionship = ({ selectedYear }) => {
   const standings = annualData?.standings || [];
   const tournaments = annualData?.tournaments || [];
   const metadata = annualData?.metadata || {};
+  const hasLiveTournament = tournaments.some(isLiveTournament);
 
   return (
     <div className="annual-championship">
       <div className="annual-header">
         <h2 className="annual-title">🏆 {selectedYear} Annual Golf Championship</h2>
       </div>
+
+      {hasLiveTournament && (
+        <div style={{
+          marginBottom: '15px',
+          padding: '10px 14px',
+          backgroundColor: 'rgba(255, 152, 0, 0.12)',
+          border: '1px solid rgba(255, 152, 0, 0.35)',
+          borderRadius: '6px',
+          color: '#ffd180',
+          fontSize: '0.9rem'
+        }}>
+          Includes current live tournament scores. Live annual totals are provisional until the tournament is final.
+        </div>
+      )}
 
       {tournaments.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
@@ -139,7 +173,22 @@ const AnnualChampionship = ({ selectedYear }) => {
                   <th>TEAM</th>
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
-                      {tournament.name}
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                        <span>{tournament.name}</span>
+                        {isLiveTournament(tournament) && (
+                          <span style={{
+                            fontSize: '0.7rem',
+                            padding: '2px 6px',
+                            borderRadius: '999px',
+                            backgroundColor: 'rgba(248,113,113,0.15)',
+                            border: '1px solid rgba(248,113,113,0.3)',
+                            color: '#fca5a5',
+                            letterSpacing: '0.04em'
+                          }}>
+                            LIVE
+                          </span>
+                        )}
+                      </div>
                     </th>
                   ))}
                   <th className="total-column">TOTAL SCORE</th>
@@ -155,9 +204,21 @@ const AnnualChampionship = ({ selectedYear }) => {
                       return (
                         <td key={tournament.tournamentId} className="score-cell">
                           {teamTournament ? (
-                            <span title={`Position: ${teamTournament.position}`}>
-                              {formatScore(teamTournament.score)}
-                            </span>
+                            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '4px' }}>
+                              <span title={`Position: ${teamTournament.position}`}>
+                                {formatScore(teamTournament.score)}
+                              </span>
+                              {isLiveTeamScore(teamTournament, tournament) && (
+                                <span style={{
+                                  fontSize: '0.65rem',
+                                  color: '#fca5a5',
+                                  textTransform: 'uppercase',
+                                  letterSpacing: '0.04em'
+                                }}>
+                                  Live
+                                </span>
+                              )}
+                            </div>
                           ) : '-'}
                         </td>
                       );
@@ -179,6 +240,9 @@ const AnnualChampionship = ({ selectedYear }) => {
             </p>
             <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '10px' }}>
               Total score is the cumulative sum of tournament scores. Lower total scores are better.
+              {hasLiveTournament && (
+                <span> Live tournament scores are marked and remain provisional until the event is complete.</span>
+              )}
               {metadata.calculatedAt && (
                 <span> • Last updated: {new Date(metadata.calculatedAt).toLocaleString()}</span>
               )}
