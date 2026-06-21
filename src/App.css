@@ -1156,10 +1156,9 @@ select:focus {
   }
 
   .tournament-name {
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-    max-width: 100%;
+    white-space: normal;
+    word-break: keep-all;
+    overflow-wrap: normal;
     display: block;
   }
   
