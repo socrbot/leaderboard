@@ -163,7 +163,7 @@ const AnnualChampionship = ({ selectedYear }) => {
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
                       <div className="tournament-header">
-                        <span>{tournament.name}</span>
+                        <span className="tournament-name" title={tournament.name}>{tournament.name}</span>
                         <span className={`tournament-status-badge ${tournament.isComplete ? 'official' : 'live'}`}>
                           {tournament.isComplete ? '✓ Official' : 'LIVE'}
                         </span>
