@@ -1078,8 +1078,8 @@ select:focus {
 .tournament-header {
   display: flex;
   flex-direction: column;
-  align-items: flex-start;
-  text-align: left;
+  align-items: center;
+  text-align: center;
   gap: 0.35rem;
 }
 
@@ -1115,29 +1115,28 @@ select:focus {
     min-width: 100%;
     width: 100%;
     font-size: 0.75rem;
-    table-layout: auto;
+    table-layout: fixed;
   }
   
   .annual-table th:nth-child(1), /* POS */
   .annual-table td:nth-child(1) {
     width: 8%;
-    min-width: 35px;
   }
   
   .annual-table th:nth-child(2), /* TEAM */
   .annual-table td:nth-child(2) {
-    width: 25%;
-    min-width: 100px;
+    width: 22%;
   }
   
   .annual-table .tournament-column,
   .annual-table .score-cell {
-    min-width: 90px;
+    min-width: 0;
   }
   
   .annual-table .total-column,
   .annual-table .total-cell {
-    min-width: 65px;
+    min-width: 0;
+    width: 10%;
   }
   
   .annual-table th,
@@ -1154,6 +1153,14 @@ select:focus {
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 0;
+  }
+
+  .tournament-name {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    display: block;
   }
   
   .annual-table-container {
@@ -1182,23 +1189,21 @@ select:focus {
   .annual-table th:nth-child(1),
   .annual-table td:nth-child(1) {
     width: 6%;
-    min-width: 30px;
   }
   
   .annual-table th:nth-child(2),
   .annual-table td:nth-child(2) {
-    width: 28%;
-    min-width: 80px;
+    width: 24%;
   }
   
   .annual-table .tournament-column,
   .annual-table .score-cell {
-    min-width: 78px;
+    min-width: 0;
   }
   
   .annual-table .total-column,
   .annual-table .total-cell {
-    min-width: 58px;
+    min-width: 0;
   }
 }
 
