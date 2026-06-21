@@ -170,7 +170,7 @@ const AnnualChampionship = ({ selectedYear }) => {
                       </div>
                     </th>
                   ))}
-                  <th className="total-column">TOTAL SCORE</th>
+                  <th className="total-column">TOTAL</th>
                 </tr>
               </thead>
               <tbody>
