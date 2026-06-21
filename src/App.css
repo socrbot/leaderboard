@@ -951,9 +951,10 @@ select:focus {
 .annual-table th,
 .annual-table td {
   border: 1px solid #444;
-  padding: 6px 4px;
+  padding: 0.55rem 0.5rem;
   text-align: center;
   font-variant-numeric: tabular-nums;
+  line-height: 1.35;
 }
 
 .annual-table th {
@@ -1005,7 +1006,7 @@ select:focus {
 .annual-table .total-cell,
 .annual-table .stats-cell {
   text-align: center;
-  min-width: 40px;
+  min-width: 56px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1025,10 +1026,11 @@ select:focus {
 }
 
 .annual-table .tournament-column {
-  min-width: 60px;
+  min-width: 120px;
   font-size: 0.8rem;
   white-space: normal;
-  word-break: break-word;
+  word-break: normal;
+  overflow-wrap: normal;
 }
 
 .annual-header {
@@ -1076,8 +1078,15 @@ select:focus {
 .tournament-header {
   display: flex;
   flex-direction: column;
-  align-items: center;
+  align-items: flex-start;
+  text-align: left;
   gap: 0.35rem;
+}
+
+.tournament-name {
+  white-space: normal;
+  word-break: keep-all;
+  overflow-wrap: normal;
 }
 
 .tournament-status-badge {
@@ -1106,7 +1115,7 @@ select:focus {
     min-width: 100%;
     width: 100%;
     font-size: 0.75rem;
-    table-layout: fixed;
+    table-layout: auto;
   }
   
   .annual-table th:nth-child(1), /* POS */
@@ -1121,33 +1130,23 @@ select:focus {
     min-width: 100px;
   }
   
-  .annual-table th:nth-child(3), /* WINS */
-  .annual-table td:nth-child(3),
-  .annual-table th:nth-child(4), /* TOP 3 */
-  .annual-table td:nth-child(4) {
-    width: 8%;
-    min-width: 35px;
-  }
-  
   .annual-table .tournament-column,
   .annual-table .score-cell {
-    width: 12%;
-    min-width: 40px;
+    min-width: 90px;
   }
   
   .annual-table .total-column,
   .annual-table .total-cell {
-    width: 15%;
-    min-width: 50px;
+    min-width: 65px;
   }
   
   .annual-table th,
   .annual-table td {
     padding: 6px 3px;
     font-size: 0.75rem;
-    white-space: nowrap;
+    white-space: normal;
     overflow: hidden;
-    text-overflow: ellipsis;
+    text-overflow: clip;
   }
   
   .annual-table .team-name-cell {
@@ -1192,24 +1191,14 @@ select:focus {
     min-width: 80px;
   }
   
-  .annual-table th:nth-child(3),
-  .annual-table td:nth-child(3),
-  .annual-table th:nth-child(4),
-  .annual-table td:nth-child(4) {
-    width: 7%;
-    min-width: 28px;
-  }
-  
   .annual-table .tournament-column,
   .annual-table .score-cell {
-    width: 10%;
-    min-width: 35px;
+    min-width: 78px;
   }
   
   .annual-table .total-column,
   .annual-table .total-cell {
-    width: 12%;
-    min-width: 40px;
+    min-width: 58px;
   }
 }
 
