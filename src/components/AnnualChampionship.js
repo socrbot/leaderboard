@@ -13,7 +13,7 @@ const AnnualChampionship = ({ selectedYear }) => {
       setError(null);
       try {
         console.log(`🏆 Annual Championship: Fetching data for year ${selectedYear}...`);
-        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}`);
+        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}&includeInProgress=true`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch annual championship data: ${response.status}`);
@@ -140,6 +140,16 @@ const AnnualChampionship = ({ selectedYear }) => {
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
                       {tournament.name}
+                      {tournament.isComplete === false && (
+                        <span style={{
+                          marginLeft: '6px',
+                          color: '#2196f3',
+                          fontSize: '0.85em',
+                          fontWeight: 'normal'
+                        }}>
+                          ● Live
+                        </span>
+                      )}
                     </th>
                   ))}
                   <th className="total-column">TOTAL SCORE</th>
@@ -152,10 +162,21 @@ const AnnualChampionship = ({ selectedYear }) => {
                     <td className="team-name-cell">{team.teamName}</td>
                     {tournaments.map(tournament => {
                       const teamTournament = team.tournaments?.find(t => t.tournamentId === tournament.tournamentId);
+                      const isLive = tournament.isComplete === false;
                       return (
                         <td key={tournament.tournamentId} className="score-cell">
                           {teamTournament ? (
-                            <span title={`Position: ${teamTournament.position}`}>
+                            <span 
+                              title={isLive ? 
+                                `Position: ${teamTournament.position} (Provisional - Live Tournament)` : 
+                                `Position: ${teamTournament.position}`
+                              }
+                              style={isLive ? {
+                                color: '#2196f3',
+                                fontStyle: 'italic',
+                                opacity: 0.85
+                              } : {}}
+                            >
                               {formatScore(teamTournament.score)}
                             </span>
                           ) : '-'}
@@ -177,6 +198,19 @@ const AnnualChampionship = ({ selectedYear }) => {
               <strong> {metadata.teamCount || standings.length}</strong> teams participating •
               <strong> {standings.reduce((total, team) => total + (team.tournaments?.length || 0), 0)}</strong> total team entries
             </p>
+            {metadata.inProgressCount > 0 && (
+              <p style={{ 
+                fontSize: '0.9rem', 
+                color: '#2196f3', 
+                marginTop: '10px',
+                padding: '8px 12px',
+                backgroundColor: 'rgba(33, 150, 243, 0.1)',
+                borderRadius: '4px',
+                display: 'inline-block'
+              }}>
+                ℹ️ Includes provisional scores from {metadata.inProgressCount} live tournament{metadata.inProgressCount > 1 ? 's' : ''}
+              </p>
+            )}
             <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '10px' }}>
               Total score is the cumulative sum of tournament scores. Lower total scores are better.
               {metadata.calculatedAt && (
