@@ -951,7 +951,7 @@ select:focus {
 .annual-table th,
 .annual-table td {
   border: 1px solid #444;
-  padding: 8px;
+  padding: 6px 4px;
   text-align: center;
   font-variant-numeric: tabular-nums;
 }
@@ -964,8 +964,8 @@ select:focus {
   z-index: 10;
   font-weight: 600;
   text-align: center;
-  padding: 1rem 0.75rem;
-  font-size: 0.9rem;
+  padding: 0.5rem 0.4rem;
+  font-size: 0.85rem;
   border-bottom: 2px solid rgba(255, 255, 255, 0.1);
 }
 
@@ -989,13 +989,13 @@ select:focus {
 
 .annual-table .position-cell {
   text-align: center;
-  min-width: 50px;
+  min-width: 32px;
 }
 
 .annual-table .team-name-cell {
   text-align: left;
-  min-width: 120px;
-  max-width: 200px;
+  min-width: 100px;
+  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -1005,7 +1005,7 @@ select:focus {
 .annual-table .total-cell,
 .annual-table .stats-cell {
   text-align: center;
-  min-width: 60px;
+  min-width: 40px;
   font-variant-numeric: tabular-nums;
 }
 
@@ -1025,8 +1025,10 @@ select:focus {
 }
 
 .annual-table .tournament-column {
-  min-width: 80px;
+  min-width: 60px;
   font-size: 0.8rem;
+  white-space: normal;
+  word-break: break-word;
 }
 
 .annual-header {
