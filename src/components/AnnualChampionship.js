@@ -1,19 +1,14 @@
-import React, { useState, useEffect, useCallback, useRef } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 
 const AnnualChampionship = ({ selectedYear }) => {
   const [annualData, setAnnualData] = useState(null);
   const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
-  const [manualRefreshDisabled, setManualRefreshDisabled] = useState(false);
-  const manualRefreshTimeoutRef = useRef(null);
 
   const fetchAnnualChampionship = useCallback(async ({ showLoading = true } = {}) => {
       if (showLoading) {
         setLoading(true);
-      } else {
-        setRefreshing(true);
       }
       setError(null);
       try {
@@ -35,7 +30,6 @@ const AnnualChampionship = ({ selectedYear }) => {
         if (showLoading) {
           setLoading(false);
         }
-        setRefreshing(false);
       }
     }, [selectedYear]);
 
@@ -56,14 +50,6 @@ const AnnualChampionship = ({ selectedYear }) => {
 
     return () => clearInterval(intervalId);
   }, [annualData?.metadata?.inProgressCount, fetchAnnualChampionship]);
-
-  useEffect(() => {
-    return () => {
-      if (manualRefreshTimeoutRef.current) {
-        clearTimeout(manualRefreshTimeoutRef.current);
-      }
-    };
-  }, []);
 
   const formatScore = (score) => {
     if (score === null || score === undefined) return '-';
@@ -94,43 +80,14 @@ const AnnualChampionship = ({ selectedYear }) => {
   const inProgressCount = metadata.inProgressCount ?? tournaments.filter((tournament) => !tournament.isComplete).length;
   const calculatedAt = metadata.calculatedAt ? new Date(metadata.calculatedAt).toLocaleString() : 'N/A';
 
-  const handleManualRefresh = () => {
-    if (manualRefreshDisabled || loading || refreshing) return;
-
-    setManualRefreshDisabled(true);
-    fetchAnnualChampionship({ showLoading: false });
-
-    if (manualRefreshTimeoutRef.current) {
-      clearTimeout(manualRefreshTimeoutRef.current);
-    }
-
-    manualRefreshTimeoutRef.current = setTimeout(() => {
-      setManualRefreshDisabled(false);
-    }, 5000);
-  };
-
   return (
     <div className="annual-championship">
       <div className="annual-header">
         <h2 className="annual-title">🏆 {selectedYear} Annual Golf Championship</h2>
         <div className="annual-header-meta">
           <span>{tournamentCount} Tournaments | {inProgressCount} In Progress | Last updated: {calculatedAt}</span>
-          <button
-            type="button"
-            className="annual-refresh-btn"
-            onClick={handleManualRefresh}
-            disabled={manualRefreshDisabled || loading || refreshing}
-          >
-            {refreshing ? 'Refreshing...' : manualRefreshDisabled ? 'Refresh cooldown...' : 'Refresh'}
-          </button>
         </div>
       </div>
-
-      {inProgressCount > 0 && (
-        <div className="annual-live-warning">
-          ⚠️ Standings include {inProgressCount} in-progress tournament(s) and are subject to change
-        </div>
-      )}
 
       {tournaments.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
@@ -240,20 +197,6 @@ const AnnualChampionship = ({ selectedYear }) => {
                 ))}
               </tbody>
             </table>
-          </div>
-
-          <div className="annual-stats">
-            <p>
-              <strong>{tournamentCount}</strong> tournaments included • 
-              <strong> {metadata.teamCount || standings.length}</strong> teams participating •
-              <strong> {standings.reduce((total, team) => total + (team.tournaments?.length || 0), 0)}</strong> total team entries
-            </p>
-            <p style={{ fontSize: '0.9rem', color: '#888', marginTop: '10px' }}>
-              Total score is the cumulative sum of tournament scores. Lower total scores are better.
-              {metadata.calculatedAt && (
-                <span> • Last updated: {new Date(metadata.calculatedAt).toLocaleString()}</span>
-              )}
-            </p>
           </div>
         </>
       )}
