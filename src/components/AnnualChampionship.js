@@ -1,19 +1,24 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import { BACKEND_BASE_URL } from '../apiConfig';
 
 const AnnualChampionship = ({ selectedYear }) => {
   const [annualData, setAnnualData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
   const [error, setError] = useState(null);
+  const [manualRefreshDisabled, setManualRefreshDisabled] = useState(false);
+  const manualRefreshTimeoutRef = useRef(null);
 
-  // Fetch annual championship data from backend
-  useEffect(() => {
-    const fetchAnnualChampionship = async () => {
-      setLoading(true);
+  const fetchAnnualChampionship = useCallback(async ({ showLoading = true } = {}) => {
+      if (showLoading) {
+        setLoading(true);
+      } else {
+        setRefreshing(true);
+      }
       setError(null);
       try {
         console.log(`🏆 Annual Championship: Fetching data for year ${selectedYear}...`);
-        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}`);
+        const response = await fetch(`${BACKEND_BASE_URL}/annual_championship?year=${selectedYear}&includeInProgress=true`);
         
         if (!response.ok) {
           throw new Error(`Failed to fetch annual championship data: ${response.status}`);
@@ -27,12 +32,38 @@ const AnnualChampionship = ({ selectedYear }) => {
         console.error('💥 Error fetching annual championship:', error);
         setError('Failed to load annual championship data: ' + error.message);
       } finally {
-        setLoading(false);
+        if (showLoading) {
+          setLoading(false);
+        }
+        setRefreshing(false);
+      }
+    }, [selectedYear]);
+
+  // Fetch annual championship data from backend
+  useEffect(() => {
+    fetchAnnualChampionship();
+  }, [fetchAnnualChampionship]);
+
+  // Poll for updates only while there are in-progress tournaments
+  useEffect(() => {
+    const inProgressCount = annualData?.metadata?.inProgressCount || 0;
+    if (inProgressCount <= 0) return;
+
+    const intervalId = setInterval(() => {
+      console.log('🔄 Auto-refreshing annual championship data...');
+      fetchAnnualChampionship({ showLoading: false });
+    }, 30 * 60 * 1000);
+
+    return () => clearInterval(intervalId);
+  }, [annualData?.metadata?.inProgressCount, fetchAnnualChampionship]);
+
+  useEffect(() => {
+    return () => {
+      if (manualRefreshTimeoutRef.current) {
+        clearTimeout(manualRefreshTimeoutRef.current);
       }
     };
-
-    fetchAnnualChampionship();
-  }, [selectedYear]);
+  }, []);
 
   const formatScore = (score) => {
     if (score === null || score === undefined) return '-';
@@ -59,16 +90,51 @@ const AnnualChampionship = ({ selectedYear }) => {
   const standings = annualData?.standings || [];
   const tournaments = annualData?.tournaments || [];
   const metadata = annualData?.metadata || {};
+  const tournamentCount = metadata.tournamentCount ?? tournaments.length;
+  const inProgressCount = metadata.inProgressCount ?? tournaments.filter((tournament) => !tournament.isComplete).length;
+  const calculatedAt = metadata.calculatedAt ? new Date(metadata.calculatedAt).toLocaleString() : 'N/A';
+
+  const handleManualRefresh = () => {
+    if (manualRefreshDisabled || loading || refreshing) return;
+
+    setManualRefreshDisabled(true);
+    fetchAnnualChampionship({ showLoading: false });
+
+    if (manualRefreshTimeoutRef.current) {
+      clearTimeout(manualRefreshTimeoutRef.current);
+    }
+
+    manualRefreshTimeoutRef.current = setTimeout(() => {
+      setManualRefreshDisabled(false);
+    }, 5000);
+  };
 
   return (
     <div className="annual-championship">
       <div className="annual-header">
         <h2 className="annual-title">🏆 {selectedYear} Annual Golf Championship</h2>
+        <div className="annual-header-meta">
+          <span>{tournamentCount} Tournaments | {inProgressCount} In Progress | Last updated: {calculatedAt}</span>
+          <button
+            type="button"
+            className="annual-refresh-btn"
+            onClick={handleManualRefresh}
+            disabled={manualRefreshDisabled || loading || refreshing}
+          >
+            {refreshing ? 'Refreshing...' : manualRefreshDisabled ? 'Refresh cooldown...' : 'Refresh'}
+          </button>
+        </div>
       </div>
+
+      {inProgressCount > 0 && (
+        <div className="annual-live-warning">
+          ⚠️ Standings include {inProgressCount} in-progress tournament(s) and are subject to change
+        </div>
+      )}
 
       {tournaments.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '50px', color: '#ccc' }}>
-          <p>No completed tournaments found for {selectedYear}</p>
+          <p>No tournaments found for {selectedYear}</p>
           {metadata.totalTournamentsFound > 0 ? (
             <div style={{ marginTop: '15px', fontSize: '0.9rem' }}>
               <p style={{ color: '#ff9800' }}>
@@ -139,7 +205,12 @@ const AnnualChampionship = ({ selectedYear }) => {
                   <th>TEAM</th>
                   {tournaments.map(tournament => (
                     <th key={tournament.tournamentId} className="tournament-column">
-                      {tournament.name}
+                      <div className="tournament-header">
+                        <span>{tournament.name}</span>
+                        <span className={`tournament-status-badge ${tournament.isComplete ? 'official' : 'live'}`}>
+                          {tournament.isComplete ? '✓ Official' : 'LIVE'}
+                        </span>
+                      </div>
                     </th>
                   ))}
                   <th className="total-column">TOTAL SCORE</th>
@@ -173,7 +244,7 @@ const AnnualChampionship = ({ selectedYear }) => {
 
           <div className="annual-stats">
             <p>
-              <strong>{metadata.tournamentCount || tournaments.length}</strong> tournaments completed • 
+              <strong>{tournamentCount}</strong> tournaments included • 
               <strong> {metadata.teamCount || standings.length}</strong> teams participating •
               <strong> {standings.reduce((total, team) => total + (team.tournaments?.length || 0), 0)}</strong> total team entries
             </p>
