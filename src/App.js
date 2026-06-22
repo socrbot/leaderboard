@@ -474,14 +474,15 @@ function App() {
         // Fixed default selection logic
         let defaultTournament = '';
         if (data.length > 0) {
-          // First priority: Find tournament with draft started and has locked odds but not complete
-          const draftReadyTournament = await findDraftReadyTournament(data);
-          
-          if (draftReadyTournament) {
-            defaultTournament = draftReadyTournament;
+          // First priority: restore last-viewed tournament from localStorage (survives refresh)
+          let saved = '';
+          try { saved = window.localStorage.getItem(`leaderboard:lastTournament:${activeLeagueId}`) || ''; } catch (_e) {}
+          if (saved && data.some((t) => t.id === saved)) {
+            defaultTournament = saved;
           } else {
-            // Fallback to most recent tournament
-            defaultTournament = data[data.length - 1].id;
+            // No saved selection — auto-select draft-in-progress or most recent
+            const draftReadyTournament = await findDraftReadyTournament(data);
+            defaultTournament = draftReadyTournament || data[data.length - 1].id;
           }
         }
         setSelectedTournamentId(defaultTournament);
