@@ -530,6 +530,7 @@ function App() {
   useEffect(() => {
     if (!user) {
       initialViewAppliedForUserRef.current = null;
+      try { sessionStorage.removeItem('sc:initView'); } catch (_e) {}
       return;
     }
 
@@ -537,7 +538,14 @@ function App() {
       return;
     }
 
-    if (initialViewAppliedForUserRef.current === user.uid) {
+    // Persist the "already applied" flag in sessionStorage so a hard refresh
+    // doesn't force the user back to UserSettings.
+    let alreadyApplied = initialViewAppliedForUserRef.current === user.uid;
+    if (!alreadyApplied) {
+      try { alreadyApplied = sessionStorage.getItem('sc:initView') === user.uid; } catch (_e) {}
+    }
+    if (alreadyApplied) {
+      initialViewAppliedForUserRef.current = user.uid;
       return;
     }
 
@@ -549,7 +557,7 @@ function App() {
     setShowAnnualChampionship(false);
     setShowTournamentScores(false);
 
-    if (isInLeague) {
+    if (isInLeague || isSuperAdmin) {
       setShowUserSettings(false);
       setLeaderboardRefreshKey((prev) => prev + 1);
     } else {
@@ -557,7 +565,8 @@ function App() {
     }
 
     initialViewAppliedForUserRef.current = user.uid;
-  }, [loadingTournaments, user, userData]);
+    try { sessionStorage.setItem('sc:initView', user.uid); } catch (_e) {}
+  }, [loadingTournaments, user, userData, isSuperAdmin]);
 
   
 
