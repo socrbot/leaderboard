@@ -456,6 +456,7 @@ function App() {
 
   // Fetch available tournaments from your Flask Backend (filtered by year)
   useEffect(() => {
+    let cancelled = false;
     const fetchTournaments = async () => {
       setLoadingTournaments(true);
       setTournamentError(null);
@@ -469,6 +470,7 @@ function App() {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         const data = await response.json();
+        if (cancelled) return;
         setTournaments(data);
         
         // Fixed default selection logic
@@ -482,6 +484,7 @@ function App() {
           } else {
             // No saved selection — auto-select draft-in-progress or most recent
             const draftReadyTournament = await findDraftReadyTournament(data);
+            if (cancelled) return;
             defaultTournament = draftReadyTournament || data[data.length - 1].id;
           }
         }
@@ -490,13 +493,15 @@ function App() {
         // Preload leaderboard data for all completed tournaments
         preloadTournamentData(data);
       } catch (error) {
+        if (cancelled) return;
         console.error("Error fetching tournaments from backend:", error);
         setTournamentError("Failed to load tournaments.");
       } finally {
-        setLoadingTournaments(false);
+        if (!cancelled) setLoadingTournaments(false);
       }
     };
     fetchTournaments();
+    return () => { cancelled = true; };
   }, [refreshTrigger, selectedYear, activeLeagueId, preloadTournamentData]);
 
   // Persist the last-selected tournament per league so league-switching no longer
