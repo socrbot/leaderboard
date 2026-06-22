@@ -4,9 +4,7 @@
   "private": true,
   "dependencies": {
     "@capacitor-firebase/messaging": "^8.2.0",
-    "@capacitor/android": "^8.3.4",
     "@capacitor/app": "^8.1.0",
-    "@capacitor/core": "^8.3.4",
     "@testing-library/dom": "^10.4.0",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/react": "^16.3.0",
@@ -21,6 +19,7 @@
     "start": "react-scripts start",
     "build": "node scripts/update-cache-version.js && react-scripts build",
     "build:staging": "node scripts/update-cache-version.js && env-cmd -f .env.staging react-scripts build",
+    "build:v2-prod": "node scripts/update-cache-version.js && env-cmd -f .env.production-v2 react-scripts build",
     "build:no-cache": "react-scripts build",
     "test": "jest",
     "eject": "react-scripts eject",
