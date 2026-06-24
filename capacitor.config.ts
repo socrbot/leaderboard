@@ -4,11 +4,16 @@ const config: CapacitorConfig = {
   appId: 'com.thesundaycup.app',
   appName: 'The Sunday Cup',
   webDir: 'build',
+  plugins: {
+    GoogleAuth: {
+      scopes: ['profile', 'email'],
+      // PASTE YOUR WEB CLIENT ID HERE (NOT the Android Client ID)
+      serverClientId: '1056126670188-t68f2nphv8dn1jr1aclusaogbk625ngs.apps.googleusercontent.com',
+      forceCodeForRefreshToken: true,
+    },
+  },
   server: {
     androidScheme: 'https',
-    // Allow the WebView to navigate to (and load resources from) our Cloud Run
-    // backends and Firebase Auth. Without this, Firebase popup/redirect URLs
-    // and backend XHRs would be blocked or treated as external.
     allowNavigation: [
       'leaderboard-backend-628169335141.us-east1.run.app',
       'leaderboard-backend-staging-1056126670188.us-east1.run.app',
@@ -17,10 +22,6 @@ const config: CapacitorConfig = {
       '*.googleapis.com',
       'accounts.google.com'
     ]
-  },
-  android: {
-    // Avoid http cleartext by default; backend is https only.
-    allowMixedContent: false
   }
 };
 
