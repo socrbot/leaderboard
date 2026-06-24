@@ -1,96 +1,114 @@
-# Alumni Golf Tournament Leaderboard
+# The Sunday Cup — Alumni Golf Tournament Leaderboard
 
-This repository powers a dynamic, team-based golf tournament leaderboard for alumni events. It pulls live data, allows team and player management, and displays up-to-the-minute scoring for each round.
+A React-based web application that powers team-based golf tournament scoring for WVU alumni events. It integrates with a Flask backend to deliver live leaderboard updates, snake-draft team management, and cumulative annual championship standings across the full season.
 
 ## Features
 
-- **Live Leaderboard:** See team and golfer scores update in real time, including in-progress rounds.
-- **Team Management:** Easily assign golfers to teams using an intuitive management interface.
-- **Draft Board:** Manage and view player draft picks for tournaments.
-- **CUT Status Display:** Instantly see which players have been cut from the tournament, indicated next to their names.
-- **Rounds & Totals:** Team scores are calculated using the best 3 individual scores per round; the total shows as soon as 3 golfers have posted a score for a round.
-- **Responsive UI:** Designed for desktop and mobile screens.
+- **Live Leaderboard** — Real-time team and golfer scores with per-round breakdowns and in-progress indicator
+- **Best-3-of-4 Scoring** — Team round scores calculated from the best 3 of 4 golfers; cut players receive a penalty stroke
+- **Snake Draft System** — Pick-order draft board with live on-clock notifications via Firebase Cloud Messaging
+- **Annual Championship** — Cumulative stroke standings across all completed tournaments in a season
+- **Multi-League Support** — Users can create or join leagues via invite code; each league manages its own tournaments and teams
+- **Tournament Scores View** — Dedicated view showing per-player round scores across all tournaments
+- **CUT Status Display** — Visual indicator for players who missed the cut
+- **Responsive UI** — Dark-themed card layout optimised for desktop and mobile
+- **Progressive Web App** — Service worker support with push notification opt-in
 
 ## How It Works
 
 - **Live scoring** and team data are fetched from a backend and the Rapid Golf API.
 - Team scores per round use the best 3 available golfer scores. If fewer than 3 golfers have a score, the team’s round score shows as "-".
 - The leaderboard automatically updates as new scores come in.
-## Annual Championship Scoring
+## Prerequisites
 
-The application tracks an annual championship across multiple tournaments throughout the season.
+- Node.js 18+
+- npm 9+
+- A Firebase project with Authentication and Firestore enabled
+- Access to the backend API (see [leaderboard-backend](https://github.com/socrbot/leaderboard-backend))
 
-### Team Scoring Per Tournament
-- Each round uses the **best 3 of 4 golfer scores**
-- If fewer than 3 golfers have scores, the round shows as "-"
-- **Cut Penalty**: Players who miss the cut receive a penalty score equal to the highest non-cut score + 1 stroke
-- Team's total score is the sum of all round scores
+## Installation
 
-### Annual Championship Scoring
-The annual championship uses **cumulative stroke scoring**:
-- Each team's total score is the **sum of their tournament scores** across all completed tournaments
-- **Lower total score wins** (standard golf scoring)
-- **Example**: Team A scores +5, +8, +3 = +16 total | Team B scores +10, +2, +6 = +18 total → Team A wins
-
-### Annual Championship Standings
-- Only **completed tournaments** with `participatesInAnnual: true` count toward the championship
-- Final standings are sorted by **lowest total score** (best in golf)
-- Each team's results show their tournament scores and cumulative total
-## Getting Started
-
-1. **Clone the repo:**
-    ```bash
-    git clone https://github.com/socrbot/leaderboard.git
-    cd leaderboard
-    ```
-
-2. **Install dependencies:**
-    ```bash
-    npm install
-    ```
-
-3. **Start the development server:**
-    ```bash
-    npm start
-    ```
-    The app will run at [http://localhost:3000](http://localhost:3000).
-
-4. **Configure backend API (if needed):**
-    - The backend URL is controlled by environment variables via `src/apiConfig.js`.
-    - **Production** (default): `https://leaderboard-backend-628169335141.us-east1.run.app/api`
-    - **Staging**: `https://leaderboard-backend-staging-1056126670188.us-east1.run.app/api`
-    - For local development, set `REACT_APP_BACKEND_URL` in a `.env.local` file.
-
-## Build & Deploy
-
-### Production
 ```bash
-npm run build
-firebase deploy --only hosting
+# Clone the repository
+git clone https://github.com/socrbot/leaderboard.git
+cd leaderboard
+
+# Install dependencies
+npm install
 ```
 
-### Staging
-```bash
-npm run build:staging
-firebase deploy --only hosting --project staging
+Create a `.env.local` file for local development:
+
+```env
+REACT_APP_BACKEND_URL=http://localhost:8080/api
 ```
 
-The staging build uses `.env.staging` (via `env-cmd`) to set the backend URL. Firebase project aliases are configured in `.firebaserc`.
+## Usage
 
-## Folder Structure
+### Development
 
-```markdown
-## Folder Structure
+```bash
+npm start
+```
+
+The app runs at [http://localhost:3000](http://localhost:3000) and proxies API requests to the backend URL configured in `.env.local`.
+
+### Build Targets
+
+| Command | Environment | Firebase Project |
+|---|---|---|
+| `npm run build` | Production | `alumni-golf-tournament` |
+| `npm run build:staging` | Staging | `alumni-golf-tournament-staging` |
+| `npm run build:v2-prod` | V2 Production | `alumni-golf-tournament` (v2 hosting) |
+
+### Deployment
+
+Deployment is fully automated via GitHub Actions. **Do not deploy manually.**
+
+| Branch | Target |
+|---|---|
+| `master` | Production — `alumni-golf-tournament.web.app` |
+| `v2-prod` | V2 Production — `alumni-golf-tournament-v2.web.app` |
+| `v2` | Staging — `aulmni-leaderboard-v2.web.app` |
+
+## Project Structure
 
 ```
 src/
-├── App.js                 # Main React app and leaderboard logic
-├── useGolfLeaderboard.js  # Custom React hook for data fetching & transformation
+├── App.js                    # Root component — auth, tournament selection, view routing
+├── apiConfig.js              # Backend URL constants
+├── authFetch.js              # fetch() wrapper that attaches Firebase ID tokens
+├── useGolfLeaderboard.js     # Data-fetching hook for live leaderboard scores
+├── leaderboardLifecycle.js   # Tournament lifecycle state helpers
 ├── components/
-│   ├── TeamManagement.js  # Team management UI
-│   ├── DraftBoard.js      # Player draft board UI
-│   └── ...                # Other UI components
-├── App.css                # App styling
-└── ...
+│   ├── AnnualChampionship.js # Season standings view
+│   ├── DraftBoard.js         # Snake draft pick board
+│   ├── TeamManagement.js     # Team / golfer assignment UI
+│   ├── TournamentCreation.js # Admin: create tournament with odds integration
+│   ├── LeagueManagement.js   # Create league, invite code display
+│   ├── UserSettings.js       # User profile, league join/create, notifications
+│   └── Setup.js              # Admin setup panel
+├── hooks/                    # Shared custom hooks
+├── notifications/            # FCM push notification helpers
+└── App.css                   # Global dark-theme styles
 ```
-```
+
+## Annual Championship Scoring
+
+- Each team's round score = best 3 of 4 golfer scores for that round
+- Players who miss the cut receive a penalty: `highest_non_cut_score + 1`
+- Annual total = sum of all tournament scores (lower is better)
+- Only tournaments marked `participatesInAnnual: true` and `isOfficiallyComplete: true` count
+
+## Contributing
+
+1. Fork the repository and create a feature branch from `v2` (staging).
+2. Make your changes and ensure `npm test` passes.
+3. Open a pull request against `v2` — CI will deploy a preview build automatically.
+4. Changes are promoted to `v2-prod` (production) after review.
+
+Code style: standard React/ES2022. No custom linter config beyond `react-app`.
+
+## License
+
+MIT License. See [LICENSE](LICENSE) for details.
