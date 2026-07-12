@@ -6,6 +6,7 @@ import { useAuth } from '../contexts/AuthContext';
 export default function LoginPage({ onClose }) {
   const { signInWithGoogle, signInWithApple, signInWithEmail, signUpWithEmail, sendPasswordReset } = useAuth();
   const [mode, setMode] = useState('signin');
+  const [emailExpanded, setEmailExpanded] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -18,6 +19,7 @@ export default function LoginPage({ onClose }) {
     setSuccessMsg('');
     setPassword('');
     setConfirmPassword('');
+    setEmailExpanded(false);
     setMode(newMode);
   };
 
@@ -140,8 +142,14 @@ export default function LoginPage({ onClose }) {
           </>
         )}
 
-        {/* ── Email / Password form ── */}
-        {mode === 'signin' && (
+        {/* ── Email / Password (collapsible) ── */}
+        {mode === 'signin' && !emailExpanded && (
+          <button style={styles.emailToggleBtn} onClick={() => setEmailExpanded(true)} disabled={loading}>
+            Continue with email
+          </button>
+        )}
+
+        {mode === 'signin' && emailExpanded && (
           <form onSubmit={handleEmailSignIn}>
             <input
               style={styles.input}
@@ -409,118 +417,17 @@ const styles = {
     textAlign: 'center',
     width: '100%',
   },
-  closeBtn: {
-    position: 'absolute',
-    top: '12px',
-    right: '14px',
-    background: 'none',
-    border: 'none',
-    color: '#888',
-    fontSize: '1rem',
-    cursor: 'pointer',
-    lineHeight: 1,
-  },
-};
-    background: 'rgba(0,0,0,0.75)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-  },
-  card: {
-    position: 'relative',
-    background: '#1a1a2e',
-    border: '1px solid #333',
-    borderRadius: '12px',
-    padding: '40px 36px 32px',
+  emailToggleBtn: {
     width: '100%',
-    maxWidth: '380px',
-    boxShadow: '0 20px 60px rgba(0,0,0,0.5)',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '24px',
-  },
-  logo: {
-    fontSize: '2rem',
-  },
-  title: {
-    color: '#fff',
-    margin: '8px 0 4px',
-    fontSize: '1.4rem',
-    fontWeight: 700,
-  },
-  subtitle: {
-    color: '#888',
-    margin: 0,
-    fontSize: '0.85rem',
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '6px',
-  },
-  label: {
-    color: '#aaa',
-    fontSize: '0.8rem',
-    textTransform: 'uppercase',
-    letterSpacing: '0.05em',
-    marginTop: '8px',
-  },
-  input: {
-    background: '#111',
+    padding: '11px',
+    background: 'transparent',
     border: '1px solid #444',
     borderRadius: '6px',
-    color: '#fff',
-    padding: '10px 12px',
+    color: '#ccc',
     fontSize: '0.95rem',
-    outline: 'none',
-    width: '100%',
-    boxSizing: 'border-box',
-  },
-  primaryBtn: {
-    marginTop: '16px',
-    background: '#2e7d32',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    padding: '11px',
-    fontSize: '0.95rem',
-    fontWeight: 600,
+    fontWeight: 500,
     cursor: 'pointer',
-    width: '100%',
-  },
-  linkBtn: {
-    background: 'none',
-    border: 'none',
-    color: '#4ade80',
-    cursor: 'pointer',
-    fontSize: '0.85rem',
-    marginTop: '10px',
-    padding: 0,
-    textDecoration: 'underline',
-    display: 'block',
-    textAlign: 'center',
-  },
-  errorBox: {
-    background: 'rgba(248,113,113,0.15)',
-    border: '1px solid rgba(248,113,113,0.4)',
-    borderRadius: '6px',
-    color: '#f87171',
-    padding: '10px 12px',
-    fontSize: '0.85rem',
-    marginBottom: '12px',
-  },
-  successBox: {
-    background: 'rgba(74,222,128,0.1)',
-    border: '1px solid rgba(74,222,128,0.3)',
-    borderRadius: '6px',
-    color: '#4ade80',
-    padding: '14px 12px',
-    fontSize: '0.85rem',
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
+    marginBottom: '4px',
   },
   closeBtn: {
     position: 'absolute',
@@ -532,47 +439,5 @@ const styles = {
     fontSize: '1rem',
     cursor: 'pointer',
     lineHeight: 1,
-  },
-  googleBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    width: '100%',
-    padding: '11px',
-    background: '#fff',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    fontWeight: 600,
-    color: '#222',
-    cursor: 'pointer',
-    marginBottom: '10px',
-  },
-  googleIcon: {
-    width: '20px',
-    height: '20px',
-    flexShrink: 0,
-  },
-  appleBtn: {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: '10px',
-    width: '100%',
-    padding: '11px',
-    background: '#000',
-    border: '1px solid #444',
-    borderRadius: '6px',
-    fontSize: '0.95rem',
-    fontWeight: 600,
-    color: '#fff',
-    cursor: 'pointer',
-    marginBottom: '10px',
-  },
-  appleIcon: {
-    width: '20px',
-    height: '20px',
-    flexShrink: 0,
   },
 };
