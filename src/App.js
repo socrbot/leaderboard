@@ -102,7 +102,8 @@ function App() {
   const [draftStatus, setDraftStatus] = useState({
     IsDraftStarted: false,
     IsDraftLocked: false,
-    IsDraftComplete: false
+    IsDraftComplete: false,
+    DraftLockedOdds: []
   });
   const [draftStatusLoading, setDraftStatusLoading] = useState(true);
 
@@ -340,7 +341,7 @@ function App() {
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
     const fetchPlayerOddsForDraftBoard = async () => {
-      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds) || isTournamentInProgress) {
+      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds)) {
         setDraftBoardLoading(false);
         setDraftBoardPlayers([]);
         setDraftBoardError(null);
@@ -350,6 +351,14 @@ function App() {
       setDraftBoardLoading(true);
       setDraftBoardError(null);
       try {
+        // Prefer locked snapshot odds from draft_status so the board remains
+        // stable once a draft is locked/started.
+        const lockedOdds = Array.isArray(draftStatus?.DraftLockedOdds) ? draftStatus.DraftLockedOdds : [];
+        if (lockedOdds.length > 0) {
+          setDraftBoardPlayers(lockedOdds.slice(0, 44));
+          return;
+        }
+
         const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -367,12 +376,12 @@ function App() {
     };
 
     fetchPlayerOddsForDraftBoard();
-  }, [selectedTournamentId, tournamentOddsId, isTournamentInProgress, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds]);
+  }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds, draftStatus?.DraftLockedOdds]);
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
     if (!selectedTournamentId) {
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false, DraftLockedOdds: [] });
       setDraftStatusLoading(false);
       return;
     }
@@ -387,7 +396,7 @@ function App() {
       setDraftStatus(status);
     } catch (error) {
       console.error('Error fetching draft status:', error);
-      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false });
+      setDraftStatus({ IsDraftStarted: false, IsDraftLocked: false, IsDraftComplete: false, DraftLockedOdds: [] });
     } finally {
       setDraftStatusLoading(false);
     }
