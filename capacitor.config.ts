@@ -11,6 +11,10 @@ const config: CapacitorConfig = {
       serverClientId: '1056126670188-t68f2nphv8dn1jr1aclusaogbk625ngs.apps.googleusercontent.com',
       forceCodeForRefreshToken: true,
     },
+    FirebaseAuthentication: {
+      skipNativeAuth: false,
+      providers: ['google.com', 'apple.com'],
+    },
   },
   server: {
     androidScheme: 'https',
@@ -20,7 +24,8 @@ const config: CapacitorConfig = {
       '*.firebaseapp.com',
       '*.web.app',
       '*.googleapis.com',
-      'accounts.google.com'
+      'accounts.google.com',
+      'appleid.apple.com',
     ]
   }
 };

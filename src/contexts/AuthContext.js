@@ -1,14 +1,23 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import {
   GoogleAuthProvider,
+  OAuthProvider,
   signInWithPopup,
   signInWithRedirect,
+  signInWithCredential,
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
 import { doc, getDoc, setDoc, serverTimestamp } from 'firebase/firestore';
 import { auth, db } from '../firebaseConfig';
 import { registerPush, unregisterPush } from '../notifications/registerPush';
+import {
+  isNativePlatform,
+  isIOS,
+  nativeSignInWithGoogle,
+  nativeSignInWithApple,
+  nativeSignOut,
+} from '../services/nativeAuth';
 
 const AuthContext = createContext(null);
 
@@ -66,8 +75,12 @@ export function AuthProvider({ children }) {
   }, []);
 
   const signInWithGoogle = async () => {
-    // Web flow only. Native plugin auth path was removed to keep the V2 web
-    // deployment unblocked and avoid optional mobile dependency failures.
+    if (isNativePlatform()) {
+      // Use the Capacitor plugin on iOS/Android — avoids popup restrictions.
+      await nativeSignInWithGoogle(auth, GoogleAuthProvider, signInWithCredential);
+      return;
+    }
+    // Web flow: popup with redirect fallback.
     const provider = new GoogleAuthProvider();
     try {
       await signInWithPopup(auth, provider);
@@ -86,10 +99,24 @@ export function AuthProvider({ children }) {
     }
   };
 
+  /**
+   * Sign in with Apple — native iOS only (iOS 13+).
+   * Apple Sign-In must be configured in Firebase Console and Xcode.
+   */
+  const signInWithApple = async () => {
+    if (!isNativePlatform()) {
+      throw new Error('Apple Sign-In is only available in the native iOS app.');
+    }
+    await nativeSignInWithApple(auth, OAuthProvider, signInWithCredential);
+  };
+
   const signOut = async () => {
     // Best-effort: remove this device's FCM token before clearing auth so the
     // backend can stop targeting it.
     try { await unregisterPush(); } catch { /* ignore */ }
+    if (isNativePlatform()) {
+      try { await nativeSignOut(); } catch { /* ignore */ }
+    }
     await firebaseSignOut(auth);
   };
 
@@ -108,7 +135,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signOut, getIdToken, refreshUserData, hadAuthSession: readAuthHint() }}>
+    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signInWithApple, signOut, getIdToken, refreshUserData, hadAuthSession: readAuthHint(), isIOS: isIOS() }}>
       {children}
     </AuthContext.Provider>
   );
