@@ -1,0 +1,39 @@
+{
+  "source": {
+    "project": "projects/6254094080875130949",
+    "designSystem": "assets/0ab0c14d266e4376954bb9bc8ecdac47"
+  },
+  "mode": "light",
+  "brand": {
+    "primary": "#006837",
+    "primaryStrong": "#004d27",
+    "accentGold": "#D4AF37",
+    "accentFairway": "#007640"
+  },
+  "surface": {
+    "background": "#fcf9f8",
+    "surface": "#fcf9f8",
+    "surfaceLow": "#f6f3f2",
+    "surfaceContainer": "#f0edec",
+    "surfaceHigh": "#eae7e7",
+    "surfaceHighest": "#e5e2e1",
+    "surfaceVariant": "#e5e2e1",
+    "surfaceTint": "#0b6d3b",
+    "creamSurface": "#FDFCF8"
+  },
+  "text": {
+    "onBackground": "#1c1b1b",
+    "onSurface": "#1c1b1b",
+    "onSurfaceVariant": "#3f4940",
+    "inverseOnSurface": "#f3f0ef"
+  },
+  "semantic": {
+    "error": "#ba1a1a",
+    "onError": "#ffffff",
+    "errorContainer": "#ffdad6"
+  },
+  "borderAndOutline": {
+    "outline": "#6f7a70",
+    "outlineVariant": "#bec9be"
+  }
+}

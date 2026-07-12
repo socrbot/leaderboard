@@ -1,0 +1,25 @@
+{
+  "source": {
+    "project": "projects/6254094080875130949",
+    "designSystem": "assets/0ab0c14d266e4376954bb9bc8ecdac47"
+  },
+  "spacing": {
+    "baseUnit": "8px",
+    "gutter": "24px",
+    "marginDesktop": "40px",
+    "marginMobile": "16px",
+    "containerMax": "1200px"
+  },
+  "radius": {
+    "sm": "0.125rem",
+    "default": "0.25rem",
+    "md": "0.375rem",
+    "lg": "0.5rem",
+    "xl": "0.75rem",
+    "full": "9999px"
+  },
+  "layout": {
+    "desktopGrid": "12-column fixed grid",
+    "mobileGrid": "single-column flow"
+  }
+}
