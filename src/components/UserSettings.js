@@ -7,6 +7,25 @@ import { Capacitor } from '@capacitor/core';
 import '../App.css';
 import './UserSettings.css';
 
+const HOW_TO_PLAY_STEPS = [
+  {
+    title: 'Join a League',
+    body: 'Use an invite code from your commissioner to join a private league. Each league runs its own Major schedule, standings, and draft room.',
+  },
+  {
+    title: 'Draft Your Four Golfers',
+    body: 'Before each Major, golfers are ranked by sportsbook odds and split into 4 tiers. When the draft opens, teams pick in a snake order and finish with one golfer from each tier.',
+  },
+  {
+    title: 'Track Live Scoring',
+    body: 'Every round uses your best 3 of 4 golfer scores, so the highest score for that round is dropped automatically. If one of your golfers misses the cut, the game assigns a penalty score for the remaining rounds based on the worst score posted in that round plus one stroke. The leaderboard also shows R1 through R4 so you can see who won each round and who leads the event overall.',
+  },
+  {
+    title: 'Win the Event and the Season',
+    body: 'Your tournament total is the sum of those best-3 round scores across all four rounds. Lower is better. Completed Majors then roll into the Annual standings, where the lowest cumulative season total wins the cup.',
+  },
+];
+
 export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreated }) {
   const { user, getIdToken } = useAuth();
 
@@ -29,6 +48,7 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
   const [emailUpdatesEnabled, setEmailUpdatesEnabled] = useState(false);
   const [isEditingTeamName, setIsEditingTeamName] = useState(false);
   const [teamNameInput, setTeamNameInput] = useState('');
+  const [showHowToPlay, setShowHowToPlay] = useState(true);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -407,6 +427,36 @@ export default function UserSettings({ activeLeagueId, onSignOut, onLeagueCreate
           <div className="user-settings-save-row">
             {saved && <span className="user-settings-saved">Saved</span>}
           </div>
+        </section>
+
+        <section className="user-settings-panel user-settings-how-panel">
+          <button
+            type="button"
+            className="user-settings-how-toggle"
+            onClick={() => setShowHowToPlay(prev => !prev)}
+            aria-expanded={showHowToPlay}
+          >
+            <span>
+              <span className="user-settings-section-label user-settings-section-label-inline">How to Play</span>
+              <span className="user-settings-how-subtitle">League rules, draft flow, and live scoring</span>
+            </span>
+            <span className="user-settings-how-chevron" aria-hidden="true">{showHowToPlay ? '−' : '+'}</span>
+          </button>
+
+          {showHowToPlay && (
+            <div className="user-settings-how-grid">
+              {HOW_TO_PLAY_STEPS.map((step, index) => (
+                <article key={step.title} className="user-settings-how-card">
+                  <div className="user-settings-how-step">Step {index + 1}</div>
+                  <h4 className="user-settings-how-title">{step.title}</h4>
+                  <p className="user-settings-how-copy">{step.body}</p>
+                </article>
+              ))}
+              <div className="user-settings-how-note">
+                <strong>Scoring shorthand:</strong> E means even par, negative scores are better, and the lowest team total wins the tournament and the season race.
+              </div>
+            </div>
+          )}
         </section>
 
         {error && <p className="user-settings-error-text">{error}</p>}

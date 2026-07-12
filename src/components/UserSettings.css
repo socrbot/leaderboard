@@ -390,6 +390,85 @@
   padding-bottom: 12px;
 }
 
+.user-settings-how-panel {
+  border-color: rgba(164, 211, 154, 0.16);
+}
+
+.user-settings-how-toggle {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0;
+  border: none;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.user-settings-section-label-inline {
+  display: block;
+  margin-bottom: 4px;
+}
+
+.user-settings-how-subtitle {
+  display: block;
+  color: #c2c9bc;
+  font-size: 0.88rem;
+}
+
+.user-settings-how-chevron {
+  color: #a4d39a;
+  font-size: 1.5rem;
+  line-height: 1;
+}
+
+.user-settings-how-grid {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.user-settings-how-card {
+  padding: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.02);
+}
+
+.user-settings-how-step {
+  color: #a4d39a;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.user-settings-how-title {
+  margin: 7px 0 6px;
+  color: #edf1ea;
+  font-size: 1rem;
+}
+
+.user-settings-how-copy {
+  margin: 0;
+  color: #c2c9bc;
+  font-size: 0.88rem;
+  line-height: 1.55;
+}
+
+.user-settings-how-note {
+  padding: 11px 12px;
+  border-radius: 4px;
+  background: rgba(31, 95, 51, 0.16);
+  border: 1px solid rgba(119, 221, 106, 0.16);
+  color: #dff0da;
+  font-size: 0.84rem;
+  line-height: 1.5;
+}
+
 .user-settings-action-row {
   display: flex;
   align-items: stretch;
@@ -462,6 +541,14 @@
 
   .user-settings-team-pill {
     font-size: 0.75rem;
+  }
+
+  .user-settings-how-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .user-settings-how-note {
+    grid-column: 1 / -1;
   }
 }
 

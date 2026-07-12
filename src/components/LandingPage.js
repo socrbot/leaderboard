@@ -51,6 +51,38 @@ const LandingPage = ({ onSignIn, signingIn }) => {
             text="Start a league, invite your crew, draft in minutes, and let live scoring do the rest."
           />
         </section>
+
+        <section className="landing-how-it-works" aria-labelledby="landing-how-it-works-title">
+          <div className="landing-how-shell">
+            <div className="landing-how-head">
+              <p className="landing-how-eyebrow">How It Works</p>
+              <h2 id="landing-how-it-works-title" className="landing-how-title">The Sunday Cup in four steps</h2>
+            </div>
+
+            <div className="landing-how-grid">
+              <HowStep
+                number="01"
+                title="Join your league"
+                text="Get an invite code from your commissioner and enter the same private season as the rest of your group."
+              />
+              <HowStep
+                number="02"
+                title="Draft one golfer per tier"
+                text="Before each Major, golfers are ranked by sportsbook odds and split into four tiers. The room drafts in snake order until every team has four golfers."
+              />
+              <HowStep
+                number="03"
+                title="Score the best 3 of 4 live"
+                text="Each round counts your best three golfer scores and drops the highest one. Missed cuts turn into penalty rounds, and the leaderboard shows who won each round and who leads the event overall."
+              />
+              <HowStep
+                number="04"
+                title="Chase the season cup"
+                text="Every completed Major adds to your annual total. Lowest tournament scores and lowest season score win."
+              />
+            </div>
+          </div>
+        </section>
       </main>
 
       <footer className="landing-footer">
@@ -74,6 +106,14 @@ const FeatureCard = ({ tone, badge, title, text }) => (
     <div className="landing-feature-badge">{badge}</div>
     <h2 className="landing-feature-title">{title}</h2>
     <p className="landing-feature-text">{text}</p>
+  </article>
+);
+
+const HowStep = ({ number, title, text }) => (
+  <article className="landing-how-card">
+    <div className="landing-how-number">{number}</div>
+    <h3 className="landing-how-card-title">{title}</h3>
+    <p className="landing-how-card-text">{text}</p>
   </article>
 );
 
