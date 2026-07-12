@@ -5,6 +5,9 @@ import {
   signInWithPopup,
   signInWithRedirect,
   signInWithCredential,
+  signInWithEmailAndPassword,
+  createUserWithEmailAndPassword,
+  sendPasswordResetEmail,
   signOut as firebaseSignOut,
   onAuthStateChanged,
 } from 'firebase/auth';
@@ -131,6 +134,18 @@ export function AuthProvider({ children }) {
     }
   };
 
+  /** Sign in with email and password */
+  const signInWithEmail = (email, password) =>
+    signInWithEmailAndPassword(auth, email, password);
+
+  /** Create a new account with email and password */
+  const signUpWithEmail = (email, password) =>
+    createUserWithEmailAndPassword(auth, email, password);
+
+  /** Send a password-reset email */
+  const sendPasswordReset = (email) =>
+    sendPasswordResetEmail(auth, email);
+
   const signOut = async () => {
     // Best-effort: remove this device's FCM token before clearing auth so the
     // backend can stop targeting it.
@@ -156,7 +171,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signInWithApple, signOut, getIdToken, refreshUserData, hadAuthSession: readAuthHint(), isIOS: isIOS() }}>
+    <AuthContext.Provider value={{ user, userData, signInWithGoogle, signInWithApple, signInWithEmail, signUpWithEmail, sendPasswordReset, signOut, getIdToken, refreshUserData, hadAuthSession: readAuthHint(), isIOS: isIOS() }}>
       {children}
     </AuthContext.Provider>
   );
