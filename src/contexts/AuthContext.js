@@ -100,14 +100,35 @@ export function AuthProvider({ children }) {
   };
 
   /**
-   * Sign in with Apple — native iOS only (iOS 13+).
-   * Apple Sign-In must be configured in Firebase Console and Xcode.
+   * Sign in with Apple.
+   * - Native iOS: uses Capacitor plugin (no popup, best UX)
+   * - Web / Android: falls back to Firebase OAuthProvider popup with redirect fallback
+   * Apple Sign-In must be configured in Firebase Console → Authentication → Apple provider.
    */
   const signInWithApple = async () => {
-    if (!isNativePlatform()) {
-      throw new Error('Apple Sign-In is only available in the native iOS app.');
+    if (isNativePlatform()) {
+      await nativeSignInWithApple(auth, OAuthProvider, signInWithCredential);
+      return;
     }
-    await nativeSignInWithApple(auth, OAuthProvider, signInWithCredential);
+    // Web flow — same popup + redirect fallback pattern used by Google
+    const provider = new OAuthProvider('apple.com');
+    provider.addScope('name');
+    provider.addScope('email');
+    try {
+      await signInWithPopup(auth, provider);
+    } catch (e) {
+      const fallbackCodes = new Set([
+        'auth/popup-blocked',
+        'auth/popup-closed-by-user',
+        'auth/cancelled-popup-request',
+        'auth/operation-not-supported-in-this-environment',
+      ]);
+      if (e && fallbackCodes.has(e.code)) {
+        await signInWithRedirect(auth, provider);
+        return;
+      }
+      throw e;
+    }
   };
 
   const signOut = async () => {
