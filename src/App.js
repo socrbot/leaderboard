@@ -9,6 +9,7 @@ import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
 import UserSettings from './components/UserSettings';
 import LandingPage from './components/LandingPage';
+import LoginPage from './components/LoginPage';
 import { useAuth } from './contexts/AuthContext';
 import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT, LEAGUES_API_ENDPOINT, BACKEND_BASE_URL } from './apiConfig';
 import { authFetch } from './authFetch';
@@ -997,15 +998,12 @@ function App() {
 
   // Gate: unauthenticated users see the landing page
   if (!user) {
-    const handleLandingSignIn = async () => {
-      setSigningIn(true);
-      try {
-        await signInWithGoogle();
-      } finally {
-        setSigningIn(false);
-      }
-    };
-    return <LandingPage onSignIn={handleLandingSignIn} signingIn={signingIn} />;
+    return (
+      <>
+        <LandingPage onSignIn={() => setSigningIn(true)} signingIn={signingIn} />
+        {signingIn && <LoginPage onClose={() => setSigningIn(false)} />}
+      </>
+    );
   }
 
   // Early-membership gate: if the signed-in user's Firestore doc has no league

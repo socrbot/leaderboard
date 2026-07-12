@@ -25,10 +25,7 @@ const LandingPage = ({ onSignIn, signingIn }) => {
               {signingIn ? (
                 <span className="landing-spinner" aria-label="Signing in" />
               ) : (
-                <>
-                  <GoogleIcon />
-                  <span>Sign in with Google</span>
-                </>
+                <span>Sign In</span>
               )}
             </button>
           </div>
@@ -59,7 +56,7 @@ const LandingPage = ({ onSignIn, signingIn }) => {
       <footer className="landing-footer">
         <div className="landing-footer-left">
           <div className="landing-footer-brand">THE SUNDAY CUP</div>
-          <p className="landing-footer-copy">Members only. Use your invited Google account.</p>
+          <p className="landing-footer-copy">Members only. Sign in to access your league.</p>
         </div>
 
         <nav className="landing-footer-links" aria-label="Landing footer links">
