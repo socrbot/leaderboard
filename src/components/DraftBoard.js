@@ -4,7 +4,7 @@ import React, { useState, useEffect } from 'react';
 const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, teams, draftPicks, isDraftStarted, tournamentInfo }) => {
   // Mobile responsive state
   const [isMobile, setIsMobile] = useState(false);
-  const [currentTierView, setCurrentTierView] = useState(0); // 0 = Tiers 1&2, 1 = Tiers 3&4
+  const [currentTierView, setCurrentTierView] = useState(0); // 0 = Picks 1&2, 1 = Picks 3&4
 
   // Check for mobile on mount and resize
   useEffect(() => {
@@ -177,7 +177,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
             flexDirection: 'column',
             justifyContent: 'center'
           }}>
-            <div style={{ fontWeight: 'bold' }}>Draft Tiers</div>
+            <div style={{ fontWeight: 'bold' }}>Draft Picks</div>
             {tournamentInfo && (
               <div style={{ color: '#ccc', marginTop: '6px', fontSize: isMobile ? '0.85em' : '0.8em', lineHeight: '1.4' }}>
                 {tournamentInfo.Name && <div>{tournamentInfo.Name}</div>}
@@ -228,7 +228,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                       cursor: 'pointer'
                     }}
                   >
-                    Tiers 1 & 2
+                    Picks 1 & 2
                   </button>
                   <button
                     onClick={() => setCurrentTierView(1)}
@@ -242,7 +242,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                       cursor: 'pointer'
                     }}
                   >
-                    Tiers 3 & 4
+                    Picks 3 & 4
                   </button>
                 </div>
               )}
@@ -261,22 +261,22 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                       // Mobile: Show only 2 tiers based on currentTierView
                       currentTierView === 0 ? (
                         <>
-                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Tier 1</th>
-                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Tier 2</th>
+                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Pick 1</th>
+                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Pick 2</th>
                         </>
                       ) : (
                         <>
-                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Tier 3</th>
-                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Tier 4</th>
+                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Pick 3</th>
+                          <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Pick 4</th>
                         </>
                       )
                     ) : (
                       // Desktop: Show all 4 tiers
                       <>
-                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Tier 1</th>
-                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555' }}>Tier 2</th>
-                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555' }}>Tier 3</th>
-                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Tier 4</th>
+                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '8px 0 0 0' }}>Pick 1</th>
+                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555' }}>Pick 2</th>
+                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555' }}>Pick 3</th>
+                        <th colSpan="2" style={{ padding: '10px 5px', textAlign: 'center', backgroundColor: '#1a1a1a', borderBottom: '1px solid #555', borderRadius: '0 8px 0 0' }}>Pick 4</th>
                       </>
                     )}
                   </tr>
