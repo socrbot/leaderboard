@@ -426,6 +426,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
           // Find the original index for searchTerms
           const teamIndex = teams.findIndex(t => t.name === team.name);
           const currentSearchTerm = searchTerms[teamIndex] || '';
+          const assignedGolfers = (team.golferNames || []).filter(Boolean);
           const filteredPlayersForThisTeam = allPlayersWithOdds.filter(player =>
             player.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) &&
             !team.golferNames.includes(player.name)
@@ -440,6 +441,7 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
                 <h3 style={{ margin: '0', color: 'white' }}>
                   {team.name}
                 </h3>
+                <span style={{ fontSize: '0.8em', color: '#aaa' }}>{assignedGolfers.length} / 4 picks</span>
                 <button
                   onClick={() => handleRemoveTeam(teamIndex)}
                   className="team-remove-btn"
@@ -468,8 +470,8 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
               </div>
 
               <ul className="team-golfer-list">
-                {team.golferNames.length === 0 && <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>No golfers assigned yet.</li>}
-                {team.golferNames.map((golfer, playerIndex) => (
+                {assignedGolfers.length === 0 && <li style={{ padding: '8px 15px', fontStyle: 'italic', color: '#ccc', backgroundColor: '#4A4A4A' }}>No golfers assigned yet.</li>}
+                {(team.golferNames || []).filter(Boolean).map((golfer, playerIndex) => (
                   <li
                     key={golfer}
                   >

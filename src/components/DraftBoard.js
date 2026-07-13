@@ -109,7 +109,7 @@ const DraftBoard = ({ topPlayers, loading, error, oddsId, hasManualDraftOdds, te
                         color: isDraftStarted && getCurrentDraftingTeam()?.name === team.name ? '#333' : '#ccc',
                         marginTop: '2px' 
                       }}>
-                        {team.golferNames.length} player{team.golferNames.length !== 1 ? 's' : ''}
+                        {(team.golferNames || []).filter(Boolean).length} player{(team.golferNames || []).filter(Boolean).length !== 1 ? 's' : ''}
                       </div>
                     </div>
                   ))
