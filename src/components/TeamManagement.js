@@ -1,6 +1,6 @@
 // src/components/TeamManagement.js
 import React, { useState, useEffect, useCallback } from 'react';
-import { BACKEND_BASE_URL, PLAYER_ODDS_API_ENDPOINT } from '../apiConfig';
+import { BACKEND_BASE_URL } from '../apiConfig';
 import '../App.css'; // Importing the CSS file
 
 // TeamManagement now receives tournamentOddsId, isDraftStarted, and hasManualDraftOdds as props,
@@ -75,6 +75,8 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
   const loadTeams = useCallback(async () => {
     if (!tournamentId) {
       setTeams([]);
+      setAllPlayersWithOdds([]);
+      setPlayerLoading(false);
       return;
     }
     try {
@@ -85,10 +87,20 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
       const tournamentData = await response.json();
       setTeams(tournamentData.teams || []);
       setSearchTerms({});
+
+      // Player search sources from the same locked draft snapshot as the draft
+      // board — never a fresh live-odds fetch — so search results always match
+      // exactly what is selectable/lockable.
+      const lockedOdds = Array.isArray(tournamentData.DraftLockedOdds) ? tournamentData.DraftLockedOdds : [];
+      setAllPlayersWithOdds(lockedOdds);
+      setPlayerError(lockedOdds.length === 0 ? 'Draft odds are not locked yet for this tournament.' : null);
     } catch (error) {
       console.error("Error loading teams or tournament details:", error);
       alert('Failed to load teams or tournament details for the selected tournament.');
       setTeams([]);
+      setAllPlayersWithOdds([]);
+    } finally {
+      setPlayerLoading(false);
     }
   }, [tournamentId]);
 
@@ -100,40 +112,6 @@ const TeamManagement = ({ tournamentId, onTournamentCreated, onTeamsSaved, tourn
     };
     initializeTeams();
   }, [syncTeamsFromGlobal, loadTeams]);
-
-
-  // Fetch all players for the search functionality (depends on prop `tournamentOddsId`)
-  // This list will correctly fetch from ManualDraftOdds if available and draft not started
-  useEffect(() => {
-    const fetchAllPlayersForSearch = async () => {
-      if (!tournamentOddsId) {
-        setPlayerLoading(false);
-        setAllPlayersWithOdds([]);
-        return;
-      }
-
-      setPlayerLoading(true);
-      setPlayerError(null);
-      try {
-        // This endpoint will now correctly prioritize manual odds if they exist
-        const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const rawOddsData = await response.json();
-
-        setAllPlayersWithOdds(rawOddsData);
-
-      } catch (error) {
-        console.error("Error fetching ALL player odds for search functionality:", error);
-        setPlayerError(`Failed to load players for search. Please check tournament Odds ID (${tournamentOddsId}).`);
-        setAllPlayersWithOdds([]);
-      } finally {
-        setPlayerLoading(false);
-      }
-    };
-    fetchAllPlayersForSearch();
-  }, [tournamentOddsId, hasManualDraftOdds]); // ADDED hasManualDraftOdds so player list refreshes if manual odds status changes
 
 
   // --- Event Handlers for Team/Player Management (mostly unchanged) ---
