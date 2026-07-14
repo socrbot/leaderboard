@@ -5,7 +5,7 @@ import Setup from './components/Setup';
 import DraftBoard from './components/DraftBoard';
 import AnnualChampionship from './components/AnnualChampionship';
 import TournamentScores from './components/TournamentScores';
-import { TOURNAMENTS_API_ENDPOINT, PLAYER_ODDS_API_ENDPOINT } from './apiConfig';
+import { TOURNAMENTS_API_ENDPOINT } from './apiConfig';
 
 function App() {
   // Memoized helper function to format scores for display
@@ -341,7 +341,7 @@ function App() {
   // Effect to fetch Draft Board players directly in App.js
   useEffect(() => {
     const fetchPlayerOddsForDraftBoard = async () => {
-      if (!selectedTournamentId || (!tournamentOddsId && !hasManualDraftOdds)) {
+      if (!selectedTournamentId) {
         setDraftBoardLoading(false);
         setDraftBoardPlayers([]);
         setDraftBoardError(null);
@@ -351,24 +351,18 @@ function App() {
       setDraftBoardLoading(true);
       setDraftBoardError(null);
       try {
-        // Prefer locked snapshot odds from draft_status so the board remains
-        // stable once a draft is locked/started.
+        // V1 now uses the locked snapshot from draft_status only.
         const lockedOdds = Array.isArray(draftStatus?.DraftLockedOdds) ? draftStatus.DraftLockedOdds : [];
         if (lockedOdds.length > 0) {
           setDraftBoardPlayers(lockedOdds.slice(0, 44));
           return;
         }
 
-        const response = await fetch(`${PLAYER_ODDS_API_ENDPOINT}?oddsId=${tournamentOddsId}`);
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        const rawOddsData = await response.json();
-        const top40Players = rawOddsData.slice(0, 44);
-        setDraftBoardPlayers(top40Players);
+        setDraftBoardPlayers([]);
+        setDraftBoardError('Draft board snapshot not yet available for this tournament.');
       } catch (error) {
-        console.error("Error fetching player odds for draft board:", error);
-        setDraftBoardError(`Failed to load player odds for draft board. Please check tournament Odds ID (${tournamentOddsId}) or manual odds.`);
+        console.error("Error loading locked draft snapshot:", error);
+        setDraftBoardError('Draft board snapshot not yet available for this tournament.');
         setDraftBoardPlayers([]);
       } finally {
         setDraftBoardLoading(false);
@@ -376,7 +370,7 @@ function App() {
     };
 
     fetchPlayerOddsForDraftBoard();
-  }, [selectedTournamentId, tournamentOddsId, leaderboardRefreshKey, isDraftStarted, hasManualDraftOdds, draftStatus?.DraftLockedOdds]);
+  }, [selectedTournamentId, leaderboardRefreshKey, isDraftStarted, draftStatus?.DraftLockedOdds]);
 
   // --- Fetch Draft Status ---
   const fetchDraftStatus = useCallback(async () => {
